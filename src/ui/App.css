@@ -1,0 +1,46 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #eef3f4;
+  background: #101d26;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 280px;
+}
+
+.app {
+  width: min(100%, 1152px);
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 40px);
+}
+
+.app__header {
+  margin-bottom: 24px;
+}
+
+.app__eyebrow {
+  margin: 0 0 8px;
+  color: #edc581;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app__title {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  line-height: 1.15;
+}
+
+.app__description {
+  margin: 12px 0 0;
+  color: #b9cbd1;
+  line-height: 1.5;
+}
