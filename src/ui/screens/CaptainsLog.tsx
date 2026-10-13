@@ -1,6 +1,7 @@
+import type { GameConfig } from '../../game/contracts/GameConfig';
 import { Button } from '../components/Button';
 import { RemotePanel } from '../records/RemotePanel';
-import type { GameConfig } from '../../game/configuration/GameConfiguration';
+
 import './CaptainsLog.css';
 
 export type RecordsTab = 'ranking' | 'history';
@@ -14,7 +15,15 @@ const RecordsTabLabels: Readonly<Record<RecordsTab, string>> = Object.freeze({
  * Captain's Log board with the Ranking and Match History tabs, composed after
  * assets/sample_ranking.png and assets/sample_history.png. The selected tab uses the primary button art.
  */
-export function CaptainsLog({ tab, onTabChange, config, playerId, revision, lastMatchId, onMainMenu }: {
+export function CaptainsLog({
+  tab,
+  onTabChange,
+  config,
+  playerId,
+  revision,
+  lastMatchId,
+  onMainMenu,
+}: {
   tab: RecordsTab;
   onTabChange: (tab: RecordsTab) => void;
   config: GameConfig;
@@ -48,7 +57,9 @@ export function CaptainsLog({ tab, onTabChange, config, playerId, revision, last
         revision={revision}
         lastMatchId={lastMatchId}
       />
-      <Button className="captains-log-menu" onClick={onMainMenu}>Main Menu</Button>
+      <Button className="captains-log-menu" onClick={onMainMenu}>
+        Main Menu
+      </Button>
     </section>
   );
 }

@@ -1,4 +1,6 @@
 export class EntityIdSequence {
   #next = 0;
-  next(): number { return this.#next++; }
+  next(): number {
+    return this.#next++;
+  }
 }

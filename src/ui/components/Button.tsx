@@ -1,9 +1,17 @@
 import type { ButtonHTMLAttributes } from 'react';
 import { uiAsset } from '../assets/UiAssets';
-import { audio } from '../../game/audio/AudioManager';
+import { useApplicationServices } from '../hooks/UseApplicationServices';
 import { AudioConfig } from '../../game/configuration/AudioConfig';
-export function Button({ children, className = '', onClick, onPointerEnter, variant = 'primary', icon, ...props }:
-  ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary'; icon?: string }) {
+export function Button({
+  children,
+  className = '',
+  onClick,
+  onPointerEnter,
+  variant = 'primary',
+  icon,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary'; icon?: string }) {
+  const { audio } = useApplicationServices();
   const handlePointerEnter: ButtonHTMLAttributes<HTMLButtonElement>['onPointerEnter'] = (event) => {
     if (event.pointerType === 'mouse') audio.playUi(AudioConfig.Cues.Hover, 'ui-hover');
     onPointerEnter?.(event);
@@ -13,9 +21,15 @@ export function Button({ children, className = '', onClick, onPointerEnter, vari
     onClick?.(event);
   };
 
-  return <button {...props} className={`sprite-button ${variant} ${className}`}
-    onPointerEnter={handlePointerEnter} onClick={handleClick}>
-    {icon && <img className="button-icon" src={uiAsset(`controls/${icon}`)} alt="" />}
-    {children}
-  </button>;
+  return (
+    <button
+      {...props}
+      className={`sprite-button ${variant} ${className}`}
+      onPointerEnter={handlePointerEnter}
+      onClick={handleClick}
+    >
+      {icon && <img className="button-icon" src={uiAsset(`controls/${icon}`)} alt="" />}
+      {children}
+    </button>
+  );
 }

@@ -8,7 +8,10 @@ import { Ship } from './Ship';
 import type { ShipReadView } from './Ship';
 
 export interface EnemyContext {
-  readonly target: Ship; readonly world: ICollisionWorld; readonly elapsed: number; readonly dt: number;
+  readonly target: Ship;
+  readonly world: ICollisionWorld;
+  readonly elapsed: number;
+  readonly dt: number;
   /** Read views of every active enemy (including this one), used to keep formation spacing. */
   readonly fleet: readonly ShipReadView[];
   fire(ship: EnemyShip, action: Action): void;
@@ -55,12 +58,21 @@ export abstract class EnemyShip extends Ship {
   }
 
   /** Initial heading for a ship spawned at `point`: towards the target, or the first corner around an island. */
-  static spawnHeading(world: ICollisionWorld, point: Readonly<Point>, target: Readonly<Point>, radius: number): number {
-    const goal = world.isNavigable(point, target, radius) ? target : world.route(point, target, radius)[0] ?? target;
+  static spawnHeading(
+    world: ICollisionWorld,
+    point: Readonly<Point>,
+    target: Readonly<Point>,
+    radius: number,
+  ): number {
+    const goal = world.isNavigable(point, target, radius)
+      ? target
+      : (world.route(point, target, radius)[0] ?? target);
     return angleTo(point, goal);
   }
 
-  protected get ai(): AiProfile { return this.#ai; }
+  protected get ai(): AiProfile {
+    return this.#ai;
+  }
 
   protected follow(context: EnemyContext, stopInRange: boolean): FollowResult {
     const { target, world, dt, elapsed } = context;
@@ -77,7 +89,14 @@ export abstract class EnemyShip extends Ship {
     let desired: number;
     if (holding) desired = angleTo(origin, target);
     else if (recovering) desired = this.#openWaterHeading(world, origin, neighbours);
-    else desired = this.#avoidObstacles(world, origin, neighbours, this.#blendSeparation(angleTo(origin, goal), origin, neighbours), goalDistance);
+    else
+      desired = this.#avoidObstacles(
+        world,
+        origin,
+        neighbours,
+        this.#blendSeparation(angleTo(origin, goal), origin, neighbours),
+        goalDistance,
+      );
     // Aiming answers the target directly; navigation headings are smoothed against momentary probe changes.
     const response = holding ? 1 : Math.min(1, this.#ai.headingResponse * dt);
     this.#heading += angleDifference(desired, this.#heading) * response;
@@ -85,7 +104,9 @@ export abstract class EnemyShip extends Ship {
     this.steer(turn, dt);
 
     const probe = recovering ? this.#ai.lookAhead : Math.min(this.#ai.lookAhead, goalDistance);
-    const speed = holding ? 0 : this.#cruiseSpeed(turn, this.#clearance(world, origin, neighbours, this.angle, probe), probe);
+    const speed = holding
+      ? 0
+      : this.#cruiseSpeed(turn, this.#clearance(world, origin, neighbours, this.angle, probe), probe);
     this.cruise(speed, dt, world);
     return { sight, inRange, aim: angleDifference(angleTo(this, target), this.angle) };
   }
@@ -94,8 +115,11 @@ export abstract class EnemyShip extends Ship {
     const { target, world, elapsed } = context;
     if (elapsed >= this.#routeAt) this.#plan(context);
     // Drop reached corners, and skip ahead whenever drift has already opened a direct line to the next one.
-    while (this.#route.length && (distance(this, this.#route[0]!) < this.#ai.waypointArrival
-      || (this.#route.length > 1 && world.isNavigable(this, this.#route[1]!, this.radius)))) {
+    while (
+      this.#route.length &&
+      (distance(this, this.#route[0]!) < this.#ai.waypointArrival ||
+        (this.#route.length > 1 && world.isNavigable(this, this.#route[1]!, this.radius)))
+    ) {
       this.#route.shift();
       if (!this.#route.length) this.#plan(context);
     }
@@ -130,13 +154,19 @@ export abstract class EnemyShip extends Ship {
       // Coincident centres have no defined direction; the hull solver separates them instead.
       if (gap >= this.#ai.separationDistance || !gap) continue;
       const weight = this.#ai.separationWeight * (1 - gap / this.#ai.separationDistance);
-      x += (origin.x - other.x) / gap * weight;
-      y += (origin.y - other.y) / gap * weight;
+      x += ((origin.x - other.x) / gap) * weight;
+      y += ((origin.y - other.y) / gap) * weight;
     }
     return Math.atan2(x, -y);
   }
 
-  #clearance(world: ICollisionWorld, origin: Point, neighbours: readonly Neighbour[], heading: number, probe: number): number {
+  #clearance(
+    world: ICollisionWorld,
+    origin: Point,
+    neighbours: readonly Neighbour[],
+    heading: number,
+    probe: number,
+  ): number {
     let free = world.clearance(origin, this.radius, heading, probe);
     const dx = Math.sin(heading);
     const dy = -Math.cos(heading);
@@ -151,7 +181,13 @@ export abstract class EnemyShip extends Ship {
   }
 
   /** Closest clear heading to `desired`, alternating sides starting with the side used last. */
-  #avoidObstacles(world: ICollisionWorld, origin: Point, neighbours: readonly Neighbour[], desired: number, goalDistance: number): number {
+  #avoidObstacles(
+    world: ICollisionWorld,
+    origin: Point,
+    neighbours: readonly Neighbour[],
+    desired: number,
+    goalDistance: number,
+  ): number {
     const probe = Math.min(this.#ai.lookAhead, goalDistance);
     if (this.#clearance(world, origin, neighbours, desired, probe) >= probe) return desired;
     let best = desired;

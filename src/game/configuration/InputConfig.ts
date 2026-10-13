@@ -4,8 +4,15 @@ import { Action } from '../contracts/GameDomain';
 export class InputConfig {
   private constructor() {}
   static readonly Keys: Readonly<Record<string, Action>> = Object.freeze({
-    KeyW: Action.Forward, ArrowUp: Action.Forward, KeyA: Action.Left, ArrowLeft: Action.Left,
-    KeyD: Action.Right, ArrowRight: Action.Right, Space: Action.Front, KeyQ: Action.Port, KeyE: Action.Starboard,
+    KeyW: Action.Forward,
+    ArrowUp: Action.Forward,
+    KeyA: Action.Left,
+    ArrowLeft: Action.Left,
+    KeyD: Action.Right,
+    ArrowRight: Action.Right,
+    Space: Action.Front,
+    KeyQ: Action.Port,
+    KeyE: Action.Starboard,
   });
   static readonly PauseKeys: readonly string[] = ['Escape', 'KeyP'];
   static readonly IgnoreSelector = 'input,select,textarea,button';

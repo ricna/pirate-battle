@@ -1,7 +1,10 @@
+import { freezeConfiguration } from '../src/game/core/Immutable';
+import { OptionsConfig } from '../src/application/configuration/OptionsConfig';
+import { GameConfigIdentity } from '../src/game/configuration/GameConfigIdentity';
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { createGameConfig, configurationKey, DEFAULT_OPTIONS } from '../src/game/configuration/GameConfiguration';
-import { GameConfigFactory, freezeConfiguration } from '../src/game/configuration/GameConfigFactory';
+
+import { GameConfigFactory } from '../src/game/configuration/GameConfigFactory';
 import { FactoryConfig } from '../src/game/configuration/FactoryConfig';
 import { ProjectileConfig } from '../src/game/configuration/ProjectileConfig';
 import { EnemyChaserConfig } from '../src/game/configuration/EnemyChaserConfig';
@@ -29,15 +32,15 @@ function map(): LoadedMap {
     layers: [], tilesets: [], colliders: json.layers.find((layer) => layer.name === 'collisions')!.objects! };
 }
 test('configuration snapshots reject invalid profiles and identify edited balance', () => {
-  const options = { ...DEFAULT_OPTIONS }; const original = createGameConfig(options); options.sessionSeconds = 60;
-  expect(original.sessionSeconds).toBe(DEFAULT_OPTIONS.sessionSeconds);
+  const options = { ...OptionsConfig.Default }; const original = GameConfigFactory.create(options); options.sessionSeconds = 60;
+  expect(original.sessionSeconds).toBe(OptionsConfig.Default.sessionSeconds);
   expect(Object.isFrozen(original.player.movement)).toBe(true);
   expect(Object.isFrozen(GameDefaults)).toBe(true); expect(Object.isFrozen(GameDefaults.SpawnPoints)).toBe(true);
   expect(Reflect.set(GameDefaults, 'FixedStep', 999)).toBe(false);
   expect(() => Reflect.set(original.player.movement, 'maxSpeed', 999)).not.toThrow();
   expect(original.player.movement.maxSpeed).toBe(230);
   const edited = { ...original, playerSpawn: { x: 1280, y: 1080 }, player: { ...original.player, movement: { ...original.player.movement, maxSpeed: 320 } } };
-  expect(configurationKey(edited)).not.toBe(configurationKey(original));
+  expect(GameConfigIdentity.key(edited)).not.toBe(GameConfigIdentity.key(original));
   const changedGame = new GameManager(edited, map()); changedGame.step(2, new Set([Action.Forward]));
   expect(changedGame.player.speed).toBe(320); changedGame.dispose();
   expect(() => GameConfigFactory.validate({ ...edited, player: { ...edited.player, radius: -1 } })).toThrow();
@@ -65,7 +68,7 @@ test('reused projectiles reset ownership, damage, velocity, age and activation I
   factory.release(next); factory.dispose(); expect(factory.statistics().capacity).toBe(0);
 });
 test('weapons defer a complete broadside when capacity is insufficient without consuming cooldown', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS); const factory = new ShipFactory(config, FactoryConfig.Enemies);
+  const config = GameConfigFactory.create(OptionsConfig.Default); const factory = new ShipFactory(config, FactoryConfig.Enemies);
   const player = factory.createPlayer(0); const projectiles = new ProjectileSystem(new ProjectileFactory({ initialCapacity: 1,
     growthSize: 1, maxCapacity: 3 }, new EntityIdSequence()));
   const weapons = new WeaponController(player, projectiles, config.rules.clockTolerance); let shots = 0;
@@ -82,7 +85,7 @@ test('custom enemy registration selects its subclass without editing GameManager
   }
   const profile = { ...EnemyChaserConfig.Default, id: 'test-patrol' };
   const registrations = [...FactoryConfig.Enemies, { profile, constructor: Patrol }];
-  const original = GameConfigFactory.create(DEFAULT_OPTIONS, registrations);
+  const original = GameConfigFactory.create(OptionsConfig.Default, registrations);
   const config = freezeConfiguration({ ...original, spawning: { ...original.spawning, initialSequence: [profile.id] } });
   const simulation = new GameManager(config, map(), new ShipFactory(config, registrations));
   for (let step = 0; step < 300; step++) simulation.step(config.fixedStep, new Set());
@@ -90,10 +93,13 @@ test('custom enemy registration selects its subclass without editing GameManager
   simulation.dispose(); expect(simulation.enemies).toHaveLength(0); expect(simulation.poolStatistics().projectiles.capacity).toBe(0);
 });
 test('read ports cannot mutate private state; acceleration, braking, pause and disposal obey the lifecycle', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS); const simulation = new GameManager(config, map());
+  const config = GameConfigFactory.create(OptionsConfig.Default); const simulation = new GameManager(config, map());
   const geometry = map(); const island = geometry.colliders.find((c) => c.id === 8)!;
   const fastMove = new CollisionWorld(geometry, config).move(config.playerSpawn, config.player.radius, 0, 2000);
   expect(fastMove.y).toBeGreaterThanOrEqual(island.y + island.height + config.player.radius);
+  expect(Object.isFrozen(simulation.readView)).toBe(true);
+  for (const command of ['step', 'pause', 'resume', 'dispose', 'advancePresentation']) expect(command in simulation.readView).toBe(false);
+  expect(simulation.readView.player).toBe(simulation.player);
   expect(Object.isFrozen(simulation.player)).toBe(true); expect('applyDamage' in simulation.player).toBe(false);
   expect(Reflect.set(simulation.player, 'health', 0)).toBe(false); expect(Reflect.set(simulation.player, 'x', 0)).toBe(false);
   expect(simulation.player.health).toBe(config.player.health);

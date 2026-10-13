@@ -9,12 +9,19 @@ export function ResultScore({ score }: { score: number }) {
     const started = performance.now();
     let frame = 0;
     const draw = (now: number) => {
-      const progress = motion.matches ? 1 : Math.min(1, (now - started) / (PresentationConfig.Default.resultCountSeconds * 1000));
+      const progress = motion.matches
+        ? 1
+        : Math.min(1, (now - started) / (PresentationConfig.Default.resultCountSeconds * 1000));
       setDisplay(Math.round(score * progress));
       if (progress < 1) frame = requestAnimationFrame(draw);
     };
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
   }, [score]);
-  return <><span aria-hidden="true">{display}</span><span className="sr-only">Final score: {score}</span></>;
+  return (
+    <>
+      <span aria-hidden="true">{display}</span>
+      <span className="sr-only">Final score: {score}</span>
+    </>
+  );
 }

@@ -1,0 +1,6 @@
+node_modules
+dist
+reports
+test-results
+public/mockServiceWorker.js
+/assets/

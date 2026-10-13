@@ -7,7 +7,8 @@ export class EnemyChaser extends EnemyShip {
     if (!this.alive || !context.target.alive) return;
     this.follow(context, false);
     if (context.world.areTouching(this, this.hullRadius, context.target, context.target.hullRadius)) {
-      context.damage(context.target, this.ai.ramDamage, false); context.damage(this, this.health, false);
+      context.damage(context.target, this.ai.ramDamage, false);
+      context.damage(this, this.health, false);
       context.event(GameEvent.ShipCollision);
     }
   }

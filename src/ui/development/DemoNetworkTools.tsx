@@ -3,7 +3,11 @@ import { SCENARIOS } from '../../infrastructure/network/NetworkSimulator';
 import type { Scenario } from '../../infrastructure/network/NetworkSimulator';
 
 /** Collapsed demo controls for the MSW scenarios, docked in the bottom-left corner outside the menu board. */
-export function DemoNetworkTools({ scenario, onSelect, onReset }: {
+export function DemoNetworkTools({
+  scenario,
+  onSelect,
+  onReset,
+}: {
   scenario: Scenario;
   onSelect: (scenario: Scenario) => void;
   onReset: () => void;
@@ -21,10 +25,16 @@ export function DemoNetworkTools({ scenario, onSelect, onReset }: {
       <label>
         Network scenario
         <select value={scenario} onChange={(event) => select(event.target.value)}>
-          {SCENARIOS.map((value) => <option key={value} value={value}>{value}</option>)}
+          {SCENARIOS.map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
         </select>
       </label>
-      <Button className="compact" onClick={onReset}>Reset demo server</Button>
+      <Button className="compact" onClick={onReset}>
+        Reset demo server
+      </Button>
     </details>
   );
 }

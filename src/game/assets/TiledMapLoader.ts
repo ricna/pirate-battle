@@ -5,7 +5,8 @@ const MAP_PATH = '/assets/maps/arena_00.tmj';
 const PROJECT_FILES: Record<string, string> = {
   [MAP_PATH]: new URL('../../../assets/maps/arena_00.tmj', import.meta.url).href,
   '/assets/maps/terrain.tsj': new URL('../../../assets/maps/terrain.tsj', import.meta.url).href,
-  '/assets/tilesheet/tiles_sheet.png': new URL('../../../assets/tilesheet/tiles_sheet.png', import.meta.url).href,
+  '/assets/tilesheet/tiles_sheet.png': new URL('../../../assets/tilesheet/tiles_sheet.png', import.meta.url)
+    .href,
 };
 
 export interface MapCollider {
@@ -124,7 +125,11 @@ function tileLayer(raw: Record<string, unknown>, width: number, height: number):
   const opacity = number(raw.opacity, `Layer ${name} opacity`);
   if (opacity > 1) throw new Error(`Layer ${name} opacity must be <= 1.`);
   return {
-    name, width, height, data, opacity,
+    name,
+    width,
+    height,
+    data,
+    opacity,
     visible: visible(raw.visible, name),
     offsetX: offset(raw.offsetx, `${name} offset X`),
     offsetY: offset(raw.offsety, `${name} offset Y`),
@@ -140,7 +145,17 @@ function collisionLayer(raw: Record<string, unknown>, width: number, height: num
     const id = integer(object.id, 'Collider ID');
     if (ids.has(id)) throw new Error(`Duplicate collider ID ${id}.`);
     ids.add(id);
-    if (object.rotation !== 0 || object.ellipse || object.point || object.polygon || object.polyline || object.gid || object.text || object.capsule || object.template) {
+    if (
+      object.rotation !== 0 ||
+      object.ellipse ||
+      object.point ||
+      object.polygon ||
+      object.polyline ||
+      object.gid ||
+      object.text ||
+      object.capsule ||
+      object.template
+    ) {
       throw new Error(`Collider ${id} must be an unrotated rectangle.`);
     }
     const collider = {
@@ -151,97 +166,122 @@ function collisionLayer(raw: Record<string, unknown>, width: number, height: num
       width: number(object.width, `Collider ${id} width`, Number.MIN_VALUE),
       height: number(object.height, `Collider ${id} height`, Number.MIN_VALUE),
     };
-    if (collider.x < 0 || collider.y < 0 || collider.x + collider.width > width || collider.y + collider.height > height) {
+    if (
+      collider.x < 0 ||
+      collider.y < 0 ||
+      collider.x + collider.width > width ||
+      collider.y + collider.height > height
+    ) {
       throw new Error(`Collider ${id} extends beyond the arena.`);
     }
     return collider;
   });
 }
 
-export async function loadTiledMap(signal: AbortSignal, onProgress: (percent: number) => void): Promise<LoadedMap> {
-  onProgress(0);
-  const raw = record(await readJson(MAP_PATH, signal), 'Map');
-  if (raw.type !== 'map' || raw.orientation !== 'orthogonal' || raw.infinite !== false || raw.renderorder !== 'right-down') {
-    throw new Error('The arena requires a finite orthogonal map in right-down order.');
-  }
-  const width = integer(raw.width, 'Map width');
-  const height = integer(raw.height, 'Map height');
-  const tileWidth = integer(raw.tilewidth, 'Map tile width');
-  const tileHeight = integer(raw.tileheight, 'Map tile height');
-  const layers: MapTileLayer[] = [];
-  let colliders: MapCollider[] | undefined;
-
-  for (const value of list(raw.layers, 'Map layers')) {
-    const layer = record(value, 'Map layer');
-    if (layer.type === 'tilelayer') layers.push(tileLayer(layer, width, height));
-    else if (layer.type === 'objectgroup') {
-      if (layer.name === 'collisions') {
-        if (colliders) throw new Error('The map must contain only one collisions layer.');
-        colliders = collisionLayer(layer, width * tileWidth, height * tileHeight);
-      }
-      // Other authored object layers are metadata for future gameplay systems.
-    } else throw new Error(`Unsupported map layer type: ${String(layer.type)}`);
-  }
-  if (!layers.length || !colliders?.length) throw new Error('The arena requires tile layers and authored collision rectangles.');
-  onProgress(25);
-
-  const references = list(raw.tilesets, 'Map tilesets');
-  if (!references.length) throw new Error('The map requires an external tileset.');
-  const tilesets: MapTileset[] = [];
-  for (const [index, value] of references.entries()) {
-    const reference = record(value, 'Tileset reference');
-    const path = relativePath(MAP_PATH, text(reference.source, 'Tileset source'));
-    const tileset = record(await readJson(path, signal), 'Tileset');
-    if (tileset.type !== 'tileset' || tileset.tiles !== undefined) {
-      throw new Error('The arena supports static image-sheet tilesets without per-tile overrides.');
+export class TiledMapLoader {
+  static async load(signal: AbortSignal, onProgress: (percent: number) => void): Promise<LoadedMap> {
+    onProgress(0);
+    const raw = record(await readJson(MAP_PATH, signal), 'Map');
+    if (
+      raw.type !== 'map' ||
+      raw.orientation !== 'orthogonal' ||
+      raw.infinite !== false ||
+      raw.renderorder !== 'right-down'
+    ) {
+      throw new Error('The arena requires a finite orthogonal map in right-down order.');
     }
-    const imagePath = relativePath(path, text(tileset.image, 'Tileset image'));
-    onProgress(25 + Math.round(35 * (index + 0.5) / references.length));
-    const texture = await Assets.load<Texture>(assetUrl(imagePath));
+    const width = integer(raw.width, 'Map width');
+    const height = integer(raw.height, 'Map height');
+    const tileWidth = integer(raw.tilewidth, 'Map tile width');
+    const tileHeight = integer(raw.tileheight, 'Map tile height');
+    const layers: MapTileLayer[] = [];
+    let colliders: MapCollider[] | undefined;
+
+    for (const value of list(raw.layers, 'Map layers')) {
+      const layer = record(value, 'Map layer');
+      if (layer.type === 'tilelayer') layers.push(tileLayer(layer, width, height));
+      else if (layer.type === 'objectgroup') {
+        if (layer.name === 'collisions') {
+          if (colliders) throw new Error('The map must contain only one collisions layer.');
+          colliders = collisionLayer(layer, width * tileWidth, height * tileHeight);
+        }
+        // Other authored object layers are metadata for future gameplay systems.
+      } else throw new Error(`Unsupported map layer type: ${String(layer.type)}`);
+    }
+    if (!layers.length || !colliders?.length)
+      throw new Error('The arena requires tile layers and authored collision rectangles.');
+    onProgress(25);
+
+    const references = list(raw.tilesets, 'Map tilesets');
+    if (!references.length) throw new Error('The map requires an external tileset.');
+    const tilesets: MapTileset[] = [];
+    for (const [index, value] of references.entries()) {
+      const reference = record(value, 'Tileset reference');
+      const path = relativePath(MAP_PATH, text(reference.source, 'Tileset source'));
+      const tileset = record(await readJson(path, signal), 'Tileset');
+      if (tileset.type !== 'tileset' || tileset.tiles !== undefined) {
+        throw new Error('The arena supports static image-sheet tilesets without per-tile overrides.');
+      }
+      const imagePath = relativePath(path, text(tileset.image, 'Tileset image'));
+      onProgress(25 + Math.round((35 * (index + 0.5)) / references.length));
+      const texture = await Assets.load<Texture>(assetUrl(imagePath));
+      signal.throwIfAborted();
+      // The provided sheet has no padding; avoid sampling neighboring tiles.
+      texture.source.scaleMode = 'nearest';
+      if (texture.width !== tileset.imagewidth || texture.height !== tileset.imageheight) {
+        throw new Error('The tileset image dimensions do not match its authored metadata.');
+      }
+      const definition: MapTileset = {
+        firstGid: integer(reference.firstgid, 'Tileset first GID'),
+        columns: integer(tileset.columns, 'Tileset columns'),
+        tileCount: integer(tileset.tilecount, 'Tileset tile count'),
+        tileWidth: integer(tileset.tilewidth, 'Tileset tile width'),
+        tileHeight: integer(tileset.tileheight, 'Tileset tile height'),
+        margin: integer(tileset.margin, 'Tileset margin', 0),
+        spacing: integer(tileset.spacing, 'Tileset spacing', 0),
+        texture,
+      };
+      if (definition.tileWidth !== tileWidth || definition.tileHeight !== tileHeight) {
+        throw new Error('Tileset cells must match the map grid size.');
+      }
+      const lastColumn = Math.min(definition.tileCount, definition.columns) - 1;
+      const lastRow = Math.floor((definition.tileCount - 1) / definition.columns);
+      if (
+        definition.margin + lastColumn * (tileWidth + definition.spacing) + tileWidth > texture.width ||
+        definition.margin + lastRow * (tileHeight + definition.spacing) + tileHeight > texture.height
+      ) {
+        throw new Error('The tileset grid extends beyond its image.');
+      }
+      if (
+        tilesets.some(
+          (other) =>
+            definition.firstGid < other.firstGid + other.tileCount &&
+            other.firstGid < definition.firstGid + definition.tileCount,
+        )
+      ) {
+        throw new Error('Tileset GID ranges must not overlap.');
+      }
+      tilesets.push(definition);
+      onProgress(25 + Math.round((65 * (index + 1)) / references.length));
+    }
+    for (const layer of layers) {
+      for (const rawGid of layer.data) {
+        const gid = (rawGid & 0x0fffffff) >>> 0;
+        if (rawGid === 0) continue;
+        if ((rawGid & 0x10000000) !== 0)
+          throw new Error('Hexagonal tile rotation is unsupported in this orthogonal map.');
+        if (
+          !tilesets.some((tileset) => gid >= tileset.firstGid && gid < tileset.firstGid + tileset.tileCount)
+        ) {
+          throw new Error(`Layer ${layer.name} references unknown tile ${gid}.`);
+        }
+        if ((rawGid & 0x20000000) !== 0 && tileWidth !== tileHeight) {
+          throw new Error('Diagonal flips require square tiles in this renderer.');
+        }
+      }
+    }
     signal.throwIfAborted();
-    // The provided sheet has no padding; avoid sampling neighboring tiles.
-    texture.source.scaleMode = 'nearest';
-    if (texture.width !== tileset.imagewidth || texture.height !== tileset.imageheight) {
-      throw new Error('The tileset image dimensions do not match its authored metadata.');
-    }
-    const definition: MapTileset = {
-      firstGid: integer(reference.firstgid, 'Tileset first GID'),
-      columns: integer(tileset.columns, 'Tileset columns'),
-      tileCount: integer(tileset.tilecount, 'Tileset tile count'),
-      tileWidth: integer(tileset.tilewidth, 'Tileset tile width'),
-      tileHeight: integer(tileset.tileheight, 'Tileset tile height'),
-      margin: integer(tileset.margin, 'Tileset margin', 0),
-      spacing: integer(tileset.spacing, 'Tileset spacing', 0),
-      texture,
-    };
-    if (definition.tileWidth !== tileWidth || definition.tileHeight !== tileHeight) {
-      throw new Error('Tileset cells must match the map grid size.');
-    }
-    const lastColumn = Math.min(definition.tileCount, definition.columns) - 1;
-    const lastRow = Math.floor((definition.tileCount - 1) / definition.columns);
-    if (definition.margin + lastColumn * (tileWidth + definition.spacing) + tileWidth > texture.width || definition.margin + lastRow * (tileHeight + definition.spacing) + tileHeight > texture.height) {
-      throw new Error('The tileset grid extends beyond its image.');
-    }
-    if (tilesets.some((other) => definition.firstGid < other.firstGid + other.tileCount && other.firstGid < definition.firstGid + definition.tileCount)) {
-      throw new Error('Tileset GID ranges must not overlap.');
-    }
-    tilesets.push(definition);
-    onProgress(25 + Math.round(65 * (index + 1) / references.length));
+    onProgress(100);
+    return { width, height, tileWidth, tileHeight, layers, tilesets, colliders };
   }
-  for (const layer of layers) {
-    for (const rawGid of layer.data) {
-      const gid = (rawGid & 0x0fffffff) >>> 0;
-      if (rawGid === 0) continue;
-      if ((rawGid & 0x10000000) !== 0) throw new Error('Hexagonal tile rotation is unsupported in this orthogonal map.');
-      if (!tilesets.some((tileset) => gid >= tileset.firstGid && gid < tileset.firstGid + tileset.tileCount)) {
-        throw new Error(`Layer ${layer.name} references unknown tile ${gid}.`);
-      }
-      if ((rawGid & 0x20000000) !== 0 && tileWidth !== tileHeight) {
-        throw new Error('Diagonal flips require square tiles in this renderer.');
-      }
-    }
-  }
-  signal.throwIfAborted();
-  onProgress(100);
-  return { width, height, tileWidth, tileHeight, layers, tilesets, colliders };
 }

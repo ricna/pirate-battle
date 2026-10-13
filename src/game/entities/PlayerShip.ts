@@ -5,7 +5,9 @@ import type { Point } from '../math/Geometry';
 import { Ship } from './Ship';
 
 export class PlayerShip extends Ship {
-  constructor(id: number, position: Readonly<Point>, profile: ShipProfile) { super(id, position, 0, profile); }
+  constructor(id: number, position: Readonly<Point>, profile: ShipProfile) {
+    super(id, position, 0, profile);
+  }
   update(dt: number, input: ReadonlySet<Action>, world: ICollisionWorld): void {
     if (!this.alive) return;
     const direction = Number(input.has(Action.Right)) - Number(input.has(Action.Left));

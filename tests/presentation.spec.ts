@@ -1,7 +1,8 @@
+import { OptionsConfig } from '../src/application/configuration/OptionsConfig';
 import { expect, test } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { AudioConfig } from '../src/game/configuration/AudioConfig';
-import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/configuration/GameConfiguration';
+
 import { GameConfigFactory } from '../src/game/configuration/GameConfigFactory';
 import { ParticleKind } from '../src/game/configuration/PresentationConfig';
 import { CollisionWorld } from '../src/game/core/CollisionWorld';
@@ -18,7 +19,7 @@ function map(): LoadedMap {
 }
 
 test('sinking emits 2–5 crew once, exercises six variants, remains on water and expires', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   const world = new CollisionWorld(map(), config);
   const presentation = new PresentationSystem(config, world);
   const sprites = new Set<string>();
@@ -50,7 +51,7 @@ test('sinking emits 2–5 crew once, exercises six variants, remains on water an
 });
 
 test('cosmetic events never modify combat, read ports omit commands and pause freezes all presentation', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   const game = new GameManager(config, map());
   for (let step = 0; step < 30; step++) game.step(config.fixedStep, new Set([Action.Forward, Action.Front]));
   expect(game.presentation.particles.some((particle) => String(particle.kind) === 'wake')).toBe(false);
@@ -69,7 +70,7 @@ test('cosmetic events never modify combat, read ports omit commands and pause fr
 });
 
 test('reduced motion removes shake/drift, keeps damage/score signals and prevents duplicate rewards', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   const presentation = new PresentationSystem(config, new CollisionWorld(map(), config));
   presentation.setReducedMotion(true);
   presentation.accept({ kind: FeedbackKind.Damage, shipId: 1, allegiance: Allegiance.Player, point: config.playerSpawn, amount: 25 });
@@ -86,7 +87,7 @@ test('reduced motion removes shake/drift, keeps damage/score signals and prevent
 });
 
 test('configuration rejects budgets that would silently omit required survivors', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   expect(() => GameConfigFactory.validate({ ...config, presentation: { ...config.presentation,
     crewPool: { initialCapacity: 1, growthSize: 1, maxCapacity: 5 } } })).toThrow(/Crew capacity/);
 });

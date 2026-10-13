@@ -14,7 +14,12 @@ export interface TouchInput {
 
 type Control = (typeof InputConfig.Controls)[number];
 
-function CommandButton({ control, disabled, readiness, input }: {
+function CommandButton({
+  control,
+  disabled,
+  readiness,
+  input,
+}: {
   control: Control;
   disabled: boolean;
   readiness: Snapshot['weapons'][number] | undefined;
@@ -26,10 +31,14 @@ function CommandButton({ control, disabled, readiness, input }: {
     delete button.dataset.held;
   };
   // Remaining reload fraction darkens the button face clockwise; a ready weapon looks exactly like the reference.
-  const cooldownStyle = readiness ? { '--cooldown': 1 - readiness.progress } as CSSProperties : undefined;
+  const cooldownStyle = readiness ? ({ '--cooldown': 1 - readiness.progress } as CSSProperties) : undefined;
 
   return (
-    <button type="button" className={`hud-round-button command command-${action}`} aria-label={label} disabled={disabled}
+    <button
+      type="button"
+      className={`hud-round-button command command-${action}`}
+      aria-label={label}
+      disabled={disabled}
       onPointerDown={(event) => {
         event.preventDefault();
         event.currentTarget.setPointerCapture(event.pointerId);
@@ -46,16 +55,30 @@ function CommandButton({ control, disabled, readiness, input }: {
         input.press(`button-${action}`, action);
       }}
       onKeyUp={() => input.release(`button-${action}`)}
-      onBlur={() => input.release(`button-${action}`)}>
+      onBlur={() => input.release(`button-${action}`)}
+    >
       <img src={retinaAsset(`ui/controls/icon_${icon}`)} alt="" />
-      {readiness && <span className="weapon-cooldown" style={cooldownStyle} role="progressbar" aria-label={`${label} readiness`}
-        aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(readiness.progress * 100)} />}
+      {readiness && (
+        <span
+          className="weapon-cooldown"
+          style={cooldownStyle}
+          role="progressbar"
+          aria-label={`${label} readiness`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(readiness.progress * 100)}
+        />
+      )}
     </button>
   );
 }
 
 /** Bottom touch clusters of `assets/sample.png`: movement on the left, weapons on the right. */
-export function TouchControls({ snapshot, disabled, input }: {
+export function TouchControls({
+  snapshot,
+  disabled,
+  input,
+}: {
   snapshot: Snapshot | null;
   disabled: boolean;
   input: TouchInput;
@@ -67,10 +90,20 @@ export function TouchControls({ snapshot, disabled, input }: {
   return (
     <>
       {clusters.map(({ cluster, label }) => (
-        <div key={cluster} className={`touch-cluster touch-cluster-${cluster}`} role="group" aria-label={label}>
+        <div
+          key={cluster}
+          className={`touch-cluster touch-cluster-${cluster}`}
+          role="group"
+          aria-label={label}
+        >
           {InputConfig.Controls.filter((control) => control.cluster === cluster).map((control) => (
-            <CommandButton key={control.action} control={control} disabled={disabled} input={input}
-              readiness={snapshot?.weapons.find((weapon) => weapon.id === control.action)} />
+            <CommandButton
+              key={control.action}
+              control={control}
+              disabled={disabled}
+              input={input}
+              readiness={snapshot?.weapons.find((weapon) => weapon.id === control.action)}
+            />
           ))}
         </div>
       ))}

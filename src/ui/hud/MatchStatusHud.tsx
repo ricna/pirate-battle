@@ -1,5 +1,6 @@
+import type { GameConfig } from '../../game/contracts/GameConfig';
 import metadata from '../../../assets/spritesheet/ui_sheet.json';
-import type { GameConfig } from '../../game/configuration/GameConfiguration';
+
 import type { Snapshot } from '../../game/runtime/GameManager';
 import { retinaAsset } from '../assets/UiAssets';
 import './GameHud.css';
@@ -31,7 +32,12 @@ function formatClock(remainingSeconds: number): string {
 }
 
 /** Top HUD of `assets/sample.png`: heart and health bar on the left; score, clock and pause on the right. */
-export function MatchStatusHud({ config, snapshot, canPause, onPause }: {
+export function MatchStatusHud({
+  config,
+  snapshot,
+  canPause,
+  onPause,
+}: {
   config: GameConfig;
   snapshot: Snapshot | null;
   canPause: boolean;
@@ -48,10 +54,16 @@ export function MatchStatusHud({ config, snapshot, canPause, onPause }: {
     <header className="match-hud" aria-label="Match status">
       <img className="hud-heart" src={retinaAsset('ui/hud/icon_heart')} alt="" />
       <p className={`hud-health ${lowHealth ? 'critical' : ''}`}>
-        <img className="hud-health-fill" src={retinaAsset(healthFillSprite(config, ratio))} alt=""
-          style={{ clipPath: healthFillClip(config, ratio) }} />
+        <img
+          className="hud-health-fill"
+          src={retinaAsset(healthFillSprite(config, ratio))}
+          alt=""
+          style={{ clipPath: healthFillClip(config, ratio) }}
+        />
         <span className="sr-only">Health </span>
-        <strong>{health} / {maxHealth}</strong>
+        <strong>
+          {health} / {maxHealth}
+        </strong>
       </p>
       <p className={`hud-counter hud-score ${snapshot?.scorePulse ? 'score-pulse' : ''}`}>
         <img src={retinaAsset('ui/hud/icon_score')} alt="" />
@@ -63,10 +75,15 @@ export function MatchStatusHud({ config, snapshot, canPause, onPause }: {
         <span className="sr-only">Time remaining </span>
         <strong>{formatClock(remaining)}</strong>
       </p>
-      <button type="button" className="hud-round-button hud-pause" aria-label="Pause game" disabled={!canPause} onClick={onPause}>
+      <button
+        type="button"
+        className="hud-round-button hud-pause"
+        aria-label="Pause game"
+        disabled={!canPause}
+        onClick={onPause}
+      >
         <img src={retinaAsset('ui/controls/icon_pause')} alt="" />
       </button>
     </header>
   );
 }
-

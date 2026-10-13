@@ -1,7 +1,10 @@
+import { freezeConfiguration } from '../src/game/core/Immutable';
+import { OptionsConfig } from '../src/application/configuration/OptionsConfig';
+import { GameConfigFactory } from '../src/game/configuration/GameConfigFactory';
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/configuration/GameConfiguration';
-import { freezeConfiguration } from '../src/game/configuration/GameConfigFactory';
+
+
 import { CollisionWorld } from '../src/game/core/CollisionWorld';
 import { ShipKind } from '../src/game/contracts/GameDomain';
 import { distance } from '../src/game/math/Geometry';
@@ -25,7 +28,7 @@ const coastHuggingPlayer: Point = { x: 250, y: 739 };
 const hiddenSpawn: Point = { x: 1024, y: 64 };
 
 test('a route to a target inside a blocked navigation cell ends at the nearest reachable water', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   const world = new CollisionWorld(map(), config);
   const radius = config.enemies[ShipKind.Chaser]!.radius;
   expect(world.isVisible(hiddenSpawn, coastHuggingPlayer, radius)).toBe(false);
@@ -41,7 +44,7 @@ test('a route to a target inside a blocked navigation cell ends at the nearest r
 
 for (const kind of [ShipKind.Chaser, ShipKind.Shooter]) {
   test(`a hidden ${kind} reaches a player hugging a coast instead of sailing away`, () => {
-    const base = createGameConfig(DEFAULT_OPTIONS);
+    const base = GameConfigFactory.create(OptionsConfig.Default);
     const config = freezeConfiguration({ ...base, playerSpawn: coastHuggingPlayer, spawnPoints: [hiddenSpawn],
       spawning: { ...base.spawning, maxCount: 1, initialSequence: [kind] } });
     const simulation = new GameManager(config, map());
@@ -55,7 +58,7 @@ for (const kind of [ShipKind.Chaser, ShipKind.Shooter]) {
 }
 
 test('a crowded seeded battle keeps enemies sailing instead of pinned to coasts or each other', () => {
-  const base = createGameConfig({ ...DEFAULT_OPTIONS, sessionSeconds: 180, spawnSeconds: 2 });
+  const base = GameConfigFactory.create({ ...OptionsConfig.Default, sessionSeconds: 180, spawnSeconds: 2 });
   // Authored-profile edit only: a resilient player keeps the full enemy cap on the water for the whole sample.
   const config = freezeConfiguration({ ...base, player: { ...base.player, health: 1e6 } });
   const simulation = new GameManager(config, map());

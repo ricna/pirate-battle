@@ -1,20 +1,38 @@
-import { DEFAULT_OPTIONS, validOptions } from '../../game/configuration/GameConfiguration';
-import type { Options } from '../../game/configuration/GameConfiguration';
-export let storageWarning: string | null = null;
-export function readStored<T>(key: string, validate: (value: unknown) => value is T, initial: T): T {
-  try { const raw = localStorage.getItem(`pirate.${key}`); if (!raw) return initial;
-    const value: unknown = JSON.parse(raw); if (validate(value)) return value;
-    storageWarning = 'Some stored data was invalid and could not be restored.';
-  } catch { storageWarning = 'Local storage is unavailable. Progress cannot survive a refresh.'; }
-  return initial;
-}
-export function writeStored(key: string, value: unknown) {
-  try { localStorage.setItem(`pirate.${key}`, JSON.stringify(value)); }
-  catch { storageWarning = 'Local storage could not save your progress.'; }
-}
-export const loadOptions = () => readStored<Options>('options', validOptions, DEFAULT_OPTIONS);
-export function playerIdentity() {
-  const id = readStored('player', (v): v is string => typeof v === 'string' && v.length > 0, '');
-  if (id) return id;
-  const created = crypto.randomUUID(); writeStored('player', created); return created;
+/** Browser adapter with lazy storage access and visible persistence failures. */
+export class LocalStorageStore {
+  #warning: string | null = null;
+  readonly #namespace: string;
+  constructor(namespace: string) {
+    if (!namespace) throw new Error('Storage requires an explicit namespace.');
+    this.#namespace = namespace;
+  }
+  get warning(): string | null {
+    return this.#warning;
+  }
+  read<T>(key: string, validate: (value: unknown) => value is T, initial: T): T {
+    const value = this.readValue(key);
+    if (value === null) return initial;
+    if (validate(value)) return value;
+    this.reportInvalidData();
+    return initial;
+  }
+  readValue(key: string): unknown {
+    try {
+      const raw = localStorage.getItem(`${this.#namespace}.${key}`);
+      return raw === null ? null : (JSON.parse(raw) as unknown);
+    } catch {
+      this.#warning = 'Local storage is unavailable or invalid. Progress could not be restored.';
+      return null;
+    }
+  }
+  write(key: string, value: unknown): void {
+    try {
+      localStorage.setItem(`${this.#namespace}.${key}`, JSON.stringify(value));
+    } catch {
+      this.#warning = 'Local storage could not save your progress.';
+    }
+  }
+  reportInvalidData(): void {
+    this.#warning = 'Some stored data was invalid and could not be restored.';
+  }
 }

@@ -28,9 +28,15 @@ export function MainMenu({ actions }: { actions: MainMenuActions }) {
       <p className="main-menu-motto">Navigate the islands. Survive the battle.</p>
 
       <nav className="main-menu-links" aria-label="Records and help">
-        <Button variant="secondary" onClick={() => actions.openRecords('ranking')}>Ranking</Button>
-        <Button variant="secondary" onClick={() => actions.openRecords('history')}>Match History</Button>
-        <Button variant="secondary" onClick={actions.openHowToPlay}>How To Play</Button>
+        <Button variant="secondary" onClick={() => actions.openRecords('ranking')}>
+          Ranking
+        </Button>
+        <Button variant="secondary" onClick={() => actions.openRecords('history')}>
+          Match History
+        </Button>
+        <Button variant="secondary" onClick={actions.openHowToPlay}>
+          How To Play
+        </Button>
       </nav>
     </section>
   );

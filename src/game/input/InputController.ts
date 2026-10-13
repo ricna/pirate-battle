@@ -40,10 +40,19 @@ export class InputController {
     if (this.#active) this.#sources.set(source, action);
   }
 
-  release(source: string) { this.#sources.delete(source); }
-  clear = () => { this.#sources.clear(); };
-  setActive(active: boolean) { this.#active = active; this.clear(); }
-  read(): ReadonlySet<Action> { return new Set(this.#sources.values()); }
+  release(source: string) {
+    this.#sources.delete(source);
+  }
+  clear = () => {
+    this.#sources.clear();
+  };
+  setActive(active: boolean) {
+    this.#active = active;
+    this.clear();
+  }
+  read(): ReadonlySet<Action> {
+    return new Set(this.#sources.values());
+  }
 
   destroy() {
     this.clear();

@@ -36,7 +36,15 @@ export class AudioConfig {
   static readonly CuePitchVariation = { minimum: 0.99, maximum: 1.01 } as const;
   static readonly EventCooldown = 0.045;
   static readonly UiCooldown = 0.06;
-  static readonly Priorities = { ambient: 0, ui: 1, weapon: 2, impact: 3, warning: 4, sinking: 5, terminal: 6 };
+  static readonly Priorities = {
+    ambient: 0,
+    ui: 1,
+    weapon: 2,
+    impact: 3,
+    warning: 4,
+    sinking: 5,
+    terminal: 6,
+  };
   static readonly EventPriorities: Readonly<Record<GameEvent, number>> = {
     [GameEvent.FrontShot]: AudioConfig.Priorities.weapon,
     [GameEvent.SideShot]: AudioConfig.Priorities.weapon,
@@ -55,10 +63,10 @@ export class AudioConfig {
   static readonly Ocean = 'ocean_ambience_loop';
   static readonly Sailing = 'ship_sailing_loop';
   static readonly Music = {
-    id:'pirate-adventure',
-    gain:0.2,
-  } as const; 
-
+    id: 'pirate-adventure',
+    url: new URL('../../../assets/sounds/extra/ebunny-pirate-adventure-361663.mp3', import.meta.url).href,
+    gain: 0.2,
+  } as const;
 
   static requiredSounds(): readonly string[] {
     const cues = Object.values(AudioConfig.Cues);

@@ -8,11 +8,14 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "npm run architecture:check && eslint .",
     "test:e2e": "playwright test",
     "test:report": "playwright show-report reports/playwright",
     "profile": "node scripts/profile.mjs",
-    "mocks:init": "msw init public --save && node scripts/configure-worker.mjs"
+    "mocks:init": "msw init public --save && node scripts/configure-worker.mjs",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
+    "architecture:check": "node scripts/check-architecture.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.2",
@@ -31,6 +34,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^10.12.0",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "3.9.10",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.1",
     "vite": "^8.3.4"

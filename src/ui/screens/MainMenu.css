@@ -17,7 +17,8 @@
   height: calc(742 * var(--sample-px));
   margin: auto;
   border-style: solid;
-  border-width: calc(80 * var(--panel-border-scale) * var(--sample-px)) calc(64 * var(--panel-border-scale) * var(--sample-px));
+  border-width: calc(80 * var(--panel-border-scale) * var(--sample-px))
+    calc(64 * var(--panel-border-scale) * var(--sample-px));
   /* Retina nine-slice borders: twice the logical 40/32 borders of ui_sheet.json. */
   border-image: url('../../../assets/png/retina/ui/menu/panel_menu.png') 80 64 fill stretch;
   filter: drop-shadow(0 calc(8 * var(--sample-px)) calc(14 * var(--sample-px)) #07172966);

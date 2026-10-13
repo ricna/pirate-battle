@@ -1,6 +1,8 @@
+import { OptionsConfig } from '../src/application/configuration/OptionsConfig';
+import { GameConfigFactory } from '../src/game/configuration/GameConfigFactory';
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/configuration/GameConfiguration';
+
 import { ShipCollisionWorld, ContactKind } from '../src/game/core/ShipCollisionWorld';
 import { PlayerShip } from '../src/game/entities/PlayerShip';
 import { EnemyShip } from '../src/game/entities/EnemyShip';
@@ -20,7 +22,7 @@ function map(): LoadedMap {
 }
 
 test('swept hull contact prevents high-speed crossing and permits departure', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   const world = new ShipCollisionWorld(map(), config);
   const player = new PlayerShip(1, { x: 1280, y: 900 }, config.player);
   const obstacle = new PlayerShip(2, { x: 1280, y: 700 }, config.player);
@@ -40,7 +42,7 @@ test('opposing enemy hulls remain separated throughout motion', () => {
   class SailingEnemy extends EnemyShip {
     override update(context: EnemyContext): void { this.sail(true, context.dt, context.world); }
   }
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   const world = new ShipCollisionWorld(map(), config);
   const first = new SailingEnemy(1, { x: 1280, y: 900 }, 0, EnemyShooterConfig.Default);
   const second = new SailingEnemy(2, { x: 1280, y: 700 }, Math.PI, EnemyShooterConfig.Default);
@@ -57,7 +59,7 @@ test('opposing enemy hulls remain separated throughout motion', () => {
 });
 
 test('Chaser ram triggers on hull contact once without a credited kill', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   const world = new ShipCollisionWorld(map(), config);
   const player = new PlayerShip(0, { x: 1280, y: 700 }, config.player);
   const chaser = new EnemyChaser(1, { x: 1280, y: 900 }, 0, EnemyChaserConfig.Default);
@@ -76,7 +78,7 @@ test('Chaser ram triggers on hull contact once without a credited kill', () => {
 });
 
 test('island contact dissipates speed and does not spam impacts while held', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS);
+  const config = GameConfigFactory.create(OptionsConfig.Default);
   const game = new GameManager(config, map());
   const events: GameEvent[] = [];
   for (let step = 0; step < 180; step++) {

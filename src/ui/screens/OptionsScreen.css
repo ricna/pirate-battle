@@ -16,7 +16,7 @@
 }
 
 .options-board {
-  --options-px: max(min(var(--sample-px), 100svh / 980), min(0.75px, 100vw / 840));
+  --options-px: max(min(var(--sample-px), 100svh / 1110), min(0.75px, 100vw / 840));
   /* The authored panel border is drawn at 0.78 of its retina size, as on the main menu board. */
   --panel-border-scale: 0.78;
 
@@ -28,7 +28,8 @@
   margin: calc(12 * var(--options-px)) auto;
   padding-bottom: calc(30 * var(--options-px));
   border-style: solid;
-  border-width: calc(80 * var(--panel-border-scale) * var(--options-px)) calc(64 * var(--panel-border-scale) * var(--options-px));
+  border-width: calc(80 * var(--panel-border-scale) * var(--options-px))
+    calc(64 * var(--panel-border-scale) * var(--options-px));
   /* Retina nine-slice borders: twice the logical 40/32 borders of ui_sheet.json. */
   border-image: url('../../../assets/png/retina/ui/menu/panel_menu.png') 80 64 fill stretch;
   filter: drop-shadow(0 calc(8 * var(--options-px)) calc(14 * var(--options-px)) #07172966);
@@ -86,7 +87,8 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: url('../../../assets/png/retina/ui/controls/button_round_normal.png') center / 100% 100% no-repeat;
+  background: url('../../../assets/png/retina/ui/controls/button_round_normal.png') center / 100% 100%
+    no-repeat;
 }
 
 .options-step:hover {

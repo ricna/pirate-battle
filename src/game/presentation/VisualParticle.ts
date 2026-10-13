@@ -39,19 +39,46 @@ export class VisualParticle extends Entity {
 
   constructor() {
     super(-1, { x: 0, y: 0 });
-    this.#view = ((entity: VisualParticle) => Object.freeze({
-      get id() { return entity.id; },
-      get sourceShipId() { return entity.activation.sourceShipId; },
-      get x() { return entity.x; },
-      get y() { return entity.y; },
-      get kind() { return entity.activation.kind; },
-      get profile() { return entity.activation.profile; },
-      get sprite() { return entity.activation.sprite; },
-      get angle() { return entity.#angle; },
-      get age() { return entity.#age; },
-      get alpha() { return entity.alpha; },
-      get bob() { return Math.sin(entity.#age * Math.PI * 2 * entity.activation.profile.bobFrequency + entity.activation.phase) * entity.activation.profile.bob; },
-    }))(this);
+    this.#view = ((entity: VisualParticle) =>
+      Object.freeze({
+        get id() {
+          return entity.id;
+        },
+        get sourceShipId() {
+          return entity.activation.sourceShipId;
+        },
+        get x() {
+          return entity.x;
+        },
+        get y() {
+          return entity.y;
+        },
+        get kind() {
+          return entity.activation.kind;
+        },
+        get profile() {
+          return entity.activation.profile;
+        },
+        get sprite() {
+          return entity.activation.sprite;
+        },
+        get angle() {
+          return entity.#angle;
+        },
+        get age() {
+          return entity.#age;
+        },
+        get alpha() {
+          return entity.alpha;
+        },
+        get bob() {
+          return (
+            Math.sin(
+              entity.#age * Math.PI * 2 * entity.activation.profile.bobFrequency + entity.activation.phase,
+            ) * entity.activation.profile.bob
+          );
+        },
+      }))(this);
   }
 
   private get activation(): ParticleActivation {
@@ -59,8 +86,12 @@ export class VisualParticle extends Entity {
     return this.#activation;
   }
 
-  get view(): ParticleReadView { return this.#view; }
-  get expired(): boolean { return this.#age >= this.activation.profile.lifetime; }
+  get view(): ParticleReadView {
+    return this.#view;
+  }
+  get expired(): boolean {
+    return this.#age >= this.activation.profile.lifetime;
+  }
   get alpha(): number {
     const profile = this.activation.profile;
     const progress = this.#age / profile.lifetime;
@@ -89,7 +120,8 @@ export class VisualParticle extends Entity {
       this.#vy *= Math.exp(-profile.drag * dt);
     }
     const destination = { x: this.x + this.#vx * dt, y: this.y + this.#vy * dt };
-    if (motion && (!profile.waterOnly || world.isFree(destination, profile.waterRadius))) this.setPosition(destination);
+    if (motion && (!profile.waterOnly || world.isFree(destination, profile.waterRadius)))
+      this.setPosition(destination);
     else this.#vx = this.#vy = 0;
     if (motion) this.#angle += profile.spin * dt;
   }

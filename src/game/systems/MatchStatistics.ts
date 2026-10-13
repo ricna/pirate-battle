@@ -28,7 +28,12 @@ export class MatchStatistics {
   }
 
   snapshot(health: number): StatisticsSnapshot {
-    return Object.freeze({ cannonballsFired: this.#shots, cannonballHits: this.#hits,
-      enemiesSunk: this.#kills, damageReceived: this.#damage, healthRemaining: health });
+    return Object.freeze({
+      cannonballsFired: this.#shots,
+      cannonballHits: this.#hits,
+      enemiesSunk: this.#kills,
+      damageReceived: this.#damage,
+      healthRemaining: health,
+    });
   }
 }
