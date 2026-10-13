@@ -1,0 +1,208 @@
+{
+  "comparedCycles": [
+    5,
+    25
+  ],
+  "differences": [
+    {
+      "name": "code:system / InstructionStream",
+      "countDelta": 488,
+      "bytesDelta": 393664
+    },
+    {
+      "name": "code:system / TrustedByteArray",
+      "countDelta": 1007,
+      "bytesDelta": 87904
+    },
+    {
+      "name": "native:blink::NetworkResourcesData::ResourceData",
+      "countDelta": 192,
+      "bytesDelta": 55296
+    },
+    {
+      "name": "code:system / FeedbackVector",
+      "countDelta": 350,
+      "bytesDelta": 40864
+    },
+    {
+      "name": "code:system / Code",
+      "countDelta": 488,
+      "bytesDelta": 35136
+    },
+    {
+      "name": "code:system / ProtectedFixedArray",
+      "countDelta": 129,
+      "bytesDelta": 28452
+    },
+    {
+      "name": "native:system / WeakArrayList",
+      "countDelta": 216,
+      "bytesDelta": 22064
+    },
+    {
+      "name": "native:PerformanceResourceTiming",
+      "countDelta": 154,
+      "bytesDelta": 20944
+    },
+    {
+      "name": "native:DOMRectReadOnly",
+      "countDelta": 200,
+      "bytesDelta": 11200
+    },
+    {
+      "name": "object shape:system / Map",
+      "countDelta": 246,
+      "bytesDelta": 9840
+    },
+    {
+      "name": "code:system / LoadHandler",
+      "countDelta": 573,
+      "bytesDelta": 9332
+    },
+    {
+      "name": "native:LayoutShift",
+      "countDelta": 40,
+      "bytesDelta": 6080
+    },
+    {
+      "name": "native:LargestContentfulPaint",
+      "countDelta": 41,
+      "bytesDelta": 5576
+    },
+    {
+      "name": "object shape:system / DescriptorArray",
+      "countDelta": 68,
+      "bytesDelta": 5216
+    },
+    {
+      "name": "code:system / AllocationSite",
+      "countDelta": 175,
+      "bytesDelta": 4892
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-19\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-16\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-14\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-24\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-12\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-17\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-18\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-20\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-22\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-23\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-21\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-6\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSize",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-9\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSize",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-25\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-15\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-10\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-7\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSize",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-8\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSize",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-13\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "string:#define SHADER_NAME graphics-vertex-11\n\n\n        #ifdef GL_ES // This checks if it is WebGL1\n        #define in attribute\n        #define out varying\n        #endif\n        precision highp float;\n\n    in vec2 aPosition;\n    in vec2 aUV;\n\n    out vec4 vColor;\n    out vec2 vUV;\n\n    //-----header START-----//\n//----global-uniforms-bit----//\n\n          uniform mat3 uProjectionMatrix;\n          uniform mat3 uWorldTransformMatrix;\n          uniform vec4 uWorldColorAlpha;\n          uniform vec2 uResolution;\n        \n//----color-bit----//\n\n            in vec4 aColor;\n        \n//----texture-batch-bit----//\n\n                in vec2 aTextureIdAndRound;\n                out float vTextureId;\n\n            \n//----local-uniform-bit----//\n\n\n            uniform mat3 uTransformMatrix;\n            uniform vec4 uColor;\n            uniform float uRound;\n        \n//----round-pixels-bit----//\n\n            vec2 roundPixels(vec2 position, vec2 targetSize)\n            {\n                return (floor(((position * 0.5 + 0.5) * targetSiz",
+      "countDelta": 1,
+      "bytesDelta": 4336
+    },
+    {
+      "name": "native:InteractionContentfulPaint",
+      "countDelta": 41,
+      "bytesDelta": 4264
+    },
+    {
+      "name": "native:LayoutShiftAttribution",
+      "countDelta": 100,
+      "bytesDelta": 4000
+    },
+    {
+      "name": "code:system / TrustedWeakFixedArray",
+      "countDelta": 129,
+      "bytesDelta": 3988
+    },
+    {
+      "name": "code:system / CodeWrapper",
+      "countDelta": 488,
+      "bytesDelta": 3904
+    },
+    {
+      "name": "object:Object",
+      "countDelta": 138,
+      "bytesDelta": 3524
+    }
+  ]
+}

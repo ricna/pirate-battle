@@ -14,3 +14,10 @@ dist/
 
 # Logs
 *.log
+
+# Ephemeral Playwright run output; delivered HTML report lives in reports/.
+test-results/
+playwright-report/
+assets/maps/*.tiled-session
+.openai/*.tar.gz
+.sites-runtime/

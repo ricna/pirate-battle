@@ -1,41 +1,29 @@
 import { Assets, Texture } from 'pixi.js';
-import { GAME_CONFIG } from './config';
-
-const tileNumbers = [...new Set(GAME_CONFIG.arena.islands.flatMap((island) => island.tiles.flat()))];
-export const ASSET_URLS = {
-  ship: new URL('../../assets/png/default/ships/ship_1.png', import.meta.url).href,
-  water: new URL('../../assets/png/default/tiles/tile_73.png', import.meta.url).href,
-  healthFrame: new URL('../../assets/png/default/ui/hud/health_frame.png', import.meta.url).href,
-  healthFill: new URL('../../assets/png/default/ui/hud/health_fill_green.png', import.meta.url).href,
-};
-
-// Explicit provided PNGs are referenced at build time; missing assets fail loading.
-const tileFiles = import.meta.glob('../../assets/png/default/tiles/*.png', {
-  eager: true, query: '?url', import: 'default',
-}) as Record<string, string>;
-
-export interface GameTextures {
-  ship: Texture;
-  water: Texture;
-  healthFrame: Texture;
-  healthFill: Texture;
-  tiles: Map<number, Texture>;
+import type { GameConfig } from './config';
+const files = import.meta.glob('../../assets/png/default/{ships,ship_parts,effects,ui/hud}/*.png',
+  { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+export type TextureName = string;
+export type GameTextures = Readonly<Record<TextureName, Texture>>;
+export function requiredTexture(textures: GameTextures, name: TextureName): Texture {
+  const texture = textures[name]; if (!texture) throw new Error(`Required texture ${name} was not loaded.`); return texture;
 }
-
-export async function loadGameTextures(onProgress: (fraction: number) => void): Promise<GameTextures> {
-  const urls = Object.values(ASSET_URLS);
-  const islandUrls = tileNumbers.map((number) => {
-    const url = tileFiles[`../../assets/png/default/tiles/tile_${number}.png`];
-    if (!url) throw new Error(`Required island tile ${number} is missing.`);
-    return url;
+export function configuredTextureNames(config: GameConfig): readonly string[] {
+  const names = new Set<string>();
+  for (const profile of [config.player, ...Object.values(config.enemies)]) {
+    const visual = profile.visual; names.add(visual.healthFrame);
+    for (const stage of [...visual.damageStages, ...visual.healthFills]) names.add(stage.sprite);
+    for (const fire of visual.fireSprites) names.add(fire);
+    for (const weapon of profile.weapons) names.add(weapon.projectile.sprite);
+  }
+  for (const effect of Object.values(config.effects)) for (const sprite of effect.sprites) names.add(sprite);
+  return Object.freeze([...names]);
+}
+export async function loadGameTextures(config: GameConfig, progress: (fraction: number) => void): Promise<GameTextures> {
+  const pairs = configuredTextureNames(config).map((name) => {
+    const url = files[`../../assets/png/default/${name}.png`];
+    if (!url) throw new Error(`Required authored texture ${name} is missing.`);
+    return [name, url] as const;
   });
-  const allUrls = [...urls, ...islandUrls];
-  await Assets.load<Texture>(allUrls, onProgress);
-  return {
-    ship: Assets.get<Texture>(ASSET_URLS.ship),
-    water: Assets.get<Texture>(ASSET_URLS.water),
-    healthFrame: Assets.get<Texture>(ASSET_URLS.healthFrame),
-    healthFill: Assets.get<Texture>(ASSET_URLS.healthFill),
-    tiles: new Map(tileNumbers.map((number, index) => [number, Assets.get<Texture>(islandUrls[index]!)])),
-  };
+  await Assets.load<Texture>(pairs.map(([, url]) => url), progress);
+  return Object.freeze(Object.fromEntries(pairs.map(([name, url]) => [name, Assets.get<Texture>(url)])));
 }

@@ -1,61 +1,118 @@
 import type { GameConfig } from './config';
+import type { LoadedMap } from './tiledMap';
+import { angleTo } from './geometry';
+import { EffectKind, EndReason, GameEvent, MatchStatus } from './domain';
+import type { Action } from './domain';
+import { EntityIdSequence } from './core/Entity';
+import { CollisionWorld } from './core/CollisionWorld';
+import { ShipFactory } from './factories/ShipFactory';
+import type { IShipFactory } from './factories/ShipFactory';
+import { FactoryConfig } from './configuration/FactoryConfig';
+import { GameConfigFactory, freezeConfiguration } from './configuration/GameConfigFactory';
+import { ProjectileFactory } from './factories/ProjectileFactory';
+import { ProjectileSystem } from './systems/ProjectileSystem';
+import { EffectSystem } from './systems/EffectSystem';
+import { SpawnSystem } from './systems/SpawnSystem';
+import { WeaponController } from './systems/WeaponController';
+import { MatchState } from './systems/MatchState';
+import { DamageSystem } from './systems/DamageSystem';
+import type { PlayerShip } from './entities/PlayerShip';
+import type { EnemyShip } from './entities/EnemyShip';
+import type { Ship as ShipEntity, ShipReadView } from './entities/Ship';
+import type { ProjectileReadView } from './entities/Projectile';
+import type { EffectReadView } from './entities/Effect';
 
-export type Action = 'forward' | 'left' | 'right';
-export type SessionStatus = 'running' | 'paused' | 'finished';
-export interface GameSnapshot {
-  status: SessionStatus;
-  elapsed: number;
-  remaining: number;
-  player: { x: number; y: number; angle: number; health: number };
-}
+export type { Action, EndReason, GameEvent } from './domain';
+// Read ports deliberately exclude gameplay commands from UI/rendering consumers.
+export type Ship = ShipReadView;
+export type Projectile = ProjectileReadView;
+export type Effect = EffectReadView;
+export interface Snapshot { readonly status: MatchStatus; readonly elapsed: number; readonly remaining: number;
+  readonly score: number; readonly health: number; readonly maxHealth: number; readonly enemies: number; readonly reason: EndReason | null }
 
+/** Match aggregate: coordinates systems; concrete enemy behaviour belongs to subclasses. */
 export class Simulation {
-  readonly config: GameConfig;
-  readonly player: GameSnapshot['player'];
-  status: SessionStatus = 'running';
-  elapsed = 0;
-
-  constructor(config: GameConfig) {
-    this.config = structuredClone(config);
-    this.player = { x: config.player.x, y: config.player.y, angle: 0, health: config.player.health };
+  readonly #config: GameConfig; readonly #map: LoadedMap; readonly #world: CollisionWorld;
+  readonly #ids = new EntityIdSequence(); readonly #factory: IShipFactory; readonly #player: PlayerShip;
+  readonly #match: MatchState; readonly #projectiles: ProjectileSystem; readonly #effects: EffectSystem;
+  readonly #spawning: SpawnSystem; readonly #damage: DamageSystem;
+  readonly #weapons = new Map<number, WeaponController>();
+  readonly #enemies: EnemyShip[] = []; #enemyView: readonly Ship[] = Object.freeze([]);
+  #events: GameEvent[] = []; #warnedTime = false; #disposed = false;
+  constructor(config: GameConfig, map: LoadedMap, factory?: IShipFactory) {
+    GameConfigFactory.validate(config);
+    this.#config = freezeConfiguration(structuredClone(config)); this.#map = map;
+    this.#world = new CollisionWorld(map, this.#config);
+    this.#factory = factory ?? new ShipFactory(this.#config, FactoryConfig.Enemies);
+    this.#match = new MatchState(this.#config); this.#spawning = new SpawnSystem(this.#config);
+    this.#projectiles = new ProjectileSystem(new ProjectileFactory(this.#config.pools.projectiles, this.#ids));
+    this.#effects = new EffectSystem(this.#config, this.#ids);
+    this.#damage = new DamageSystem(this.#config, this.#effects, this.#match, (event) => this.#events.push(event));
+    this.#player = this.#factory.createPlayer(this.#ids.next());
+    if (!this.#world.isFree(this.#player, this.#player.radius)) throw new Error('Authored player spawn is obstructed.');
+    for (const profile of Object.values(this.#config.enemies)) for (const point of this.#config.spawnPoints)
+      if (!this.#world.isFree(point, profile.radius)) throw new Error(`Authored spawn is obstructed for ${profile.id}.`);
+    this.#weapons.set(this.#player.id, this.#createWeapons(this.#player));
   }
-
-  step(dt: number, input: ReadonlySet<Action>) {
-    if (this.status !== 'running') return;
-    const activeDt = Math.min(dt, this.config.sessionSeconds - this.elapsed);
-    const turn = Number(input.has('right')) - Number(input.has('left'));
-    this.player.angle = (this.player.angle + turn * this.config.player.turnSpeed * activeDt) % (2 * Math.PI);
-    if (input.has('forward')) {
-      const distance = this.config.player.speed * activeDt;
-      const x = this.player.x + Math.sin(this.player.angle) * distance;
-      const y = this.player.y - Math.cos(this.player.angle) * distance;
-      // Resolve axes separately so a ship can slide along an obstacle's edge.
-      if (this.canOccupy(x, this.player.y)) this.player.x = x;
-      if (this.canOccupy(this.player.x, y)) this.player.y = y;
-    }
-    this.elapsed += activeDt;
-    if (this.elapsed >= this.config.sessionSeconds) this.status = 'finished';
-  }
-
-  private canOccupy(x: number, y: number) {
-    const { arena, player } = this.config;
-    const r = player.radius;
-    if (x < r || y < r || x > arena.width - r || y > arena.height - r) return false;
-    return !arena.islands.some((island) => {
-      const width = (island.tiles[0]?.length ?? 0) * island.size;
-      const height = island.tiles.length * island.size;
-      const closestX = Math.max(island.x, Math.min(x, island.x + width));
-      const closestY = Math.max(island.y, Math.min(y, island.y + height));
-      return (x - closestX) ** 2 + (y - closestY) ** 2 <= r ** 2;
+  get config(): GameConfig { return this.#config; }
+  get map(): LoadedMap { return this.#map; }
+  get width(): number { return this.#world.width; }
+  get height(): number { return this.#world.height; }
+  get player(): Ship { return this.#player.view; }
+  get enemies(): readonly Ship[] { return this.#enemyView; }
+  get projectiles(): readonly Projectile[] { return this.#projectiles.readView; }
+  get effects(): readonly Effect[] { return this.#effects.readView; }
+  get status(): MatchStatus { return this.#match.status; }
+  get elapsed(): number { return this.#match.elapsed; }
+  get score(): number { return this.#match.score; }
+  get reason(): EndReason | null { return this.#match.reason; }
+  #createWeapons(ship: ShipEntity): WeaponController { return new WeaponController(ship, this.#projectiles, this.#config.rules.clockTolerance); }
+  #fire(ship: ShipEntity, action: Action): void {
+    const weapon = this.#weapons.get(ship.id);
+    if (!weapon) throw new Error('A ship requires its weapon controller.');
+    weapon.tryFire(action, this.elapsed, (origin, angle, mount) => {
+      this.#effects.emit(origin, EffectKind.Muzzle, angle); this.#events.push(mount.event);
     });
   }
-
-  snapshot(): GameSnapshot {
-    return {
-      status: this.status,
-      elapsed: this.elapsed,
-      remaining: Math.max(0, this.config.sessionSeconds - this.elapsed),
-      player: { ...this.player },
-    };
+  pause(): void { this.#match.pause(); }
+  resume(): void { if (!this.#disposed) this.#match.resume(); }
+  step(dt: number, input: ReadonlySet<Action>): void {
+    if (this.#disposed || this.status !== MatchStatus.Playing) return;
+    dt = this.#match.advance(dt); if (!dt) return;
+    this.#player.update(dt, input, this.#world);
+    for (const mount of this.#config.player.weapons) if (input.has(mount.id)) this.#fire(this.#player, mount.id);
+    this.#spawning.update(this.elapsed, this.#player, this.#enemies, (profileId, point) => {
+      const ship = this.#factory.createEnemy(profileId, this.#ids.next(), point, angleTo(point, this.#player));
+      this.#enemies.push(ship); this.#weapons.set(ship.id, this.#createWeapons(ship)); this.#enemyView = Object.freeze(this.#enemies.map((e) => e.view));
+    });
+    for (const enemy of this.#enemies) enemy.update({ target: this.#player, world: this.#world, elapsed: this.elapsed, dt,
+      fire: (ship, action) => this.#fire(ship, action), damage: (ship, amount, credited) => this.#damage.apply(ship, amount, credited) });
+    if (!this.#player.alive) { this.#match.finish(EndReason.Death); return; }
+    this.#projectiles.update(dt, this.#player, this.#enemies, this.#world,
+      (ship, amount, credited) => this.#damage.apply(ship, amount, credited), (point) => {
+        this.#effects.emit(point, EffectKind.Impact); this.#events.push(GameEvent.Impact);
+      });
+    let removed = false;
+    for (let i = this.#enemies.length - 1; i >= 0; i--) if (!this.#enemies[i]!.alive) {
+      this.#weapons.delete(this.#enemies[i]!.id); this.#enemies.splice(i, 1); removed = true;
+    }
+    if (removed) this.#enemyView = Object.freeze(this.#enemies.map((e) => e.view));
+    this.#effects.update(dt);
+    if (this.#match.remaining <= this.#config.rules.timeWarning && !this.#warnedTime) {
+      this.#warnedTime = true; this.#events.push(GameEvent.TimeWarning);
+    }
+    if (!this.#player.alive || this.#match.remaining <= this.#config.rules.clockTolerance)
+      this.#match.finish(this.#player.alive ? EndReason.Time : EndReason.Death);
+  }
+  drainEvents(): GameEvent[] { const events = this.#events; this.#events = []; return events; }
+  snapshot(): Snapshot { return { status: this.status, elapsed: this.elapsed, remaining: this.#match.remaining,
+    score: this.score, health: this.#player.health, maxHealth: this.#player.maxHealth, enemies: this.#enemies.length, reason: this.reason }; }
+  observation() { return { player: this.#player.snapshot(), enemies: this.#enemies.map((e) => e.snapshot()),
+    projectiles: this.#projectiles.projectiles.map((p) => p.snapshot()) }; }
+  poolStatistics() { return { projectiles: this.#projectiles.statistics(), effects: this.#effects.statistics() }; }
+  dispose(): void {
+    if (this.#disposed) return; this.#disposed = true;
+    this.#projectiles.dispose(); this.#effects.dispose(); this.#weapons.clear(); this.#enemies.length = 0;
+    this.#enemyView = Object.freeze([]); this.#events.length = 0;
   }
 }
