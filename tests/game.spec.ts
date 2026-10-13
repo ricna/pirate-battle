@@ -128,8 +128,8 @@ test('death stops combat and result survives refresh', async ({ page }) => {
   const result = await page.evaluate(() => localStorage.getItem('pirate.last'));
   await page.waitForTimeout(500); expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBe(result);
   expect(await page.evaluate(() => !!window.pirateTest)).toBe(false);
-  await page.reload(); await page.getByRole('button', { name: 'Last battle result' }).click();
-  await expect(page.locator('.result-panel')).toContainText('ship was lost');
+  await page.reload(); await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBe(result);
 });
 test('pause freezes simulation and cooldowns, focus loss requires explicit resume', async ({ page }) => {
   await play(page); await page.keyboard.down('w'); await page.keyboard.down('Space'); await advance(page, 0.1);
@@ -162,6 +162,14 @@ test('abandonment, repeated mounts, refresh and simultaneous touch controls', as
   await play(page); await page.reload(); await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBeNull();
 });
+test('how to play explains the controls and only returns to the main menu', async ({ page }) => {
+  await page.getByRole('button', { name: 'How To Play', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'How To Play' })).toBeVisible();
+  await expect(page.locator('.controls-help')).toContainText('left broadside');
+  await expect(page.locator('.how-to-play').getByRole('button')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+});
 test('ranking and history handle pages, empty lists, loading and errors', async ({ page }) => {
   await scenario(page, 'multiple-pages'); await page.getByRole('button', { name: 'Ranking', exact: true }).click();
   await expect(page.getByRole('table')).toBeVisible(); await expect(page.getByText('Page 1 of 6')).toBeVisible();
@@ -171,6 +179,7 @@ test('ranking and history handle pages, empty lists, loading and errors', async 
   await scenario(page, 'history-error'); await expect(page.getByRole('alert')).toContainText('503');
   await scenario(page, 'success'); await page.getByRole('button', { name: 'Ranking', exact: true }).click(); await expect(page.getByRole('table')).toBeVisible();
   await scenario(page, 'ranking-error'); await expect(page.getByRole('alert')).toContainText('503');
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click(); await page.waitForFunction(() => !!window.pirateTest);
 });
 test('pending outage submission survives refresh and updates both tabs', async ({ page }) => {
@@ -187,10 +196,8 @@ test('post-commit timeout retries idempotently and late requests do not replace 
   await scenario(page, 'post-commit-timeout'); await play(page); await advance(page, 120);
   await expect(page.getByRole('alert')).toContainText('timed out');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pirate.server')!).length)).toBe(1);
-  await page.reload(); await page.getByRole('button', { name: 'Last battle result' }).click();
-  await expect(page.locator('.result-panel')).toContainText('Battle registered');
+  await page.reload(); await expect(page.locator('.pending-banner')).toHaveCount(0);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pirate.server')!).length)).toBe(1);
-  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await scenario(page, 'out-of-order'); await page.getByRole('button', { name: 'Ranking', exact: true }).click();
   await scenario(page, 'empty'); await expect(page.locator('tbody tr')).toHaveCount(1); // Only the confirmed local match.
   await page.waitForTimeout(1500); await expect(page.locator('tbody tr')).toHaveCount(1);

@@ -1,0 +1,104 @@
+/*
+ * Main menu board reproducing assets/sample_menu.png.
+ * Every length is a pixel of that 1800×1000 reference multiplied by --sample-px (defined in App.css),
+ * so the composition keeps its measured proportions at any viewport size.
+ * Button art and states come from the shared .sprite-button rules; the reference stretches them.
+ */
+
+.main-menu {
+  /* The authored panel border is drawn at 0.78 of its retina size on the reference. */
+  --panel-border-scale: 0.78;
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc(796 * var(--sample-px));
+  height: calc(742 * var(--sample-px));
+  margin: auto;
+  border-style: solid;
+  border-width: calc(80 * var(--panel-border-scale) * var(--sample-px)) calc(64 * var(--panel-border-scale) * var(--sample-px));
+  /* Retina nine-slice borders: twice the logical 40/32 borders of ui_sheet.json. */
+  border-image: url('../../assets/png/retina/ui/menu/panel_menu.png') 80 64 fill stretch;
+  filter: drop-shadow(0 calc(8 * var(--sample-px)) calc(14 * var(--sample-px)) #07172966);
+  text-align: center;
+}
+
+.main-menu-title {
+  margin: calc(2.6 * var(--sample-px)) 0 0;
+  line-height: 0;
+}
+
+.main-menu-title img {
+  width: calc(511 * var(--sample-px));
+  height: calc(170.4 * var(--sample-px));
+}
+
+.main-menu-tagline,
+.main-menu-motto {
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.main-menu-tagline {
+  margin: calc(3.6 * var(--sample-px)) 0 0;
+  /* Letter spacing also follows the last letter; matching it on the left keeps the line centred. */
+  padding-left: 0.19em;
+  font-size: max(calc(14 * var(--sample-px)), 10px);
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  color: #e8d9b5;
+}
+
+.main-menu-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(6 * var(--sample-px));
+  margin-top: calc(18.7 * var(--sample-px));
+}
+
+.main-menu-emblem {
+  width: calc(48 * var(--sample-px));
+  height: calc(82.5 * var(--sample-px));
+  margin-top: calc(13.8 * var(--sample-px));
+}
+
+.main-menu-motto {
+  margin: calc(20 * var(--sample-px)) 0 0;
+  font-size: max(calc(14 * var(--sample-px)), 10px);
+  color: #dccaa4;
+}
+
+.main-menu-links {
+  display: flex;
+  justify-content: center;
+  gap: calc(12 * var(--sample-px));
+  margin-top: calc(23.7 * var(--sample-px));
+}
+
+.main-menu .sprite-button {
+  min-width: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.main-menu-actions .sprite-button {
+  width: calc(350 * var(--sample-px));
+  height: calc(90 * var(--sample-px));
+  font-size: max(calc(28 * var(--sample-px)), 12px);
+  color: #382b1f;
+  text-shadow: none;
+}
+
+/* The reference sizes Ranking and Match History at 230 px; three links need 215 px to fit the board. */
+.main-menu-links .sprite-button {
+  width: calc(215 * var(--sample-px));
+  height: calc(65 * var(--sample-px));
+  font-size: max(calc(14 * var(--sample-px)), 10px);
+  color: #fff4d6;
+}

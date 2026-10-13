@@ -6,8 +6,10 @@ const files = import.meta.glob('../../assets/png/default/ui/**/*.png', { eager: 
 export function uiAsset(name: string) {
   const url = files[`../../assets/png/default/ui/${name}.png`]; if (!url) throw new Error(`Required UI asset ${name} is missing.`); return url;
 }
-export function Button({ children, className = '', onClick, ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button {...props} className={`sprite-button ${className}`} onClick={(event) => { audio.play(AudioConfig.Cues.Click); onClick?.(event); }}>{children}</button>;
+export function Button({ children, className = '', onClick, variant = 'primary', icon, ...props }:
+  ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary'; icon?: string }) {
+  return <button {...props} className={`sprite-button ${variant} ${className}`}
+    onClick={(event) => { audio.play(AudioConfig.Cues.Click); onClick?.(event); }}>{icon && <img className="button-icon" src={uiAsset(`controls/${icon}`)} alt="" />}{children}</button>;
 }
 export function Dialog({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);

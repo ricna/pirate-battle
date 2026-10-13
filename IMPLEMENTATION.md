@@ -325,4 +325,13 @@ The owner explicitly requested review and implementation of the consolidated gam
 
 B01–B09 are required presentation work; B10–B11 are lower-priority required polish in the accepted brief. Architecture improvements alone do not complete that scope. Track implementation/evidence per item rather than marking the whole brief complete on the strength of an earlier gameplay test run.
 
+## 20. Accepted menu composition — 13 October 2026
+
+The owner required the main menu to match `assets/sample_menu.png` exactly, with these accepted additions resolving the challenge requirements the sample does not show:
+
+- A **How To Play** button in the bottom row opens a screen with the game explanation and controls; its only action returns to the main menu. This satisfies the challenge's control instructions in the main menu.
+- **Ranking** and **Match History** open the Captain's Log screen with both tabs (`sample_ranking.png` and `sample_history.png` are its art references).
+- The MSW scenario selector and reset stay available in a collapsed panel in the bottom-left corner. The Jungle Gaming logo sits in the bottom-right corner as in the samples. The menu no longer shows a last-result link or a credit footer; the last result is still persisted.
+- Reproduce reference compositions with measured values in reference pixels (`--sample-px`), authored PNG/SVG pieces and real controls. Verify a change against the reference image at 1800×1000 before accepting it; do not crop the samples.
+
 For navigation in the owner's local environment, the personal wiki entry is [Implementation context](../Docs/13-contexto-de-implementacao.md). This optional link is outside the clone; all mandatory rules are contained in this document and the repository's AGENTS.md.

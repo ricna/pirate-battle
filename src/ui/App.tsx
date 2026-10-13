@@ -1,8 +1,15 @@
+// The shared stylesheet loads first so screen stylesheets imported by components can refine it.
+import './App.css';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 const GameCanvas = lazy(() => import('./GameCanvas').then((module) => ({ default: module.GameCanvas })));
-import { Button, ControlsHelp, GameLoadBoundary, uiAsset } from './components';
-import { RemotePanel } from './RemotePanel';
+import { Button, GameLoadBoundary, uiAsset } from './components';
+import { CaptainsLog } from './CaptainsLog';
+import type { RecordsTab } from './CaptainsLog';
+import { DemoNetworkTools } from './DemoNetworkTools';
+import { HowToPlay } from './HowToPlay';
+import { MainMenu } from './MainMenu';
+import { MenuArt } from './MenuArt';
 import { createGameConfig, DEFAULT_OPTIONS, LIMITS, validOptions } from '../game/config';
 import type { GameConfig, Options } from '../game/config';
 import type { Snapshot } from '../game/simulation';
@@ -11,11 +18,10 @@ import { AudioConfig } from '../game/configuration/AudioConfig';
 import { api, describeError, queryClient } from '../data/api';
 import { lastMatch, pendingMatches } from '../data/contracts';
 import type { MatchRecord } from '../data/contracts';
-import { getScenario, networkWarning, resetNetwork, SCENARIOS, setScenario } from '../data/network';
+import { getScenario, networkWarning, resetNetwork, setScenario } from '../data/network';
 import type { Scenario } from '../data/network';
 import { loadOptions, playerIdentity, storageWarning, writeStored } from '../data/storage';
 import { GameDefaults } from '../game/configuration/GameDefaults';
-import './App.css';
 function OptionsForm({ options, save, back }: { options: Options; save: (options: Options) => void; back: () => void }) {
   const [draft, setDraft] = useState(options); const [error, setError] = useState('');
   return <section className="panel options-panel"><h1>Options</h1><p>Prepare your next voyage.</p>
@@ -37,8 +43,8 @@ function OptionsForm({ options, save, back }: { options: Options; save: (options
 }
 export function App() {
   const [options, setOptions] = useState(loadOptions); const [playerId] = useState(playerIdentity);
-  const [screen, setScreen] = useState<'menu' | 'options' | 'game' | 'result'>('menu');
-  const [tab, setTab] = useState<'welcome' | 'ranking' | 'history'>('welcome');
+  const [screen, setScreen] = useState<'menu' | 'options' | 'howToPlay' | 'records' | 'game' | 'result'>('menu');
+  const [recordsTab, setRecordsTab] = useState<RecordsTab>('ranking');
   const [config, setConfig] = useState<GameConfig | null>(null); const [gameId, setGameId] = useState('');
   const [last, setLast] = useState(lastMatch); const [pending, setPending] = useState(pendingMatches);
   const pendingRef = useRef(pending); const attempted = useRef(new Set<string>());
@@ -79,13 +85,43 @@ export function App() {
     setScreen('result');
   };
   const retry = () => { if (save.isPending) return; const record = pendingRef.current[0]; if (record) save.mutate(record); };
-  const mainMenu = () => { setScreen('menu'); setTab('welcome'); audio.stop(); audio.play(AudioConfig.Cues.Back); };
+  const mainMenu = () => { setScreen('menu'); audio.stop(); audio.play(AudioConfig.Cues.Back); };
+  const menuActions = {
+    play,
+    openOptions: () => {
+      audio.unlock(options);
+      setScreen('options');
+    },
+    openRecords: (tab: RecordsTab) => {
+      setRecordsTab(tab);
+      setScreen('records');
+    },
+    openHowToPlay: () => setScreen('howToPlay'),
+  };
+  const selectScenario = (value: Scenario) => {
+    setScenario(value);
+    updateScenario(value);
+    setRevision((current) => current + 1);
+    void queryClient.cancelQueries();
+    void queryClient.invalidateQueries();
+  };
+  const resetDemoServer = () => {
+    resetNetwork();
+    updateScenario('success');
+    setRevision((current) => current + 1);
+    void queryClient.cancelQueries();
+    queryClient.clear();
+    setNotice('Demo server reset. Local results and pending battles are preserved.');
+  };
   if (screen === 'game' && config) return <GameLoadBoundary onMenu={mainMenu}><Suspense fallback={<div className="app" role="status">Loading game engine…</div>}>
     <GameCanvas key={gameId} config={config} onComplete={complete} onAbandon={mainMenu} /></Suspense></GameLoadBoundary>;
-  return <main className="app">
+  return <main className={`app app-${screen}`}>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <div id="main-content" className="shell" tabIndex={-1}>
       {screen === 'options' ? <OptionsForm options={options} save={(value) => { writeStored('options', value); setOptions(value); setNotice('Options saved.'); mainMenu(); }} back={mainMenu} />
+        : screen === 'howToPlay' ? <HowToPlay onMainMenu={mainMenu} />
+        : screen === 'records' ? <CaptainsLog tab={recordsTab} onTabChange={setRecordsTab} config={createGameConfig(options)}
+          playerId={playerId} revision={revision} onMainMenu={mainMenu} />
         : screen === 'result' && last ? <section className="panel result-panel"><p className="eyebrow">Your voyage</p><h1>Battle result</h1>
           <p>{last.reason === 'time' ? 'Time expired. The voyage is complete.' : 'Your ship was lost at sea.'}</p>
           <div className="result-score"><img src={uiAsset('hud/icon_score')} alt="" />{last.score}<span>points</span></div>
@@ -96,40 +132,13 @@ export function App() {
           {pending.some((r) => r.id === last.id) && <Button disabled={save.isPending} onClick={() => save.mutate(last)}>Retry submission</Button>}
           <div className="button-row"><Button onClick={play}>Play Again</Button><Button onClick={mainMenu}>Main Menu</Button></div>
         </section>
-          : <>
-            <header className="brand"><img src={uiAsset('menu/title_pirate_battle')} alt="Pirate Battle" /><p>One captain. An ocean of trouble.</p></header>
-            <section className="menu-layout"><aside className="panel menu-panel"><h1 className="sr-only">Pirate Battle</h1>
-              <Button onClick={play}>Play</Button><Button onClick={() => { audio.unlock(options); setScreen('options'); }}>Options</Button>
-              {last && <button className="text-button" onClick={() => setScreen('result')}>Last battle result</button>}
-              <p>Survive, sink enemy ships and earn your place among the captains.</p><ControlsHelp />
-              <p className="muted">{options.sessionSeconds}s session · {options.spawnSeconds}s spawn interval</p>
-            </aside><section className="panel records-panel">
-              <nav className="tabs" aria-label="Main menu sections">
-                <button aria-current={tab === 'welcome' ? 'page' : undefined} onClick={() => setTab('welcome')}>How to play</button>
-                <button aria-current={tab === 'ranking' ? 'page' : undefined} onClick={() => setTab('ranking')}>Ranking</button>
-                <button aria-current={tab === 'history' ? 'page' : undefined} onClick={() => setTab('history')}>Match History</button>
-              </nav>
-              {tab === 'welcome' ? <section className="briefing"><h2>Captain’s orders</h2><p>Keep moving. Aim your bow for a single cannon shot, or turn alongside an enemy for a three-cannon broadside.</p>
-                <div className="enemy-guide"><img src={new URL('../../assets/png/default/ships/ship_2.png', import.meta.url).href} alt="Black-sailed Chaser" />
-                  <p><strong>Chaser</strong><br />Pursues and rams your ship. Sink it before impact. Its own explosion earns no points.</p></div>
-                <div className="enemy-guide"><img src={new URL('../../assets/png/default/ships/ship_3.png', import.meta.url).href} alt="Red-sailed Shooter" />
-                  <p><strong>Shooter</strong><br />Attacks from a distance. Dodge its cannonballs and return fire.</p></div>
-                <p className="muted">Islands stop ships and cannonballs. Each enemy you sink earns 1 point. Losing focus pauses the battle.</p></section>
-                : <RemotePanel key={`${tab}-${revision}`} kind={tab} config={createGameConfig(options)} playerId={playerId} revision={revision} />}
-            </section></section>
-          </>}
+          : <MainMenu actions={menuActions} />}
       {(notice || storageWarning || audio.error || networkWarning) && <p role="status" className="notice">{networkWarning ?? storageWarning ?? audio.error ?? notice}</p>}
       {pending.length > 0 && <aside className="pending-banner" aria-label="Pending submissions"><div><p>{pending.length} battle(s) awaiting registration. You can keep playing.</p>
         {screen !== 'result' && pending[0] && errors[pending[0].id] && <p role="alert">{errors[pending[0].id]}</p>}</div>
         <Button className="compact" disabled={save.isPending} onClick={retry}>{save.isPending ? 'Submitting…' : 'Retry pending battle'}</Button></aside>}
-      <details className="network-tools"><summary>Demo network scenarios</summary><p>These simulated APIs run locally with MSW. Real gameplay keeps working when the service fails.</p>
-        <label>Network scenario<select value={scenario} onChange={(e) => { const value = e.target.value as Scenario;
-          setScenario(value); updateScenario(value); setRevision((r) => r + 1); void queryClient.cancelQueries(); void queryClient.invalidateQueries(); }}>
-          {SCENARIOS.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
-        <Button className="compact" onClick={() => { resetNetwork(); updateScenario('success'); setRevision((r) => r + 1);
-          void queryClient.cancelQueries(); queryClient.clear(); setNotice('Demo server reset. Local results and pending battles are preserved.'); }}>Reset demo server</Button>
-      </details>
-      <footer className="credit"><img src={new URL('../../assets/logo_jungle_gaming.svg', import.meta.url).href} alt="Jungle Gaming" /><span>Frontend Game Developer challenge · Assets supplied by Jungle Gaming</span></footer>
     </div>
+    <DemoNetworkTools scenario={scenario} onSelect={selectScenario} onReset={resetDemoServer} />
+    <img className="studio-logo" src={MenuArt.StudioLogo} alt="Jungle Gaming" />
   </main>;
 }
