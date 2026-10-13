@@ -50,7 +50,7 @@ Combat supports **landscape** on mobile. Rotating to portrait pauses the battle.
 
 ## Options and balance
 
-Options persist after refresh: session time **60–180 seconds** in 10-second steps, enemy spawn interval **2–10 seconds** in 0.2-second steps, sound on/off, master volume and independent music volume in 10% steps. The screen reproduces `assets/sample_options.png` with minus/plus buttons; every press is a valid value and is saved immediately, so there is no separate Save action. Restore default options resets and saves all preferences. Defaults are 120 seconds, 5 seconds, sound enabled, master volume 50% and music volume 100%. The spawn minimum limits pressure and entity growth; the maximum ensures both enemy types appear even in the shortest session.
+Options persist after refresh: session time **60–180 seconds** in 10-second steps, enemy spawn interval **2–10 seconds** in 0.2-second steps, sound on/off, master volume and independent music volume in 10% steps. The screen uses the authored `assets/sample_options.png` board with **Game** and **Audio** headers. Sound uses an On/Off toggle; each numeric setting displays its value above an authored HUD-bar slider with minus/plus buttons at its sides. Every adjustment is saved immediately, so there is no separate Save action. Restore default options resets and saves all preferences. Defaults are 120 seconds, 5 seconds, sound enabled, master volume 50% and music volume 100%. The spawn minimum limits pressure and entity growth; the maximum ensures both enemy types appear even in the shortest session.
 
 Static classes under `src/game/configuration/` author ship, projectile, visual, factory, pool and runtime defaults. Each match receives a validated, recursively frozen snapshot. Version `arena_00-v1/balance-v4` includes acceleration/braking; seed `20261012` keeps spawning deterministic. See [CONFIGURATION.md](CONFIGURATION.md) for the client guide, editable files, units, examples and new-enemy registration. Increment the version when changing rules or map geometry.
 
@@ -101,6 +101,8 @@ Scenario changes reset the deterministic request counter and use a new query rev
 To demonstrate recovery: choose outage, finish a battle, refresh, select success and click Retry pending battle. To demonstrate idempotency: choose post-commit-timeout, finish, wait for timeout, then retry or refresh. History must show only one record.
 
 ## Audio and assets
+
+Game initialization displays **Setting Sail** with the authored player-health frame and green fill. Engine preparation is indeterminate; map and texture loading report completion progress from their loaders. Retry resets progress and preserves visible errors.
 
 Player death plays the owner's additional pirate-battle WAV and lowers the OST to 8% of its configured mix. Destruction remains visible for 3 seconds as **Game Over** fades in; then results fade in over 1 second while Game Over fades out. The death sound survives the transition, and music recovers when it finishes or when leaving/restarting. The match is saved immediately, before these animations. Time expiry keeps its separate completion cue.
 

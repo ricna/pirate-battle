@@ -5,6 +5,7 @@ import type { Snapshot } from '../../game/runtime/GameManager';
 import { GameSession } from '../../game/runtime/GameSession';
 import { useApplicationServices } from '../hooks/UseApplicationServices';
 import { Button } from '../components/Button';
+import { AssetLoadingIndicator } from '../components/AssetLoadingIndicator';
 import { Dialog } from '../components/Dialog';
 import { MatchStatusHud } from '../hud/MatchStatusHud';
 import { TouchControls } from '../hud/TouchControls';
@@ -119,15 +120,24 @@ export function GameCanvas({
           </div>
         )}
         {status === 'loading' && (
-          <div className="arena-message" role="status">
-            Loading arena… {progress}%
+          <div className="arena-message">
+            <AssetLoadingIndicator label="Loading arena" progress={progress} />
           </div>
         )}
         {status === 'error' && (
           <div className="arena-message" role="alert">
             <p>Unable to load the arena.</p>
             <p>{error}</p>
-            <Button onClick={() => setAttempt((v) => v + 1)}>Try again</Button>
+            <Button
+              onClick={() => {
+                setProgress(0);
+                setError('');
+                setStatus('loading');
+                setAttempt((v) => v + 1);
+              }}
+            >
+              Try again
+            </Button>
             <Button onClick={onAbandon}>Main Menu</Button>
           </div>
         )}

@@ -10,7 +10,7 @@ Run `npm run test:e2e`. Open the delivered HTML report with `npm run test:report
 
 | Specification area | E2E evidence |
 | --- | --- |
-| Options | Limits disable the out-of-range step, documented ranges, restore defaults, immediate save, refresh persistence, configuration snapshot |
+| Options | Game/Audio headers, volume sliders and side steppers, Sound toggle, keyboard adjustment, limits disable the out-of-range step, documented ranges, restore defaults, immediate save, refresh persistence, configuration snapshot |
 | Assets | Failed map/image responses, failed lazy engine module, accessible errors and retry/reload recovery |
 | Navigation | Forward movement, bounded rotation, central island contact, bottom/right arena limits |
 | Weapons | Front projectile, independent broadsides, three parallel vectors, cooldown and TTL |
@@ -87,3 +87,15 @@ The terminal regression observes actual player death, one playback of the extra 
 Production preview at port 5195 also passed on 1280×800 desktop and 844×390 landscape mobile emulation. `reports/game-over-production-verification.json` records HTTP 200 for the hashed death WAV, one death playback, simultaneous partial result/banner opacity with one canvas during the fade, music time advancing at volume 0.008 through teardown, and volume 0.1 restored on Main Menu, with no application page errors. `reports/game-over-production-*` contains the corresponding rendered captures. The bundled WAV's SHA-256 equals the unchanged source. These checks establish playback/lifecycle behavior in Chromium, not subjective listening or physical-device compatibility; no new performance profile is claimed for this presentation change.
 
 The first complete run had 67 passes and two failures: a concurrent test run removed a trace file during browser cleanup, and a result baseline was captured during the new opacity animation. Output/report directories were isolated and the result baseline now waits for full opacity. The final run passed without changing any baselines or adding retries.
+
+## Options sliders verification — 13 October 2026
+
+The initial sections, volume sliders and Sound toggle passed 69/69 tests in 5.2 minutes on a fresh Vite origin (port 5184). Typecheck, lint/architecture, Prettier and production build passed at that stage. Mouse dragging, touch tapping, reload persistence and restore were checked in desktop and emulated landscape mobile.
+
+## Game sliders and asset loading verification — 13 October 2026
+
+The final working checkout passed **12/12 focused tests in 2.5 minutes**, using a fresh Vite origin at port 5192. The configured report is `reports/options-loading-focused`. These scenarios cover Options limits/persistence, legacy music preferences, keyboard slider/Sound-switch adjustment, engine/map/texture failure and recovery, and a gated loading scenario: indeterminate engine preparation, map progress, texture completion and disabled combat controls until ready. The arena loader follows completion callbacks, not downloaded bytes; one delayed atlas does not prevent other textures from advancing progress.
+
+Typecheck and production build passed. The global lint attempt found a concurrent `CrewSystem.ts` no-this-alias violation; the global formatting attempt reported concurrent GameSession/GameCanvas edits. A full 76-test run was attempted, but concurrent source changes and a survival-to-time failure invalidated it; it was interrupted and the focused scenarios were rerun. No baseline was updated for this task. These results describe the visible working checkout with parallel gameplay changes, rather than a certification of unrelated work.
+
+Captures in `reports/options-sliders-*`, `reports/loading-arena-*` and `reports/loading-engine-*` show four authored numeric sliders and the authored player-health loading bar in desktop and emulated mobile landscape. Both new Game sliders were also adjusted with Home/ArrowRight and persisted after refresh. Reduced motion disables the indeterminate preparation pulse. No physical-device testing or deployment is claimed.

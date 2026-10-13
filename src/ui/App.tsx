@@ -7,6 +7,7 @@ import type { CSSProperties } from 'react';
 import { useMutation } from '@tanstack/react-query';
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })));
 import { Button } from './components/Button';
+import { AssetLoadingIndicator } from './components/AssetLoadingIndicator';
 import { GameLoadBoundary } from './components/GameLoadBoundary';
 import { CaptainsLog } from './screens/CaptainsLog';
 import type { RecordsTab } from './screens/CaptainsLog';
@@ -166,8 +167,8 @@ export function App() {
         <GameLoadBoundary onMenu={mainMenu}>
           <Suspense
             fallback={
-              <div className="app" role="status">
-                Loading game engine…
+              <div className="app asset-loading-screen">
+                <AssetLoadingIndicator label="Loading game engine" progress={null} />
               </div>
             }
           >

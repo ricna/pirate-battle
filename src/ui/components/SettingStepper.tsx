@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { useApplicationServices } from '../hooks/UseApplicationServices';
 import { AudioConfig } from '../../game/configuration/AudioConfig';
 import { retinaAsset } from '../assets/UiAssets';
+import { SettingSlider } from './SettingSlider';
 
 type Direction = -1 | 1;
 
@@ -12,6 +13,7 @@ export function SettingStepper({
   decreaseDisabled,
   increaseDisabled,
   onStep,
+  slider,
 }: {
   label: string;
   value: string;
@@ -20,6 +22,13 @@ export function SettingStepper({
   decreaseDisabled: boolean;
   increaseDisabled: boolean;
   onStep: (direction: Direction) => void;
+  slider?: {
+    value: number;
+    minimum: number;
+    maximum: number;
+    step: number;
+    onChange: (value: number) => void;
+  };
 }) {
   const { audio } = useApplicationServices();
   const labelId = useId();
@@ -36,6 +45,11 @@ export function SettingStepper({
       <p id={rangeId} className="sr-only">
         {range}
       </p>
+      {slider && (
+        <output className="options-value options-slider-value" aria-live="polite">
+          {value}
+        </output>
+      )}
       <div className="options-stepper">
         <button
           type="button"
@@ -46,9 +60,13 @@ export function SettingStepper({
         >
           <img src={retinaAsset('ui/controls/icon_minus')} alt="" />
         </button>
-        <output className="options-value" aria-live="polite">
-          {value}
-        </output>
+        {slider ? (
+          <SettingSlider {...slider} labelId={labelId} descriptionId={rangeId} valueText={value} />
+        ) : (
+          <output className="options-value" aria-live="polite">
+            {value}
+          </output>
+        )}
         <button
           type="button"
           className="options-step"

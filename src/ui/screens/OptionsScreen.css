@@ -1,8 +1,6 @@
 /*
- * Options board reproducing assets/sample_options.png.
- * Lengths are pixels of that 1800×1000 reference multiplied by --options-px. The board is taller than the
- * reference because the Sound and Volume rows follow the two required settings, so tall screens fit the whole
- * board; short landscape phones keep at least 0.75 of the reference for touch targets and scroll instead.
+ * Options board using the sample's authored art, grouped into Game and Audio.
+ * Short landscape phones retain touch target sizes and scroll through the board.
  */
 
 .app-options {
@@ -16,7 +14,7 @@
 }
 
 .options-board {
-  --options-px: max(min(var(--sample-px), 100svh / 1110), min(0.75px, 100vw / 840));
+  --options-px: max(min(var(--sample-px), 100svh / 1190), min(0.75px, 100vw / 840));
   /* The authored panel border is drawn at 0.78 of its retina size, as on the main menu board. */
   --panel-border-scale: 0.78;
 
@@ -40,7 +38,7 @@
 }
 
 .options-board h1 {
-  margin: calc(63 * var(--options-px)) 0 0;
+  margin: calc(30 * var(--options-px)) 0 0;
   font-size: calc(40 * var(--options-px));
   line-height: 1;
   letter-spacing: -0.027em;
@@ -49,12 +47,26 @@
   text-shadow: 0 calc(3 * var(--options-px)) 0 #13212c;
 }
 
-.options-setting {
-  margin-top: calc(25 * var(--options-px));
+.options-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc(440 * var(--options-px));
+  margin-top: calc(28 * var(--options-px));
 }
 
-.options-board h1 + .options-setting {
-  margin-top: calc(32.2 * var(--options-px));
+.options-section h2 {
+  width: 100%;
+  margin: 0;
+  padding-bottom: calc(12 * var(--options-px));
+  border-bottom: calc(1 * var(--options-px)) solid #d8c9a966;
+  font-size: calc(24 * var(--options-px));
+  line-height: 1;
+  color: #ffebbc;
+}
+
+.options-setting {
+  margin-top: calc(22 * var(--options-px));
 }
 
 .options-label {
@@ -71,7 +83,7 @@
   justify-content: space-between;
   width: calc(331 * var(--options-px));
   height: calc(50 * var(--options-px));
-  margin-top: calc(33 * var(--options-px));
+  margin-top: calc(18 * var(--options-px));
 }
 
 .options-value {
@@ -110,6 +122,115 @@
   width: calc(18 * var(--options-px));
   height: calc(18 * var(--options-px));
   transform: translate(-50%, -50%);
+}
+
+.options-slider-value {
+  display: block;
+  margin-top: calc(14 * var(--options-px));
+}
+
+.options-slider-value + .options-stepper {
+  margin-top: calc(6 * var(--options-px));
+}
+
+.options-slider-bar {
+  --slider-thumb-size: calc(24 * var(--options-px));
+
+  position: relative;
+  width: calc(231 * var(--options-px));
+  height: calc(43.3125 * var(--options-px));
+}
+
+.options-slider-bar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.options-slider {
+  appearance: none;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.options-slider::-webkit-slider-runnable-track {
+  height: var(--slider-thumb-size);
+  background: transparent;
+}
+
+.options-slider::-moz-range-track {
+  height: var(--slider-thumb-size);
+  background: transparent;
+}
+
+.options-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--slider-thumb-size);
+  height: var(--slider-thumb-size);
+  border: 0;
+  border-radius: 50%;
+  background: url('../../../assets/png/retina/ui/controls/button_round_normal.png') center / 100% 100%
+    no-repeat;
+}
+
+.options-slider::-moz-range-thumb {
+  width: var(--slider-thumb-size);
+  height: var(--slider-thumb-size);
+  border: 0;
+  border-radius: 50%;
+  background: url('../../../assets/png/retina/ui/controls/button_round_normal.png') center / 100% 100%
+    no-repeat;
+}
+
+.options-toggle {
+  position: relative;
+  display: block;
+  width: calc(132 * var(--options-px));
+  height: calc(50 * var(--options-px));
+  margin: calc(18 * var(--options-px)) auto 0;
+  padding: 0;
+  border: calc(2 * var(--options-px)) solid #d8c9a9;
+  border-radius: calc(25 * var(--options-px));
+  background: #17252b;
+  color: #ffebbc;
+  font-size: calc(20 * var(--options-px));
+}
+
+.options-toggle[aria-checked='true'] {
+  background: #294e3a;
+}
+
+.options-toggle-state {
+  display: block;
+  margin-left: calc(36 * var(--options-px));
+}
+
+.options-toggle[aria-checked='true'] .options-toggle-state {
+  margin-left: 0;
+  margin-right: calc(36 * var(--options-px));
+}
+
+.options-toggle-thumb {
+  position: absolute;
+  top: calc(3 * var(--options-px));
+  left: calc(3 * var(--options-px));
+  width: calc(40 * var(--options-px));
+  height: calc(40 * var(--options-px));
+  background: url('../../../assets/png/retina/ui/controls/button_round_normal.png') center / 100% 100%
+    no-repeat;
+}
+
+.options-toggle[aria-checked='true'] .options-toggle-thumb {
+  left: auto;
+  right: calc(3 * var(--options-px));
 }
 
 .options-board .options-main-menu {

@@ -312,3 +312,41 @@ test('versioned menu, arena and result visual baselines; layout fits supported s
   await expect(page.locator('.app-result')).toHaveCSS('opacity', '1');
   await expect(page).toHaveScreenshot('result.png', { fullPage: true });
 });
+
+test('authored loading bar follows engine, map and texture completion', async ({ page }, testInfo) => {
+  let releaseEngine!: () => void;
+  let releaseMap!: () => void;
+  let releaseAtlas!: () => void;
+  const engineGate = new Promise<void>((resolve) => { releaseEngine = resolve; });
+  const mapGate = new Promise<void>((resolve) => { releaseMap = resolve; });
+  const atlasGate = new Promise<void>((resolve) => { releaseAtlas = resolve; });
+  await page.route('**/src/ui/game/GameCanvas.tsx*', async (route) => { await engineGate; await route.continue(); });
+  await page.route('**/assets/tilesheet/tiles_sheet.png*', async (route) => { await mapGate; await route.continue(); });
+  await page.route('**/assets/spritesheet/ships_miscellaneous_sheet.png*', async (route) => { await atlasGate; await route.continue(); });
+  try {
+    await page.getByRole('button', { name: 'Play', exact: true }).click();
+    const engine = page.getByRole('progressbar', { name: 'Loading game engine', exact: true });
+    await expect(engine).toBeVisible();
+    await expect(engine).not.toHaveAttribute('aria-valuenow');
+    releaseEngine();
+    const arena = page.getByRole('progressbar', { name: 'Loading arena', exact: true });
+    await expect(arena).toBeVisible();
+    await expect.poll(async () => Number(await arena.getAttribute('aria-valuenow'))).toBeGreaterThan(0);
+    expect(Number(await arena.getAttribute('aria-valuenow'))).toBeLessThan(60);
+    await expect(page.locator('.arena')).toHaveAttribute('aria-busy', 'true');
+    await expect(page.getByRole('button', { name: 'Pause game', exact: true })).toBeDisabled();
+    releaseMap();
+    await expect.poll(async () => Number(await arena.getAttribute('aria-valuenow'))).toBeGreaterThanOrEqual(60);
+    expect(Number(await arena.getAttribute('aria-valuenow'))).toBeLessThan(100);
+    await expect(arena.locator('img').first()).toHaveAttribute('src', /health_frame/);
+    await expect(arena.locator('img').last()).toHaveAttribute('src', /health_fill_green/);
+    await page.screenshot({ path: `reports/loading-arena-${testInfo.project.name}.png` });
+    releaseAtlas();
+    await page.waitForFunction(() => !!window.pirateTest);
+    await expect(page.locator('.arena')).toHaveAttribute('aria-busy', 'false');
+    await expect(arena).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Pause game', exact: true })).toBeEnabled();
+  } finally {
+    releaseEngine(); releaseMap(); releaseAtlas();
+  }
+});

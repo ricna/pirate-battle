@@ -3,6 +3,7 @@ import type { Options } from '../../application/configuration/Options';
 import { OptionsConfig } from '../../application/configuration/OptionsConfig';
 import { Button } from '../components/Button';
 import { SettingStepper } from '../components/SettingStepper';
+import { SettingToggle } from '../components/SettingToggle';
 import './OptionsScreen.css';
 
 /** Tolerance for values persisted between step multiples (for example by an older build with finer steps). */
@@ -28,8 +29,8 @@ function stepped(
 }
 
 /**
- * Options board reproducing `assets/sample_options.png`, followed by the sound settings in the same style.
- * Every step is already a valid value, so each change is saved at once; there is no separate Save action.
+ * Game and Audio preferences using the authored Options board and controls.
+ * Every change is saved at once; there is no separate Save action.
  */
 export function OptionsScreen({
   options,
@@ -47,69 +48,96 @@ export function OptionsScreen({
     <section className="options-board" aria-labelledby="options-title">
       <h1 id="options-title">Options</h1>
 
-      <SettingStepper
-        label="Game session time"
-        value={`${options.sessionSeconds} s`}
-        range={`Allowed range ${OptionsConfig.Limits.session[0]}–${OptionsConfig.Limits.session[1]} seconds.`}
-        decreaseDisabled={options.sessionSeconds <= OptionsConfig.Limits.session[0]}
-        increaseDisabled={options.sessionSeconds >= OptionsConfig.Limits.session[1]}
-        onStep={(direction) =>
-          update({
-            sessionSeconds: stepped(
-              options.sessionSeconds,
-              steps.session,
-              direction,
-              OptionsConfig.Limits.session,
-            ),
-          })
-        }
-      />
+      <section className="options-section" aria-labelledby="options-game-title">
+        <h2 id="options-game-title">Game</h2>
+        <SettingStepper
+          label="Game session time"
+          value={`${options.sessionSeconds} s`}
+          range={`Allowed range ${OptionsConfig.Limits.session[0]}–${OptionsConfig.Limits.session[1]} seconds.`}
+          decreaseDisabled={options.sessionSeconds <= OptionsConfig.Limits.session[0]}
+          increaseDisabled={options.sessionSeconds >= OptionsConfig.Limits.session[1]}
+          slider={{
+            value: options.sessionSeconds,
+            minimum: OptionsConfig.Limits.session[0],
+            maximum: OptionsConfig.Limits.session[1],
+            step: steps.session,
+            onChange: (sessionSeconds) => update({ sessionSeconds }),
+          }}
+          onStep={(direction) =>
+            update({
+              sessionSeconds: stepped(
+                options.sessionSeconds,
+                steps.session,
+                direction,
+                OptionsConfig.Limits.session,
+              ),
+            })
+          }
+        />
 
-      <SettingStepper
-        label="Enemy spawn time"
-        value={`${options.spawnSeconds} s`}
-        range={`Allowed range ${OptionsConfig.Limits.spawn[0]}–${OptionsConfig.Limits.spawn[1]} seconds.`}
-        decreaseDisabled={options.spawnSeconds <= OptionsConfig.Limits.spawn[0]}
-        increaseDisabled={options.spawnSeconds >= OptionsConfig.Limits.spawn[1]}
-        onStep={(direction) =>
-          update({
-            spawnSeconds: stepped(options.spawnSeconds, steps.spawn, direction, OptionsConfig.Limits.spawn),
-          })
-        }
-      />
+        <SettingStepper
+          label="Enemy spawn time"
+          value={`${options.spawnSeconds} s`}
+          range={`Allowed range ${OptionsConfig.Limits.spawn[0]}–${OptionsConfig.Limits.spawn[1]} seconds.`}
+          decreaseDisabled={options.spawnSeconds <= OptionsConfig.Limits.spawn[0]}
+          increaseDisabled={options.spawnSeconds >= OptionsConfig.Limits.spawn[1]}
+          slider={{
+            value: options.spawnSeconds,
+            minimum: OptionsConfig.Limits.spawn[0],
+            maximum: OptionsConfig.Limits.spawn[1],
+            step: steps.spawn,
+            onChange: (spawnSeconds) => update({ spawnSeconds }),
+          }}
+          onStep={(direction) =>
+            update({
+              spawnSeconds: stepped(options.spawnSeconds, steps.spawn, direction, OptionsConfig.Limits.spawn),
+            })
+          }
+        />
+      </section>
 
-      <SettingStepper
-        label="Sound"
-        value={options.sound ? 'On' : 'Off'}
-        range="Off or on."
-        decreaseDisabled={!options.sound}
-        increaseDisabled={options.sound}
-        onStep={(direction) => update({ sound: direction > 0 })}
-      />
+      <section className="options-section" aria-labelledby="options-audio-title">
+        <h2 id="options-audio-title">Audio</h2>
+        <SettingToggle label="Sound" checked={options.sound} onChange={(sound) => update({ sound })} />
 
-      <SettingStepper
-        label="Volume"
-        value={`${Math.round(options.volume * PercentScale)} %`}
-        range={`Allowed range ${OptionsConfig.Limits.volume[0] * PercentScale}–${OptionsConfig.Limits.volume[1] * PercentScale} percent.`}
-        decreaseDisabled={options.volume <= OptionsConfig.Limits.volume[0]}
-        increaseDisabled={options.volume >= OptionsConfig.Limits.volume[1]}
-        onStep={(direction) =>
-          update({ volume: stepped(options.volume, steps.volume, direction, OptionsConfig.Limits.volume) })
-        }
-      />
+        <SettingStepper
+          label="Volume"
+          value={`${Math.round(options.volume * PercentScale)} %`}
+          range={`Allowed range ${OptionsConfig.Limits.volume[0] * PercentScale}–${OptionsConfig.Limits.volume[1] * PercentScale} percent.`}
+          decreaseDisabled={options.volume <= OptionsConfig.Limits.volume[0]}
+          increaseDisabled={options.volume >= OptionsConfig.Limits.volume[1]}
+          slider={{
+            value: options.volume,
+            minimum: OptionsConfig.Limits.volume[0],
+            maximum: OptionsConfig.Limits.volume[1],
+            step: steps.volume,
+            onChange: (volume) => update({ volume }),
+          }}
+          onStep={(direction) =>
+            update({ volume: stepped(options.volume, steps.volume, direction, OptionsConfig.Limits.volume) })
+          }
+        />
 
-      <SettingStepper
-        label="Music volume"
-        value={`${Math.round(options.musicVolume * PercentScale)} %`}
-        range="Allowed range 0–100 percent. Music is also affected by Sound and master Volume."
-        decreaseDisabled={options.musicVolume <= OptionsConfig.Limits.volume[0]}
-        increaseDisabled={options.musicVolume >= OptionsConfig.Limits.volume[1]}
-        onStep={(direction) =>
-          update({
-            musicVolume: stepped(options.musicVolume, steps.volume, direction, OptionsConfig.Limits.volume),
-          })
-        }
-      />
+        <SettingStepper
+          label="Music volume"
+          value={`${Math.round(options.musicVolume * PercentScale)} %`}
+          range="Allowed range 0–100 percent. Music is also affected by Sound and master Volume."
+          decreaseDisabled={options.musicVolume <= OptionsConfig.Limits.volume[0]}
+          increaseDisabled={options.musicVolume >= OptionsConfig.Limits.volume[1]}
+          slider={{
+            value: options.musicVolume,
+            minimum: OptionsConfig.Limits.volume[0],
+            maximum: OptionsConfig.Limits.volume[1],
+            step: steps.volume,
+            onChange: (musicVolume) => update({ musicVolume }),
+          }}
+          onStep={(direction) =>
+            update({
+              musicVolume: stepped(options.musicVolume, steps.volume, direction, OptionsConfig.Limits.volume),
+            })
+          }
+        />
+      </section>
 
       <Button className="options-main-menu" onClick={onMainMenu}>
         Main Menu

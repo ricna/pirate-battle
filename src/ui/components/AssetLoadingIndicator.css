@@ -1,0 +1,81 @@
+.asset-loading-screen {
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+}
+
+.asset-loading-indicator {
+  width: min(520px, 100%);
+  text-align: center;
+}
+
+.asset-loading-title {
+  margin: 0;
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-size: clamp(28px, 4.4vw, 52px);
+  font-weight: bold;
+  line-height: 1.15;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+  color: #ffebbc;
+  text-shadow:
+    0 3px 0 #13212c,
+    0 5px 12px #071729;
+}
+
+.asset-loading-label {
+  margin: 16px 0 20px;
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  font-size: clamp(15px, 2.2vw, 20px);
+  line-height: 1.4;
+  letter-spacing: 0.035em;
+  color: #d8c9a9;
+}
+
+.asset-loading-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(480px, 100%);
+  aspect-ratio: 512 / 96;
+  margin: 0 auto;
+}
+
+.asset-loading-bar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.asset-loading-value {
+  position: relative;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(14px, 2.4vw, 24px);
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 1px 3px #0c2410;
+}
+
+.asset-loading-indeterminate .asset-loading-fill {
+  animation: asset-loading-pulse 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes asset-loading-pulse {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 0.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asset-loading-indeterminate .asset-loading-fill {
+    animation: none;
+    opacity: 0.5;
+  }
+}

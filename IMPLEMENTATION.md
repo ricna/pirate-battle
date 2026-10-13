@@ -368,10 +368,16 @@ The owner required the Options screen to match `assets/sample_options.png`, keep
 - The board reproduces the reference measurements in `--options-px` reference pixels: title, Game session time and Enemy spawn time rows with authored round minus/plus buttons, then MAIN MENU. Sound (Off/On) and Volume follow the two required rows in the same style; Restore default options is a text action below MAIN MENU. Tall screens fit the whole board; short landscape phones keep at least 0.75 of the reference and scroll.
 - Steppers produce only valid values: the step sizes live in `OptionsConfig.Steps`, and each documented limit disables the button that would leave the range. Every press is saved immediately; there is no Save button. Ranges remain available to assistive technology as each setting's description.
 
+The owner subsequently refined this composition on 13 October 2026: group the settings under **Game** and **Audio** headers. Sound uses an accessible On/Off toggle. Game session time, Enemy spawn time, master Volume and Music volume each show the value above a slider, with the existing minus/plus buttons on its sides. Sliders reuse the authored HUD health frame, amber fill and round control art, following the atlas fill rectangle. Keyboard, pointer and touch changes retain the existing limits and steps (10 seconds, 0.2 seconds and 10%) with immediate persistence.
+
 ## 25. Accepted player-death presentation — 13 October 2026
 
 On player death, play the owner's `assets/sounds/extra/576054__istudeny__pirat-battle.wav` once, replacing the original `game_over.wav` cue. Drastically lower the persistent OST (8% of the configured music mix), without rewriting saved volumes or restarting the track. Preserve the approximately 14-second cue through result reveal; restore the mix when it finishes or the player starts another battle/returns to the menu.
 
 Freeze combat and persist/enqueue the completed record immediately. Show destruction for 3 seconds while **Game Over** fades in, then fade the result screen in over 1 second while Game Over fades out. Keep the arena alive beneath that crossfade and dispose it when the transition completes. Time expiry keeps its distinct Battle Complete text/cue and does not duck the soundtrack.
+
+## Asset loading presentation — 13 October 2026
+
+The owner requires an authored progress bar whenever game assets are loading, including the map and the lazy game module. Use the same player-health frame and green fill, respecting the atlas fill rectangle, with a prominent Setting Sail heading and readable stage/percentage text. The map/texture bar follows actual loader completion callbacks; it is not a download-byte estimate. Module preparation is indeterminate and must not invent a percentage. Retry resets the visible progress, required asset failures remain visible, and reduced motion disables the preparation pulse.
 
 For navigation in the owner's local environment, the personal wiki entry is [Implementation context](../Docs/13-contexto-de-implementacao.md). This optional link is outside the clone; all mandatory rules are contained in this document and the repository's AGENTS.md.
