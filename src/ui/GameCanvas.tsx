@@ -32,7 +32,7 @@ export function GameCanvas({ config, onComplete, onAbandon }: {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null); const [abandon, setAbandon] = useState(false);
   function pause() { const sim = simRef.current; if (!sim || sim.status !== 'playing') return;
     sim.pause(); inputRef.current?.setActive(false); rootRef.current?.querySelectorAll<HTMLElement>('.command').forEach((button) => delete button.dataset.held);
-    audio.ambience(false, false); audio.play(AudioConfig.Cues.Pause); setSnapshot(sim.snapshot()); }
+    audio.ambience(false, 0); audio.play(AudioConfig.Cues.Pause); setSnapshot(sim.snapshot()); }
   function resume() { const sim = simRef.current; if (!sim || sim.status !== 'paused' || document.hidden) return;
     if (matchMedia('(orientation: portrait)').matches) return;
     sim.resume(); inputRef.current?.setActive(true); audio.play(AudioConfig.Cues.Resume); setSnapshot(sim.snapshot());
@@ -49,7 +49,7 @@ export function GameCanvas({ config, onComplete, onAbandon }: {
     const sources = new Set<TextureSource>();
     const focusLost = () => { const sim = simRef.current; if (sim?.status === 'playing') {
       sim.pause(); inputRef.current?.setActive(false); root!.querySelectorAll<HTMLElement>('.command').forEach((button) => delete button.dataset.held);
-      audio.ambience(false, false); audio.play(AudioConfig.Cues.Pause); setSnapshot(sim.snapshot()); }
+      audio.ambience(false, 0); audio.play(AudioConfig.Cues.Pause); setSnapshot(sim.snapshot()); }
       accumulator = 0; last = 0;
     };
     const visibility = () => { if (document.hidden) focusLost(); };
@@ -112,7 +112,7 @@ export function GameCanvas({ config, onComplete, onAbandon }: {
             if (instrument && delta > 0 && simulation.elapsed > config.runtime.profileWarmupSeconds) { samples.push(delta * 1000); if (samples.length > config.runtime.maxFrameSamples) samples.shift(); }
             entityPeak = Math.max(entityPeak, simulation.enemies.length + simulation.projectiles.length + simulation.effects.length + 1);
           } else accumulator = 0;
-          audio.ambience(simulation.status === 'playing', inputRef.current?.read().has('forward') ?? false);
+          audio.ambience(simulation.status === 'playing', simulation.player.speed / config.player.movement.maxSpeed);
           arena?.draw(); application.render();
           if (now >= publishAt) { setSnapshot(simulation.snapshot()); publishAt = now + config.runtime.hudIntervalMs; }
           frame = requestAnimationFrame(tick);
