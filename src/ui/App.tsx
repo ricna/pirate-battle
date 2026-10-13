@@ -10,6 +10,7 @@ import { DemoNetworkTools } from './DemoNetworkTools';
 import { HowToPlay } from './HowToPlay';
 import { MainMenu } from './MainMenu';
 import { MenuArt } from './MenuArt';
+import { useTransientNotice } from './useTransientNotice';
 import { createGameConfig, DEFAULT_OPTIONS, LIMITS, validOptions } from '../game/config';
 import type { GameConfig, Options } from '../game/config';
 import type { Snapshot } from '../game/simulation';
@@ -49,7 +50,7 @@ export function App() {
   const [last, setLast] = useState(lastMatch); const [pending, setPending] = useState(pendingMatches);
   const pendingRef = useRef(pending); const attempted = useRef(new Set<string>());
   const [scenario, updateScenario] = useState(getScenario); const [revision, setRevision] = useState(0);
-  const [notice, setNotice] = useState(''); const [errors, setErrors] = useState<Record<string, string>>({});
+  const [notice, setNotice] = useTransientNotice(); const [errors, setErrors] = useState<Record<string, string>>({});
   const save = useMutation({ mutationFn: api.save, onSuccess: (record) => {
     const next = pendingRef.current.filter((r) => r.id !== record.id); pendingRef.current = next; writeStored('pending', next); setPending(next);
     setErrors((old) => { const copy = { ...old }; delete copy[record.id]; return copy; });

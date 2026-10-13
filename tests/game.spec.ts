@@ -170,6 +170,13 @@ test('how to play explains the controls and only returns to the main menu', asyn
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
 });
+test('demo server reset confirmation is shown briefly', async ({ page }) => {
+  await page.locator('.network-tools summary').click();
+  await page.getByRole('button', { name: 'Reset demo server' }).click();
+  const notice = page.locator('.notice');
+  await expect(notice).toContainText('Demo server reset');
+  await expect(notice).toBeHidden({ timeout: 8000 });
+});
 test('ranking and history handle pages, empty lists, loading and errors', async ({ page }) => {
   await scenario(page, 'multiple-pages'); await page.getByRole('button', { name: 'Ranking', exact: true }).click();
   await expect(page.getByRole('table')).toBeVisible(); await expect(page.getByText('Page 1 of 6')).toBeVisible();
