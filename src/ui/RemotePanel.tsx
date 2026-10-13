@@ -39,7 +39,7 @@ function PageButton({ label, icon, disabled, onClick }: { label: string; icon: s
       aria-label={label}
       disabled={disabled}
       onClick={() => {
-        audio.play(AudioConfig.Cues.Click);
+        audio.playUi(AudioConfig.Cues.Click, 'ui-click');
         onClick();
       }}
     >

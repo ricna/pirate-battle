@@ -8,7 +8,20 @@ export const MatchStatus = { Playing: 'playing', Paused: 'paused', Ended: 'ended
 export type MatchStatus = typeof MatchStatus[keyof typeof MatchStatus];
 export const EndReason = { Time: 'time', Death: 'death' } as const;
 export type EndReason = typeof EndReason[keyof typeof EndReason];
-export const GameEvent = { FrontShot: 'front-shot', SideShot: 'side-shot', EnemyShot: 'enemy-shot', Impact: 'impact', Explosion: 'explosion', Score: 'score', LowHealth: 'low-health', TimeWarning: 'time-warning' } as const;
+export const GameEvent = {
+  FrontShot: 'front-shot',
+  SideShot: 'side-shot',
+  EnemyShot: 'enemy-shot',
+  Impact: 'impact',
+  Explosion: 'explosion',
+  Score: 'score',
+  LowHealth: 'low-health',
+  TimeWarning: 'time-warning',
+  WaterImpact: 'water-impact',
+  ShipCollision: 'ship-collision',
+  Sinking: 'sinking',
+  CoastImpact: 'coast-impact',
+} as const;
 export type GameEvent = typeof GameEvent[keyof typeof GameEvent];
 export const EffectKind = { Muzzle: 'muzzle', Impact: 'impact', Explosion: 'explosion' } as const;
 export type EffectKind = typeof EffectKind[keyof typeof EffectKind];
