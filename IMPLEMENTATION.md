@@ -334,4 +334,28 @@ The owner required the main menu to match `assets/sample_menu.png` exactly, with
 - The MSW scenario selector and reset stay available in a collapsed panel in the bottom-left corner. The Jungle Gaming logo sits in the bottom-right corner as in the samples. The menu no longer shows a last-result link or a credit footer; the last result is still persisted.
 - Reproduce reference compositions with measured values in reference pixels (`--sample-px`), authored PNG/SVG pieces and real controls. Verify a change against the reference image at 1800×1000 before accepting it; do not crop the samples.
 
+## 21. Ship wake removal — 13 October 2026
+
+The owner requested complete removal of the existing ship wake before implementing a replacement. Remove the old stamped wake emitter, configuration, asset registration and `assets/authored/wake.svg`; do not merely hide it or set its opacity to zero. Preserve projectile trails, crew foam, splashes, water motion and other feedback. Preserve the owner's `assets/authored/shipt-trail.png` unchanged and do not wire a replacement in this removal task. The two continuous wakes discussed in B08/B09 remain pending future implementation with original code and explicitly authored art.
+
+## 22. Owner-authored splash — 13 October 2026
+
+The owner replaced the water splash art with a PNG manually authored in Krita. `assets/authored/Splash.png` is the runtime texture; `Splash.kra` is its editable source. Keep the logical `authored/water_splash` key and select the PNG through `AssetConfig.Standalone`. The previous SVG is retained as unused source art. Preserve the effect's configured dimensions, duration and impact triggers unless separately requested. Validate both texture loading and an actual impact render; a preload or a static filename reference alone does not demonstrate use.
+
+## 23. Accepted gameplay HUD composition — 13 October 2026
+
+The owner required the gameplay screen to match `assets/sample.png` exactly, including the mobile buttons and the HUD in general:
+
+- The arena fills the viewport; there is no frame, header bar, footer or button captions. The map keeps its uniform contain fit and the deep-water tiling sprite extends under any letterbox area, as the owner chose on 13 October 2026 after comparing it with letterbox bands. Known trade-off: on screens whose proportion differs from the map, the ship stops at the authored map bounds while water continues beyond them.
+- The HUD is a React overlay (`src/ui/GameHud.tsx`, `GameHud.css`) using the retina HUD pieces at positions/sizes measured by template-matching them against the reference: heart and health frame with `current / max` at the top left; score, `mm:ss` clock and pause at the top right; turn-left/forward/turn-right at the bottom left; left broadside/front cannon/right broadside at the bottom right; the Jungle Gaming wordmark above the weapon cluster.
+- Lengths use `--hud-px`, one reference pixel. It is exact at 1800×1000 and keeps at least 0.72 of the reference on small screens so touch buttons stay about 55 CSS pixels, unless the top row would not fit.
+- The health fill follows the atlas `fill_rect`/`clip_axis` and the player's authored fill stages. Weapon readiness darkens the button face clockwise while reloading; a ready weapon looks exactly like the reference. Keyboard controls remain documented in How To Play.
+
+## 24. Accepted Options composition — 13 October 2026
+
+The owner required the Options screen to match `assets/sample_options.png`, keeping sound settings and the restore action:
+
+- The board reproduces the reference measurements in `--options-px` reference pixels: title, Game session time and Enemy spawn time rows with authored round minus/plus buttons, then MAIN MENU. Sound (Off/On) and Volume follow the two required rows in the same style; Restore default options is a text action below MAIN MENU. Tall screens fit the whole board; short landscape phones keep at least 0.75 of the reference and scroll.
+- Steppers produce only valid values: the step sizes live in `GameDefaults.OptionSteps`, and each documented limit disables the button that would leave the range. Every press is saved immediately; there is no Save button. Ranges remain available to assistive technology as each setting's description.
+
 For navigation in the owner's local environment, the personal wiki entry is [Implementation context](../Docs/13-contexto-de-implementacao.md). This optional link is outside the clone; all mandatory rules are contained in this document and the repository's AGENTS.md.

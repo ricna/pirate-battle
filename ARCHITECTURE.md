@@ -19,6 +19,7 @@ React authors the canvas, menus, forms, dialogs, semantic HUD and touch buttons.
 | game/renderer | Ships, health, deterioration, cannonballs and effects from explicit PNGs |
 | game/audio | Cached Web Audio buffers, bounded voices, loop and lifecycle control |
 | ui/GameCanvas | Initialization, resize, fixed-step accumulator, pause events and low-frequency snapshots |
+| ui/GameHud | Full-screen overlay HUD from `assets/sample.png`: health bar, score, clock, pause and the two touch clusters with weapon cooldown faces |
 | data/contracts, api, network, storage | Typed REST records, Axios/Query, MSW and persistence |
 
 ## Simulation clock and input
@@ -63,7 +64,7 @@ React buttons are semantic HTML controls decorated with provided PNG states. Men
 
 `MainMenu` composes the board shown in `assets/sample_menu.png`. `MainMenu.css` expresses every measurement in pixels of that 1800×1000 reference, multiplied by the `--sample-px` custom property from `App.css`, so the board keeps its proportions on desktop and mobile; small text has a legibility minimum. The board uses retina panel, title and ship art (`MenuArt`) because it is drawn above logical size; static imports make a missing file fail the build. `CaptainsLog` composes the Ranking/Match History board of `assets/sample_ranking.png` and `assets/sample_history.png` (same panel and measurement method in `CaptainsLog.css`, with a `--board-px` unit that also fits portrait screens); `RemotePanel` renders its semantic table, highlights this player's ranking records and the last completed battle in history, and pages with the round authored buttons, `HowToPlay` holds the briefing and control reference, and `DemoNetworkTools` docks the MSW scenario controls in the bottom-left corner. `App.tsx` remains the owner of the active screen and of the handlers these components receive. Native modal dialogs provide focus containment, Escape handling and focus restoration. Main screen transitions focus the heading; Resume returns focus to gameplay. Score, time, health and state remain available outside the canvas.
 
-Web Audio unlocks on a user gesture, caches supplied decoded WAVs, limits simultaneous sources to 16 and coalesces repeated events within a step. Ambient/sailing loops stop while paused or outside combat. Finished sources disconnect. Audio decode failures are nonfatal; buffers and a single audio context remain cached rather than recreated each match.
+Web Audio unlocks on a user gesture and decodes only cues registered by `AudioConfig`. It keeps one AudioContext, a 16-voice budget, per-cue cooldowns and priority-aware voice replacement so warning/sinking/terminal cues can be heard during dense combat. Repeated cannon, hull-hit, water-impact and explosion cues alternate authored WAVs and apply small configured playback-rate variation independently of gameplay randomness. UI hover is mouse-only. Ocean and speed-sensitive sailing loops stop on pause, match end, abandonment and teardown. Finished sources disconnect; decode failures remain nonfatal and visible.
 
 ## Lifecycle and Strict Mode
 

@@ -14,8 +14,10 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | `GameDefaults.ts` | Default Options and allowed limits, simulation clock, seed, spawn points/weights/cap, pool capacities, effects, warnings and runtime budgets |
 | `FactoryConfig.ts` | Enemy profile → concrete subclass registrations |
 | `InputConfig.ts` | Keyboard bindings, pause keys and touch command labels/icons |
-| `AudioConfig.ts` | Gameplay-event sound names, simultaneous voice budget and mix gains |
+| `AudioConfig.ts` | UI cues, gameplay-event sound variants, pitch ranges, repeat cooldowns, voice priorities/budget and mix gains |
 | `CollisionConfig.ts` | Hull separation, slide iteration budget, impact threshold and repeat cooldown |
+| `PresentationConfig.ts` | Crew/debris/projectile-trail profiles, guaranteed crew capacity, cosmetic pools, recoil/tint/shake, floating labels, water animation and terminal/result durations; ship wake removed by owner request |
+| `AssetConfig.ts` | Shared default atlas sources and explicitly registered standalone authored textures |
 
 `config.ts` is an entry point, not a second balance table. `GameConfigFactory.create()` gathers the registered profiles, validates them, clones their data and recursively freezes the match snapshot. `Simulation` also isolates an externally supplied configuration. Objects passed to ships cannot remain mutable aliases to their original profiles.
 
@@ -126,6 +128,8 @@ npm run test:e2e
 Publish the new `dist` together with the matching source revision. Re-run optimized profiling after changing movement, spawn pressure, pool limits, projectile TTL or rendering budgets. Source configuration is compile-time authored data; shipped values cannot be edited through a remote customer admin panel.
 
 ## Shipped movement feel and static-map rendering
+
+For standalone gameplay art, `AssetConfig.Standalone` maps a logical key to its explicit file URL. `PresentationConfig` selects that key and sets logical display dimensions/lifetime. The owner's Krita-exported `assets/authored/Splash.png` now supplies `authored/water_splash`; its 64×64 source is displayed at the configured 45×45 size for 0.45 seconds. To replace the image without changing the effect's identity, change the mapped URL, preserve the key, and reload the page to discard the application texture cache. Network confirms loading; a breakpoint in `PresentationRenderer.draw()` confirms the particle key, `texture.source.label`, frame and actual sprite assignment. Atlas textures share a source URL, so inspect their frame rectangle too. Missing required references fail instead of selecting substitute art.
 
 Player defaults now use acceleration 230 pixels/s² and braking 115 pixels/s², giving approximately one second to maximum speed and two seconds to stop in unobstructed water. Full-speed braking distance is approximately 230 logical pixels. Test in free water, since obstacles can stop travel before braking finishes. Enemy profiles retain their independent settings.
 
