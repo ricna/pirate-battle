@@ -330,7 +330,7 @@ B01–B09 are required presentation work; B10–B11 are lower-priority required 
 The owner required the main menu to match `assets/sample_menu.png` exactly, with these accepted additions resolving the challenge requirements the sample does not show:
 
 - A **How To Play** button in the bottom row opens a screen with the game explanation and controls; its only action returns to the main menu. This satisfies the challenge's control instructions in the main menu.
-- **Ranking** and **Match History** open the Captain's Log screen with both tabs (`sample_ranking.png` and `sample_history.png` are its art references).
+- **Ranking** and **Match History** open the Captain's Log screen with both tabs, reproducing `sample_ranking.png` and `sample_history.png`. Ranking shows rank, captain (star for the leader), points and UTC play date; history shows UTC date, points, mm:ss duration and result. Ranking highlights this player's records; history highlights the last completed battle. Fixture data, not the sample's example names, fills the rows.
 - The MSW scenario selector and reset stay available in a collapsed panel in the bottom-left corner. The Jungle Gaming logo sits in the bottom-right corner as in the samples. The menu no longer shows a last-result link or a credit footer; the last result is still persisted.
 - Reproduce reference compositions with measured values in reference pixels (`--sample-px`), authored PNG/SVG pieces and real controls. Verify a change against the reference image at 1800×1000 before accepting it; do not crop the samples.
 

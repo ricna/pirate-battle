@@ -64,6 +64,8 @@ The arena is authored in Tiled at `assets/maps/arena_00.tmj`, with 32×18 cells 
 
 Axios performs real HTTP requests intercepted by MSW. TanStack Query manages the paginated queries, cancellation, retries, cache and completed-match mutation. Lists contain five records per page.
 
+Both lists appear in the **Captain's Log**. Ranking shows rank, captain, points and play date; Match History shows date, points, duration (mm:ss) and result (Time up / Defeated). Dates are UTC. Your ranking records and your last completed battle are highlighted.
+
 A completed match contains a stable UUID, player identity, UTC date, score, active duration, end reason and configuration snapshot. Ranking compares matches with the same map/balance version, seed, session duration, spawn interval and complete gameplay snapshot fingerprint. Ordering is score descending, then date ascending, then ID ascending. Other captains are fixtures. History shows this browser's player, newest first.
 
 Options, identity, last completed result, pending submissions and confirmed mock records persist in localStorage under `pirate.*` keys. Incomplete battles are abandoned on refresh or leaving combat. Completed results enter the persistent outbox before the POST. Retries recover the existing match ID, including a timeout after the server committed; they never duplicate ranking/history entries. Another battle can start while an older result is pending.

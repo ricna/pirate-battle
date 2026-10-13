@@ -122,7 +122,7 @@ export function App() {
       {screen === 'options' ? <OptionsForm options={options} save={(value) => { writeStored('options', value); setOptions(value); setNotice('Options saved.'); mainMenu(); }} back={mainMenu} />
         : screen === 'howToPlay' ? <HowToPlay onMainMenu={mainMenu} />
         : screen === 'records' ? <CaptainsLog tab={recordsTab} onTabChange={setRecordsTab} config={createGameConfig(options)}
-          playerId={playerId} revision={revision} onMainMenu={mainMenu} />
+          playerId={playerId} revision={revision} lastMatchId={last?.id ?? null} onMainMenu={mainMenu} />
         : screen === 'result' && last ? <section className="panel result-panel"><p className="eyebrow">Your voyage</p><h1>Battle result</h1>
           <p>{last.reason === 'time' ? 'Time expired. The voyage is complete.' : 'Your ship was lost at sea.'}</p>
           <div className="result-score"><img src={uiAsset('hud/icon_score')} alt="" />{last.score}<span>points</span></div>
