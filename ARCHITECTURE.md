@@ -10,7 +10,7 @@ React authors the canvas, menus, forms, dialogs, semantic HUD and touch buttons.
 | --- | --- |
 | game/configuration | Static authored profiles, factory registrations, validation and frozen snapshots |
 | game/tiledMap | Validated authored-map/tileset/image loading and progress |
-| game/mapRenderer | Tile layers, cached atlas frames and Tiled flip transforms |
+| game/mapRenderer | Authored tile composition at integer resolution, single cached map surface, Tiled flip transforms |
 | game/simulation | Encapsulated match aggregate coordinating entities and systems |
 | game/entities | Entity/Ship inheritance, player/enemy behaviours, projectile and effect lifecycles |
 | game/core, factories, systems | Collision-world interface, bounded pools, registered construction, weapons, spawning, damage and match state |
@@ -33,7 +33,7 @@ React receives a semantic snapshot approximately 4Hz. Loading, pause and end tra
 
 The player's finite orthogonal Tiled map is the source of truth: 32×18 tiles, 64 logical pixels, four visual layers and five rectangular collision objects. Required references are registered as bundler-visible URLs. Relative JSON references resolve against original logical asset paths, so hashed production URLs and inlined tilesets remain valid. Missing files, unsupported geometry, invalid GIDs, dimensions and out-of-arena rectangles fail visibly with a retry action.
 
-The complete 2048×1152 arena is uniformly fitted into the available canvas. Resize changes display scale, never simulation coordinates or balance. Device resolution is capped at 2×. Tiles support horizontal, vertical and diagonal Tiled flips. Cropped tile textures are reused by GID; base image textures remain intentionally cached across matches. No generated island, UI or substitute asset is used after a loading error.
+The complete 2048×1152 arena is uniformly fitted into the available canvas. Resize changes display scale, never simulation coordinates or balance. Device resolution is capped at 2×. Tiles support horizontal, vertical and diagonal Tiled flips. Cropped tile textures are reused by GID while composing the authored static layers once into an owned RenderTexture at integer resolution. Fitting one map sprite prevents cracks between independently scaled tile quads at fractional viewport/DPI sizes. Temporary tile sprites are destroyed after composition; the cached surface and frame textures are destroyed with the match. Base image textures remain intentionally cached across matches. No generated island, UI or substitute asset is used after a loading error.
 
 ## Object-oriented gameplay model
 

@@ -93,3 +93,9 @@ npm run test:e2e
 ```
 
 Publish the new `dist` together with the matching source revision. Re-run optimized profiling after changing movement, spawn pressure, pool limits, projectile TTL or rendering budgets. Source configuration is compile-time authored data; shipped values cannot be edited through a remote customer admin panel.
+
+## Shipped movement feel and static-map rendering
+
+Player defaults now use acceleration 230 pixels/s² and braking 115 pixels/s², giving approximately one second to maximum speed and two seconds to stop in unobstructed water. Full-speed braking distance is approximately 230 logical pixels. Test in free water, since obstacles can stop travel before braking finishes. Enemy profiles retain their independent settings.
+
+GameDefaults.Runtime.staticMapResolution is a positive integer (default 1). Authored tile layers are composed once at that resolution into an owned render surface before fitting the whole arena, preventing one-pixel gaps at fractional display scales. This changes rendering only; the Tiled map and its collisions remain authored inputs.

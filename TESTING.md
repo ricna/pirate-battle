@@ -38,10 +38,16 @@ Screenshot baselines in `tests/game.spec.ts-snapshots` were captured on Windows 
 
 ## Reports and repaired failures
 
-Final verification on 12 October 2026: **39/39 passed** (7 domain/architecture tests plus 32 desktop/mobile E2E cases) in approximately 2.0 minutes, including all six visual baselines. Type checking, lint and production build also passed. No unhandled application page errors were observed; every E2E case asserts this.
+Final verification on 12 October 2026: **42/42 passed** (7 domain/architecture tests, 1 renderer regression across 20 viewport/DPI combinations, and 34 desktop/mobile E2E cases) in approximately 1.8 minutes, including all six visual baselines. Type checking, lint and production build also passed. No unhandled application page errors were observed; every E2E case asserts this.
 
 The final run's report is delivered in `reports/playwright`. Initial failure traces are retained in `reports/failures`; open any with `npx playwright show-trace <path>`. They document repaired pilot observation-after-end, test routing/touch/scenario selection problems, a frame-step boundary issue subsequently clamped in gameplay, and one test interrupted by a development reload. They are historical evidence, not the final pass/fail status.
 
 Playwright emits a console warning about conflicting NO_COLOR/FORCE_COLOR variables in this host; this is runner formatting, not a game failure. The first optional headless-shell download failed due to this network's certificate chain. The full Chromium download succeeded; `--no-shell` installs exactly the browser used without bypassing TLS verification.
 
 Physical mobile devices and non-Chromium engines were not covered. Desktop/mobile emulation validates viewport, density and multi-touch logic, but does not establish Safari audio or real-device GPU performance.
+
+## Reported visual/movement regressions
+
+The new rendering project reads actual WebGL pixels after a zero-time render through the test clock. It checks continuous water across five viewport sizes and four DPI factors (1, 1.25, 1.5, 2), waits for the ResizeObserver's canvas dimensions, and attaches a wide screenshot. The pre-fix canvas at width 1319 exposed one background pixel [18,55,68] between independently scaled tile quads. Static map composition eliminates that crack. Two E2E cases verify a gradual one-second player ramp and two-second braking, with a numerical tolerance at the precise stopping-time boundary.
+
+Use npm run test:e2e with the configured reporters to write reports/playwright. A CLI --reporter override selects Playwright's default output folder instead; the verified final report has been copied into the delivered reports/playwright directory.

@@ -1,5 +1,8 @@
 # Performance evidence
 
+The retained numbers below measure balance-v2, before the balance-v3 gradual movement tuning and static-map render surface. They remain historical baseline evidence. Re-profile the final build after the concurrent audio/game adjustments finish; no new balance-v3 FPS or heap result is claimed by the rendering/movement regression tests.
+
+
 ## Reference environment
 
 Windows 10 Pro; Intel Core i7-9700KF, 8 cores; approximately 32 GiB RAM; NVIDIA GeForce RTX 3060, driver 32.0.16.1714. Chromium 156.0.8078.4, headless, ANGLE / Direct3D11 on the RTX 3060. Viewport 1280×800, device scale 1. Hardware fields are delivered in `reports/hardware.json`.

@@ -50,9 +50,9 @@ Combat supports **landscape** on mobile. Rotating to portrait pauses the battle.
 
 Options persist after refresh: session time **60–180 seconds**, enemy spawn interval **2–10 seconds**, sound and volume. Defaults are 120 seconds, 5 seconds, sound enabled and volume 50%. The spawn minimum limits pressure and entity growth; the maximum ensures both enemy types appear even in the shortest session.
 
-Static classes under `src/game/configuration/` author ship, projectile, visual, factory, pool and runtime defaults. Each match receives a validated, recursively frozen snapshot. Version `arena_00-v1/balance-v2` includes acceleration/braking; seed `20261012` keeps spawning deterministic. See [CONFIGURATION.md](CONFIGURATION.md) for the client guide, editable files, units, examples and new-enemy registration. Increment the version when changing rules or map geometry.
+Static classes under `src/game/configuration/` author ship, projectile, visual, factory, pool and runtime defaults. Each match receives a validated, recursively frozen snapshot. Version `arena_00-v1/balance-v3` includes acceleration/braking; seed `20261012` keeps spawning deterministic. See [CONFIGURATION.md](CONFIGURATION.md) for the client guide, editable files, units, examples and new-enemy registration. Increment the version when changing rules or map geometry.
 
-Player: 100 HP, radius 34, maximum speed 230 pixels/s, acceleration 1600 pixels/s², braking 2200 pixels/s², turn 2.6 radians/s. Chaser: 40 HP, speed 125, ram damage 25. Shooter: 65 HP, speed 100, range 580, damage 12, cooldown 2.2s. Player front cannon: damage 25, cooldown 0.35s. Each broadside ball: damage 22, cooldown 1.1s. Player bullets travel at 780 pixels/s; enemy bullets at 340; lifetime is 1.6s. Enemy turn rate is 2.1 radians/s. Active enemies are capped at 28.
+Player: 100 HP, radius 34, maximum speed 230 pixels/s, acceleration 230 pixels/s² (about 1s to maximum), braking 115 pixels/s² (about 2s to stop), turn 2.6 radians/s. Chaser: 40 HP, speed 125, ram damage 25. Shooter: 65 HP, speed 100, range 580, damage 12, cooldown 2.2s. Player front cannon: damage 25, cooldown 0.35s. Each broadside ball: damage 22, cooldown 1.1s. Player bullets travel at 780 pixels/s; enemy bullets at 340; lifetime is 1.6s. Enemy turn rate is 2.1 radians/s. Active enemies are capped at 28.
 
 The first two spawns guarantee a Chaser and a Shooter; later spawns use a seeded 50/50 distribution. Eight explicit water spawn points must pass obstacle validation and remain at least 440 pixels from the player. Occupied or unsafe points are skipped. No substitute map or generated asset is used when loading fails.
 
@@ -105,6 +105,8 @@ See [ASSETS.md](ASSETS.md) for attribution and asset ownership. No generated vis
 ## Architecture, performance and publication
 
 [ARCHITECTURE.md](ARCHITECTURE.md) explains React/Pixi ownership, the fixed-step simulation, swept projectile collisions, obstacle-aware enemy routes, low-frequency HUD updates, cleanup and persistent idempotent submissions.
+
+Before implementing or refactoring, read [AGENTS.md](AGENTS.md) and the complete [implementation contract](IMPLEMENTATION.md). It records the owner's required OOP/SOLID, readability, configuration, factory, pooling, asset, verification and collaboration standards for future developers and coding sessions.
 
 [PERFORMANCE.md](PERFORMANCE.md) and `reports/profile.json` record real-time optimized-build profiling, frame intervals, entity counts and five-cycle memory checks. To reproduce, run `npm run build`, `npm run preview` and, in another terminal, `npm run profile`. The script uses actual keyboard inputs, 180s sessions and 10s spawn intervals; it does not modify combat state.
 
