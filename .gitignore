@@ -21,3 +21,7 @@ playwright-report/
 assets/maps/*.tiled-session
 .openai/*.tar.gz
 .sites-runtime/
+
+# Local editor/agent state
+.claude/
+*~
