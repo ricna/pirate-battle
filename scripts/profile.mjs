@@ -13,8 +13,12 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, dev
 const errors = []; page.on('pageerror', (e) => errors.push(e.message));
 await page.goto(`${url}?profile=1`);
 await page.getByRole('button', { name: 'Options', exact: true }).click();
-await page.getByLabel('Game session time').fill('180'); await page.getByLabel('Enemy spawn time').fill('10');
-await page.getByLabel('Sound enabled').check(); await page.getByRole('button', { name: 'Save options' }).click();
+// Options save on every press; raising each setting to its limit selects the profiled 180 s, 10 s and sound on.
+for (const name of ['Game session time', 'Enemy spawn time', 'Sound']) {
+  const increase = page.getByRole('group', { name, exact: true }).getByRole('button', { name: /^Increase/ });
+  while (await increase.isEnabled()) await increase.click();
+}
+await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
 await page.getByRole('button', { name: 'Play', exact: true }).click(); await page.waitForFunction(() => !!window.pirateTest);
 await page.keyboard.down('Space'); await page.keyboard.down('q'); await page.keyboard.down('e'); const started = Date.now();
 let lastTurn = ''; let lastLog = 0; let moving = false; let pools = null; let renderPools = null; let config = null;
