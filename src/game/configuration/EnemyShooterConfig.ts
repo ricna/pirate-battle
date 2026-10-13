@@ -1,8 +1,8 @@
 import { freezeStaticConfiguration } from '../core/Immutable';
-import { Action, Allegiance, GameEvent, ShipKind } from '../domain';
+import { Action, Allegiance, GameEvent, ShipKind } from '../contracts/GameDomain';
 import { ProjectileConfig } from './ProjectileConfig';
 import { ShipVisualConfig } from './ShipVisualConfig';
-import type { ShipProfile } from './types';
+import type { ShipProfile } from '../contracts/GameConfig';
 
 export class EnemyShooterConfig {
   private constructor() {}

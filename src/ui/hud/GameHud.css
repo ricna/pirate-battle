@@ -1,0 +1,216 @@
+/*
+ * Gameplay HUD reproducing assets/sample.png.
+ * Every length is a pixel of that 1800×1000 reference multiplied by --hud-px (defined on .game),
+ * measured by matching the retina HUD pieces against the reference. Elements keep their distance
+ * to the screen corner they belong to, so the arena can fill any landscape viewport.
+ */
+
+.match-hud,
+.touch-cluster,
+.hud-studio-logo {
+  position: absolute;
+  z-index: 2;
+}
+
+.match-hud {
+  inset: 0 0 auto;
+  height: 0;
+  pointer-events: none;
+}
+
+.match-hud > * {
+  position: absolute;
+  margin: 0;
+  pointer-events: auto;
+}
+
+.match-hud strong {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hud-heart {
+  left: calc(28 * var(--hud-px));
+  top: calc(34 * var(--hud-px));
+  width: calc(56 * var(--hud-px));
+  height: calc(56 * var(--hud-px));
+}
+
+.hud-health {
+  left: calc(93 * var(--hud-px));
+  top: calc(32 * var(--hud-px));
+  width: calc(320 * var(--hud-px));
+  height: calc(60 * var(--hud-px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url('../../../assets/png/retina/ui/hud/health_frame.png') center / 100% 100% no-repeat;
+}
+
+/* The fill art shares the frame's canvas; its clip-path reveals the authored fill_rect from the left. */
+.hud-health-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hud-health strong {
+  position: relative;
+  font-size: calc(18 * var(--hud-px));
+  color: #ffffff;
+  text-shadow: 0 calc(1 * var(--hud-px)) calc(2 * var(--hud-px)) #0c2410b3;
+}
+
+.hud-counter {
+  top: calc(31 * var(--hud-px));
+  width: calc(174 * var(--hud-px));
+  height: calc(62 * var(--hud-px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 * var(--hud-px));
+  background: url('../../../assets/png/retina/ui/hud/counter_panel.png') center / 100% 100% no-repeat;
+}
+
+.hud-score {
+  right: calc(303 * var(--hud-px));
+}
+
+.hud-time {
+  right: calc(112 * var(--hud-px));
+}
+
+.hud-counter img {
+  width: calc(36 * var(--hud-px));
+  height: calc(36 * var(--hud-px));
+}
+
+.hud-counter strong {
+  font-size: calc(24 * var(--hud-px));
+  color: #fff4d6;
+}
+
+.hud-health.critical strong,
+.hud-counter.critical strong {
+  color: #ffb8a3;
+}
+
+.hud-counter.score-pulse strong {
+  color: #fff4b0;
+  text-shadow: 0 0 calc(10 * var(--hud-px)) #f4d063;
+}
+
+/*
+ * Round buttons. The reference darkens a thin disc around each button; the authored PNG leaves that
+ * ring transparent, so the element's circular background tint shows through it.
+ */
+.hud-round-button {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: url('../../../assets/png/retina/ui/controls/button_round_normal.png') center / 100% 100% no-repeat;
+  background-color: rgb(8 32 48 / 14%);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.hud-round-button:hover {
+  background-image: url('../../../assets/png/retina/ui/controls/button_round_hover.png');
+}
+
+.hud-round-button:active,
+.hud-round-button[data-held='true'] {
+  background-image: url('../../../assets/png/retina/ui/controls/button_round_pressed.png');
+}
+
+.hud-round-button:disabled {
+  opacity: 0.6;
+}
+
+.hud-round-button img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hud-pause {
+  right: calc(28 * var(--hud-px));
+  top: calc(28 * var(--hud-px));
+  width: calc(68 * var(--hud-px));
+  height: calc(68 * var(--hud-px));
+}
+
+.hud-pause img {
+  width: calc(26 * var(--hud-px));
+  height: calc(26 * var(--hud-px));
+}
+
+/* Each cluster is the 244×121 box spanned by its three 76-pixel buttons on the reference. */
+.touch-cluster {
+  bottom: calc(52 * var(--hud-px));
+  width: calc(244 * var(--hud-px));
+  height: calc(121 * var(--hud-px));
+  touch-action: none;
+}
+
+.touch-cluster-movement {
+  left: calc(28 * var(--hud-px));
+}
+
+.touch-cluster-weapons {
+  right: calc(28 * var(--hud-px));
+}
+
+.command {
+  width: calc(76 * var(--hud-px));
+  height: calc(76 * var(--hud-px));
+}
+
+.command img {
+  width: calc(30 * var(--hud-px));
+  height: calc(30 * var(--hud-px));
+}
+
+.command-left,
+.command-port {
+  left: 0;
+  bottom: 0;
+}
+
+.command-forward,
+.command-front {
+  left: calc(84 * var(--hud-px));
+  top: 0;
+}
+
+.command-right,
+.command-starboard {
+  right: 0;
+  bottom: 0;
+}
+
+/* Covers the button's navy face (inner 56% of the authored disc). */
+.weapon-cooldown {
+  position: absolute;
+  inset: 21.9%;
+  border-radius: 50%;
+  background: conic-gradient(rgb(4 10 18 / 72%) calc(var(--cooldown, 0) * 1turn), transparent 0);
+  pointer-events: none;
+}
+
+/* Same wordmark box as the menu, raised to its position on the gameplay reference. */
+.hud-studio-logo {
+  right: calc(79.5 * var(--hud-px));
+  bottom: calc(206.4 * var(--hud-px));
+  width: calc(142 * var(--hud-px));
+  pointer-events: none;
+}

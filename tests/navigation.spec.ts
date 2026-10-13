@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/config';
+import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/configuration/GameConfiguration';
 import { freezeConfiguration } from '../src/game/configuration/GameConfigFactory';
 import { CollisionWorld } from '../src/game/core/CollisionWorld';
-import { ShipKind } from '../src/game/domain';
-import { distance } from '../src/game/geometry';
-import type { Point } from '../src/game/geometry';
-import { Simulation } from '../src/game/simulation';
-import type { LoadedMap } from '../src/game/tiledMap';
+import { ShipKind } from '../src/game/contracts/GameDomain';
+import { distance } from '../src/game/math/Geometry';
+import type { Point } from '../src/game/math/Geometry';
+import { GameManager } from '../src/game/runtime/GameManager';
+import type { LoadedMap } from '../src/game/assets/TiledMapLoader';
 
 // Domain-only fixture: real authored map geometry; no rendering or substitute runtime assets.
 function map(): LoadedMap {
@@ -44,7 +44,7 @@ for (const kind of [ShipKind.Chaser, ShipKind.Shooter]) {
     const base = createGameConfig(DEFAULT_OPTIONS);
     const config = freezeConfiguration({ ...base, playerSpawn: coastHuggingPlayer, spawnPoints: [hiddenSpawn],
       spawning: { ...base.spawning, maxCount: 1, initialSequence: [kind] } });
-    const simulation = new Simulation(config, map());
+    const simulation = new GameManager(config, map());
     const seconds = 25;
     for (let step = 0; step < seconds / config.fixedStep && simulation.player.health === config.player.health; step++) {
       simulation.step(config.fixedStep, new Set());
@@ -58,7 +58,7 @@ test('a crowded seeded battle keeps enemies sailing instead of pinned to coasts 
   const base = createGameConfig({ ...DEFAULT_OPTIONS, sessionSeconds: 180, spawnSeconds: 2 });
   // Authored-profile edit only: a resilient player keeps the full enemy cap on the water for the whole sample.
   const config = freezeConfiguration({ ...base, player: { ...base.player, health: 1e6 } });
-  const simulation = new Simulation(config, map());
+  const simulation = new GameManager(config, map());
   const windowSeconds = 2;
   const minimumProgress = 25;
   const samples = new Map<number, { point: Point; elapsed: number }[]>();

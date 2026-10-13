@@ -1,13 +1,13 @@
-import { Allegiance } from '../domain';
-import type { ProjectileProfile } from '../configuration/types';
+import { Allegiance } from '../contracts/GameDomain';
+import type { ProjectileProfile } from '../contracts/GameConfig';
 import type { ProjectileFactory } from '../factories/ProjectileFactory';
 import type { Projectile, ProjectileReadView } from '../entities/Projectile';
 import type { Ship } from '../entities/Ship';
 import type { ICollisionWorld } from '../core/CollisionWorld';
-import { segmentCircle } from '../geometry';
-import type { Point } from '../geometry';
-import { ImpactKind } from '../presentation/events';
-import type { ImpactKind as ProjectileImpactKind } from '../presentation/events';
+import { segmentCircle } from '../math/Geometry';
+import type { Point } from '../math/Geometry';
+import { ImpactKind } from '../contracts/FeedbackEvent';
+import type { ImpactKind as ProjectileImpactKind } from '../contracts/FeedbackEvent';
 
 export interface IProjectileEmitter {
   readonly available: number;

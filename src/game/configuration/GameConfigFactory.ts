@@ -1,11 +1,11 @@
-import { Allegiance } from '../domain';
+import { Allegiance } from '../contracts/GameDomain';
 import type { EnemyRegistration } from '../factories/ShipFactory';
 import { FactoryConfig } from './FactoryConfig';
 import { GameDefaults } from './GameDefaults';
 import { PlayerShipConfig } from './PlayerShipConfig';
 import { CollisionConfig } from './CollisionConfig';
 import { PresentationConfig, ParticleKind } from './PresentationConfig';
-import type { GameConfig, ShipProfile } from './types';
+import type { GameConfig, ShipProfile } from '../contracts/GameConfig';
 import { freezeConfiguration } from '../core/Immutable';
 export { freezeConfiguration } from '../core/Immutable';
 

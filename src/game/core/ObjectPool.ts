@@ -1,4 +1,4 @@
-import type { PoolProfile } from '../configuration/types';
+import type { PoolProfile } from '../contracts/GameConfig';
 
 export interface PoolStatistics { readonly capacity: number; readonly active: number; readonly available: number; readonly peak: number; readonly exhausted: number }
 /** Bounded, lazily growing pool. Foreign/double releases are programming errors. */

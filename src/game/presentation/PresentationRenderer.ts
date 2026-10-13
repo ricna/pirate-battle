@@ -1,8 +1,8 @@
 import { Container, Sprite, Text } from 'pixi.js';
 import { ObjectPool } from '../core/ObjectPool';
 import { SpritePool } from '../rendering/SpritePool';
-import { requiredTexture } from '../assets';
-import type { GameTextures } from '../assets';
+import { requiredTexture } from '../assets/GameTextureLibrary';
+import type { GameTextures } from '../assets/GameTextureLibrary';
 import type { PresentationProfile } from '../configuration/PresentationConfig';
 import { ParticleKind } from '../configuration/PresentationConfig';
 import type { PresentationReadView } from './PresentationSystem';

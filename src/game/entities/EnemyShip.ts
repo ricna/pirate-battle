@@ -1,9 +1,9 @@
 import type { ICollisionWorld } from '../core/CollisionWorld';
-import type { AiProfile, ShipProfile } from '../configuration/types';
-import { angleDifference, angleTo, distance, segmentCircle } from '../geometry';
-import type { Point } from '../geometry';
-import type { Action } from '../domain';
-import type { GameEvent } from '../domain';
+import type { AiProfile, ShipProfile } from '../contracts/GameConfig';
+import { angleDifference, angleTo, distance, segmentCircle } from '../math/Geometry';
+import type { Point } from '../math/Geometry';
+import type { Action } from '../contracts/GameDomain';
+import type { GameEvent } from '../contracts/GameDomain';
 import { Ship } from './Ship';
 import type { ShipReadView } from './Ship';
 

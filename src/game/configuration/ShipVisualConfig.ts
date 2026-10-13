@@ -1,5 +1,5 @@
 import { freezeStaticConfiguration } from '../core/Immutable';
-import type { ShipVisualProfile } from './types';
+import type { ShipVisualProfile } from '../contracts/GameConfig';
 
 export class ShipVisualConfig {
   

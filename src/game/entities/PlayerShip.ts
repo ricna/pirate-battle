@@ -1,7 +1,7 @@
-import { Action } from '../domain';
+import { Action } from '../contracts/GameDomain';
 import type { ICollisionWorld } from '../core/CollisionWorld';
-import type { ShipProfile } from '../configuration/types';
-import type { Point } from '../geometry';
+import type { ShipProfile } from '../contracts/GameConfig';
+import type { Point } from '../math/Geometry';
 import { Ship } from './Ship';
 
 export class PlayerShip extends Ship {

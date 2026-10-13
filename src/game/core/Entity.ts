@@ -1,4 +1,4 @@
-import type { Point } from '../geometry';
+import type { Point } from '../math/Geometry';
 
 export abstract class Entity implements Point {
   #id: number; #x: number; #y: number;
@@ -8,8 +8,4 @@ export abstract class Entity implements Point {
   get y(): number { return this.#y; }
   protected setPosition(position: Readonly<Point>): void { this.#x = position.x; this.#y = position.y; }
   protected resetIdentity(id: number, position: Readonly<Point>): void { this.#id = id; this.setPosition(position); }
-}
-export class EntityIdSequence {
-  #next = 0;
-  next(): number { return this.#next++; }
 }

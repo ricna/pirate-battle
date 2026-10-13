@@ -1,5 +1,5 @@
 import { freezeStaticConfiguration } from '../core/Immutable';
-import { Action } from '../domain';
+import { Action } from '../contracts/GameDomain';
 
 export class InputConfig {
   private constructor() {}

@@ -1,7 +1,7 @@
 import { PlayerShip } from '../entities/PlayerShip';
 import type { EnemyShip } from '../entities/EnemyShip';
-import type { GameConfig, ShipProfile } from '../configuration/types';
-import type { Point } from '../geometry';
+import type { GameConfig, ShipProfile } from '../contracts/GameConfig';
+import type { Point } from '../math/Geometry';
 import { freezeConfiguration } from '../core/Immutable';
 
 export interface EnemyRegistration {

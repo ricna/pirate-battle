@@ -1,6 +1,6 @@
 import { EnemyShip } from './EnemyShip';
 import type { EnemyContext } from './EnemyShip';
-import { GameEvent } from '../domain';
+import { GameEvent } from '../contracts/GameDomain';
 
 export class EnemyChaser extends EnemyShip {
   override update(context: EnemyContext): void {

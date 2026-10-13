@@ -1,7 +1,7 @@
 import { freezeStaticConfiguration } from '../core/Immutable';
-import { Allegiance, ShipKind } from '../domain';
+import { Allegiance, ShipKind } from '../contracts/GameDomain';
 import { ShipVisualConfig } from './ShipVisualConfig';
-import type { ShipProfile } from './types';
+import type { ShipProfile } from '../contracts/GameConfig';
 
 export class EnemyChaserConfig {
   private constructor() {}

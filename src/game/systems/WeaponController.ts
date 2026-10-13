@@ -1,8 +1,8 @@
-import type { WeaponProfile } from '../configuration/types';
-import type { Action } from '../domain';
+import type { WeaponProfile } from '../contracts/GameConfig';
+import type { Action } from '../contracts/GameDomain';
 import type { Ship } from '../entities/Ship';
 import type { IProjectileEmitter } from './ProjectileSystem';
-import type { Point } from '../geometry';
+import type { Point } from '../math/Geometry';
 
 /** Independent mount cooldowns; pool exhaustion defers the complete salvo, never a partial broadside. */
 export class WeaponController {

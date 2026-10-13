@@ -1,15 +1,15 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { AudioConfig } from '../src/game/configuration/AudioConfig';
-import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/config';
+import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/configuration/GameConfiguration';
 import { GameConfigFactory } from '../src/game/configuration/GameConfigFactory';
 import { ParticleKind } from '../src/game/configuration/PresentationConfig';
 import { CollisionWorld } from '../src/game/core/CollisionWorld';
 import { PresentationSystem } from '../src/game/presentation/PresentationSystem';
-import { FeedbackKind } from '../src/game/presentation/events';
-import { Allegiance, Action } from '../src/game/domain';
-import { Simulation } from '../src/game/simulation';
-import type { LoadedMap } from '../src/game/tiledMap';
+import { FeedbackKind } from '../src/game/contracts/FeedbackEvent';
+import { Allegiance, Action } from '../src/game/contracts/GameDomain';
+import { GameManager } from '../src/game/runtime/GameManager';
+import type { LoadedMap } from '../src/game/assets/TiledMapLoader';
 
 function map(): LoadedMap {
   const json = JSON.parse(readFileSync('assets/maps/arena_00.tmj', 'utf8'));
@@ -51,7 +51,7 @@ test('sinking emits 2–5 crew once, exercises six variants, remains on water an
 
 test('cosmetic events never modify combat, read ports omit commands and pause freezes all presentation', () => {
   const config = createGameConfig(DEFAULT_OPTIONS);
-  const game = new Simulation(config, map());
+  const game = new GameManager(config, map());
   for (let step = 0; step < 30; step++) game.step(config.fixedStep, new Set([Action.Forward, Action.Front]));
   expect(game.presentation.particles.some((particle) => String(particle.kind) === 'wake')).toBe(false);
   expect(game.presentation.particles.some((particle) => particle.kind === ParticleKind.Trail)).toBe(true);

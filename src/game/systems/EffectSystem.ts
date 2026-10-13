@@ -1,10 +1,10 @@
 import { ObjectPool } from '../core/ObjectPool';
-import type { EntityIdSequence } from '../core/Entity';
+import type { EntityIdSequence } from '../core/EntityIdSequence';
 import { Effect } from '../entities/Effect';
 import type { EffectReadView } from '../entities/Effect';
-import type { EffectKind } from '../domain';
-import type { GameConfig } from '../configuration/types';
-import type { Point } from '../geometry';
+import type { EffectKind } from '../contracts/GameDomain';
+import type { GameConfig } from '../contracts/GameConfig';
+import type { Point } from '../math/Geometry';
 
 export class EffectSystem {
   readonly #pool: ObjectPool<Effect>; readonly #config: GameConfig; readonly #ids: EntityIdSequence;

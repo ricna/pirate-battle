@@ -4,31 +4,31 @@
 
 `main.tsx` starts MSW, then mounts React with a shared TanStack Query provider. `App.tsx` owns screens, persisted options, the current recursively frozen match configuration, the last result and the pending submission queue. Gameplay is loaded lazily, reducing work before Play.
 
-React authors the canvas, menus, forms, dialogs, semantic HUD and touch buttons. Pixi owns rendering resources attached to that canvas. A match owns one `Simulation`, `InputController`, `MapRenderer`, `ArenaRenderer`, animation-frame loop and ResizeObserver. React never mirrors the continuously changing entity collections.
+React authors the canvas, menus, forms, dialogs, semantic HUD and touch buttons. Pixi owns rendering resources attached to that canvas. A match owns one `GameManager`, `InputController`, `MapRenderer`, `ArenaRenderer`, animation-frame loop and ResizeObserver. React never mirrors the continuously changing entity collections.
 
 | Module | Responsibility |
 | --- | --- |
-| game/configuration | Static authored profiles, factory registrations, validation and frozen snapshots |
-| game/tiledMap | Validated authored-map/tileset/image loading and progress |
-| game/mapRenderer | Authored tile composition at integer resolution, single cached map surface, Tiled flip transforms |
-| game/simulation | Encapsulated match aggregate coordinating entities and systems |
+| game/configuration/GameConfigurationuration | Static authored profiles, factory registrations, validation and frozen snapshots |
+| game/assets/TiledMapLoader | Validated authored-map/tileset/image loading and progress |
+| game/rendering/MapRenderer | Authored tile composition at integer resolution, single cached map surface, Tiled flip transforms |
+| game/runtime/GameManager | Encapsulated match aggregate coordinating entities and systems |
 | game/entities | Entity/Ship inheritance, player/enemy behaviours, projectile and effect lifecycles |
 | game/core, factories, systems | Collision-world interface, bounded pools, registered construction, weapons, spawning, damage and match state |
-| game/geometry | Circle/rectangle contacts, swept projectile intersections and BFS grid routes (nearest reachable cell when the target cell is blocked) |
-| game/input | Gameplay-scoped keyboard and independent touch sources |
-| game/renderer | Ships, health, deterioration, cannonballs and effects from explicit PNGs |
-| game/audio | Cached Web Audio buffers, bounded voices, loop and lifecycle control |
+| game/math/Geometry | Circle/rectangle contacts, swept projectile intersections and BFS grid routes (nearest reachable cell when the target cell is blocked) |
+| game/input/InputController | Gameplay-scoped keyboard and independent touch sources |
+| game/rendering/ArenaRenderer | Ships, health, deterioration, cannonballs and effects from explicit PNGs |
+| game/audio/AudioManager | Cached Web Audio buffers, bounded voices, loop and lifecycle control |
 | ui/GameCanvas | Initialization, resize, fixed-step accumulator, pause events and low-frequency snapshots |
 | ui/GameHud | Full-screen overlay HUD from `assets/sample.png`: health bar, score, clock, pause and the two touch clusters with weapon cooldown faces |
-| data/contracts, api, network, storage | Typed REST records, Axios/Query, MSW and persistence |
+| application/records/MatchRecord, api, network, storage | Typed REST records, Axios/Query, MSW and persistence |
 
-## Simulation clock and input
+## GameManager clock and input
 
-The render loop uses `requestAnimationFrame`; elapsed wall time enters a fixed-step accumulator. Simulation runs at 1/60s independently of rendered FPS. Individual real-time frames are capped at 250ms to avoid a spiral after browser stalls. Hidden/focus-lost sessions pause, reset the accumulator and clear all input; resuming always requires a user action. Remaining time, projectile lifetime, effects, AI and cooldowns all use active simulation time.
+The render loop uses `requestAnimationFrame`; elapsed wall time enters a fixed-step accumulator. GameManager runs at 1/60s independently of rendered FPS. Individual real-time frames are capped at 250ms to avoid a spiral after browser stalls. Hidden/focus-lost sessions pause, reset the accumulator and clear all input; resuming always requires a user action. Remaining time, projectile lifetime, effects, AI and cooldowns all use active simulation time.
 
 Keyboard listeners belong to the focusable gameplay region, and ignore form/button events. An input-source map permits several keys and pointer contacts to contribute commands independently. Pointer capture, pointer cancellation, blur and pause release input. Accessible touch buttons also respond to Enter/Space while focused.
 
-React receives a semantic snapshot approximately 4Hz. Loading, pause and end transitions publish immediately. Position, speed, health, projectiles and AI paths live in private entity/system fields; Simulation coordinates them through commands. React does not render every simulation step.
+React receives a semantic snapshot approximately 4Hz. Loading, pause and end transitions publish immediately. Position, speed, health, projectiles and AI paths live in private entity/system fields; GameManager coordinates them through commands. React does not render every simulation step.
 
 ## Arena and resource loading
 
@@ -40,7 +40,7 @@ The complete 2048×1152 arena is uniformly fitted into the available canvas. Res
 
 `Entity` encapsulates ID/position. Abstract `Ship` adds health, angle, speed, a frozen profile and protected steering/movement. `PlayerShip` interprets input. Abstract `EnemyShip` owns navigation state; `EnemyChaser` and `EnemyShooter` override the update contract. Projectile and Effect inherit Entity and have explicit pooled activation/reset lifecycles. Private state uses JavaScript `#` fields; read ports are frozen getter facades without gameplay mutation methods.
 
-Movement integrates configured acceleration or braking per fixed step and clamps to each profile's maximum. Cooldowns belong to per-ship WeaponControllers, independently keyed by mount. Enemy behaviour uses an EnemyContext for required collision, target, firing and damage commands. Simulation and rendering do not branch on enemy IDs. FactoryConfig registers each explicit profile with its subclass; new types extend that registration and spawn weights. CollisionWorld implements ICollisionWorld, ShipFactory implements IShipFactory, and ProjectileSystem implements IProjectileEmitter.
+Movement integrates configured acceleration or braking per fixed step and clamps to each profile's maximum. Cooldowns belong to per-ship WeaponControllers, independently keyed by mount. Enemy behaviour uses an EnemyContext for required collision, target, firing and damage commands. GameManager and rendering do not branch on enemy IDs. FactoryConfig registers each explicit profile with its subclass; new types extend that registration and spawn weights. CollisionWorld implements ICollisionWorld, ShipFactory implements IShipFactory, and ProjectileSystem implements IProjectileEmitter.
 
 GameConfigFactory validates authored settings, clones profiles and freezes each match snapshot. Static classes separate PlayerShip, EnemyChaser, EnemyShooter, projectiles, visuals, input, audio and game defaults. Factories contain construction logic; FactoryConfig contains authored mappings. All gameplay tuning and runtime budgets reside in configuration classes; mathematical identities and algorithmic constants remain in algorithms. React components continue using their framework's function/hook lifecycle.
 

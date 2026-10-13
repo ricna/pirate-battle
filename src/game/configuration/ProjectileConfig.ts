@@ -1,5 +1,5 @@
 import { freezeStaticConfiguration } from '../core/Immutable';
-import type { ProjectileProfile } from './types';
+import type { ProjectileProfile } from '../contracts/GameConfig';
 
 export class ProjectileConfig {
   private constructor() {}

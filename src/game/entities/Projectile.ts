@@ -1,7 +1,7 @@
 import { Entity } from '../core/Entity';
-import type { ProjectileProfile } from '../configuration/types';
-import type { Allegiance } from '../domain';
-import type { Point } from '../geometry';
+import type { ProjectileProfile } from '../contracts/GameConfig';
+import type { Allegiance } from '../contracts/GameDomain';
+import type { Point } from '../math/Geometry';
 import { freezeConfiguration } from '../core/Immutable';
 
 export interface ProjectileSnapshot extends Point { readonly id: number; readonly vx: number; readonly vy: number;

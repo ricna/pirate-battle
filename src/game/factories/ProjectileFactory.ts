@@ -1,9 +1,9 @@
 import { Projectile } from '../entities/Projectile';
 import { ObjectPool } from '../core/ObjectPool';
-import type { PoolProfile, ProjectileProfile } from '../configuration/types';
-import type { Allegiance } from '../domain';
-import type { Point } from '../geometry';
-import type { EntityIdSequence } from '../core/Entity';
+import type { PoolProfile, ProjectileProfile } from '../contracts/GameConfig';
+import type { Allegiance } from '../contracts/GameDomain';
+import type { Point } from '../math/Geometry';
+import type { EntityIdSequence } from '../core/EntityIdSequence';
 
 export class ProjectileFactory {
   readonly #pool: ObjectPool<Projectile>; readonly #ids: EntityIdSequence;

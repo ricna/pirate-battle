@@ -2,8 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './data/api';
-import { startNetwork } from './data/network';
+import { queryClient } from './infrastructure/network/RecordsApi';
+import { startNetwork } from './infrastructure/network/NetworkSimulator';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Required React root is missing.');

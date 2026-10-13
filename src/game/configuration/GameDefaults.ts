@@ -1,5 +1,5 @@
 import { freezeStaticConfiguration } from '../core/Immutable';
-import { EffectKind, ShipKind } from '../domain';
+import { EffectKind, ShipKind } from '../contracts/GameDomain';
 
 // Edit source defaults here. Options are deliberately limited to the challenge's public settings.
 export class GameDefaults {

@@ -5,7 +5,7 @@ import type { EnemyRegistration } from '../factories/ShipFactory';
 import { EnemyChaserConfig } from './EnemyChaserConfig';
 import { EnemyShooterConfig } from './EnemyShooterConfig';
 
-/** Composition root: register another profile + subclass here, without editing Simulation or renderer. */
+/** Composition root: register another profile + subclass here, without editing GameManager or renderer. */
 export class FactoryConfig {
   private constructor() {}
   static readonly Enemies: readonly EnemyRegistration[] = [

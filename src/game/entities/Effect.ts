@@ -1,7 +1,7 @@
 import { Entity } from '../core/Entity';
-import type { EffectProfile } from '../configuration/types';
-import type { EffectKind } from '../domain';
-import type { Point } from '../geometry';
+import type { EffectProfile } from '../contracts/GameConfig';
+import type { EffectKind } from '../contracts/GameDomain';
+import type { Point } from '../math/Geometry';
 export interface EffectReadView extends Point { readonly id: number; readonly kind: EffectKind;
   readonly profile: EffectProfile; readonly angle: number; readonly age: number; readonly duration: number }
 

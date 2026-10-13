@@ -1,8 +1,8 @@
 import { CollisionWorld } from './CollisionWorld';
-import type { LoadedMap } from '../tiledMap';
-import type { GameConfig } from '../configuration/types';
-import { segmentCircle } from '../geometry';
-import type { Point } from '../geometry';
+import type { LoadedMap } from '../assets/TiledMapLoader';
+import type { GameConfig } from '../contracts/GameConfig';
+import { segmentCircle } from '../math/Geometry';
+import type { Point } from '../math/Geometry';
 
 export interface CollisionBody extends Point {
   readonly id: number;

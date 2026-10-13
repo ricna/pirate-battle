@@ -110,7 +110,7 @@ test('missing ship atlas fails visibly and can be loaded on retry', async ({ pag
 });
 test('failed lazy engine module has an accessible error and reload recovery', async ({ page }) => {
   let fail = true;
-  await page.context().route('**/src/ui/GameCanvas.tsx*', async (route) => {
+  await page.context().route('**/src/ui/game/GameCanvas.tsx*', async (route) => {
     if (fail) { fail = false; await route.fulfill({ status: 503, body: 'Unavailable' }); } else await route.continue();
   });
   await page.getByRole('button', { name: 'Play', exact: true }).click();

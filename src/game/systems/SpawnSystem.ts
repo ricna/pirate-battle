@@ -1,6 +1,6 @@
-import type { GameConfig } from '../configuration/types';
-import type { Point } from '../geometry';
-import { distance } from '../geometry';
+import type { GameConfig } from '../contracts/GameConfig';
+import type { Point } from '../math/Geometry';
+import { distance } from '../math/Geometry';
 import type { Ship } from '../entities/Ship';
 
 export class SpawnSystem {

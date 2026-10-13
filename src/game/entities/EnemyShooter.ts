@@ -1,4 +1,4 @@
-import { Action } from '../domain';
+import { Action } from '../contracts/GameDomain';
 import { EnemyShip } from './EnemyShip';
 import type { EnemyContext } from './EnemyShip';
 

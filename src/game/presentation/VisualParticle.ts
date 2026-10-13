@@ -1,7 +1,7 @@
 import { Entity } from '../core/Entity';
 import type { ICollisionWorld } from '../core/CollisionWorld';
 import type { ParticleKind, ParticleProfile } from '../configuration/PresentationConfig';
-import type { Point } from '../geometry';
+import type { Point } from '../math/Geometry';
 
 export interface ParticleActivation {
   readonly id: number;

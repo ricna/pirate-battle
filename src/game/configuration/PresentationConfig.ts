@@ -1,5 +1,5 @@
 import { freezeStaticConfiguration } from '../core/Immutable';
-import type { PoolProfile } from './types';
+import type { PoolProfile } from '../contracts/GameConfig';
 
 export const ParticleKind = {
   Crew: 'crew', Debris: 'debris', Trail: 'trail', Splash: 'splash', Wreck: 'wreck',

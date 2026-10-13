@@ -1,5 +1,5 @@
-import { EndReason, MatchStatus } from '../domain';
-import type { GameConfig } from '../configuration/types';
+import { EndReason, MatchStatus } from '../contracts/GameDomain';
+import type { GameConfig } from '../contracts/GameConfig';
 
 export class MatchState {
   readonly #config: GameConfig; #status: MatchStatus = MatchStatus.Playing;
@@ -11,7 +11,7 @@ export class MatchState {
   get reason(): EndReason | null { return this.#reason; }
   get remaining(): number { return Math.max(0, this.#config.sessionSeconds - this.#elapsed); }
   advance(dt: number): number {
-    if (!Number.isFinite(dt) || dt < 0) throw new Error('Simulation step must be finite and non-negative.');
+    if (!Number.isFinite(dt) || dt < 0) throw new Error('GameManager step must be finite and non-negative.');
     if (this.#status !== MatchStatus.Playing) return 0;
     const budget = Math.min(dt, this.remaining); this.#elapsed += budget; return budget;
   }

@@ -32,8 +32,18 @@ The owner initially asked to implement each step manually, then authorized auton
 
 ## 3. Readability and maintainability
 
+### Accepted team convention — 13 October 2026
+
+The owner authorized a comprehensive structural refactor and continuous OST integration. Use PascalCase for source module filenames, matching the primary class or React component; contract and pure-function modules use a descriptive PascalCase domain name. `main.tsx` and `vite-env.d.ts` are framework entry/declaration exceptions. Hooks retain React's `use` function prefix and live in PascalCase modules under `ui/hooks`.
+
+Keep folders lowercase and group them by responsibility: `application` composes services and application workflows; `game` owns configuration, contracts, entities, systems, factories, runtime, input, math, assets, rendering and presentation; `infrastructure` owns network and storage adapters; `ui` owns screens, components, HUD, game views and hooks. Public classes/components have individual modules. Do not keep legacy re-export paths after migration.
+
+`GameManager` coordinates domain systems per match. `GameSession` owns browser/Pixi match resources and the fixed-step/render lifecycle. `AudioManager` coordinates dedicated sound-effect and music players for the application lifetime. Managers delegate to focused classes; a manager name does not authorize unrelated responsibilities. Browser services are constructed at the application composition root and injected into React/runtime collaborators. React components and hooks remain idiomatic.
+
+The authored MP3 plays continuously across menus, gameplay, pause, results and restarts after a user gesture, with its own persisted Music volume under the master Sound/Volume controls. Match teardown stops match effects/ambience but does not reset the application's music.
+
 - Use descriptive English names tied to domain responsibilities. Prefer `WeaponController`, `ShipProfile` and `applyDamage` to generic managers, abbreviated variables or vague utility bags.
-- Give each module/class one cohesive responsibility. Split responsibilities when their reasons to change differ; avoid both a giant Simulation and gratuitous layers with no purpose.
+- Give each module/class one cohesive responsibility. Split responsibilities when their reasons to change differ; avoid both a giant GameManager and gratuitous layers with no purpose.
 - Write readable, formatted code with clear control flow. Do not compress several fields, unrelated statements or entire methods onto one line in new or rewritten code. Existing compact code is not the readability target.
 - Keep functions focused. Use guard clauses and named helpers when they clarify intent. Document the reason for a non-obvious algorithm, invariant, unit or resource lifetime, rather than narrating every statement.
 - Keep data definitions separate from algorithms. A reviewer must find a ship's speed, sprite and weapons without searching through movement, rendering or AI code.
@@ -72,7 +82,7 @@ Entity
 └── Effect
 ```
 
-`Entity` owns identity/position. `Ship` owns common health and movement invariants. `EnemyShip` owns shared navigation behavior. Concrete ships specialize their update behavior. A ship has a weapon controller; it does not inherit from one. Simulation coordinates systems instead of implementing every rule itself.
+`Entity` owns identity/position. `Ship` owns common health and movement invariants. `EnemyShip` owns shared navigation behavior. Concrete ships specialize their update behavior. A ship has a weapon controller; it does not inherit from one. GameManager coordinates systems instead of implementing every rule itself.
 
 React components retain functional components and hooks. Pure geometry functions and serialized data interfaces remain appropriate. Do not convert every function, DTO, component or hook into a class to claim “100% OOP.” Complete encapsulation means controlled state ownership, not mandatory inheritance everywhere.
 
@@ -80,8 +90,8 @@ React components retain functional components and hooks. Pure geometry functions
 
 | Principle | Required application in this project |
 | --- | --- |
-| Single responsibility | Entity state, weapons, spawn, damage, effects, collision, rendering, audio, network and UI have distinct owners. Simulation orchestrates them. |
-| Open/closed | Add a normal enemy subtype through a profile, subclass and factory registration. Do not scatter enemy-ID branches throughout Simulation or renderer. A genuinely new capability may require an explicit contract extension. |
+| Single responsibility | Entity state, weapons, spawn, damage, effects, collision, rendering, audio, network and UI have distinct owners. GameManager orchestrates them. |
+| Open/closed | Add a normal enemy subtype through a profile, subclass and factory registration. Do not scatter enemy-ID branches throughout GameManager or renderer. A genuinely new capability may require an explicit contract extension. |
 | Liskov substitution | Any registered EnemyShip obeys the same update, movement, life and cleanup contracts. It must not weaken invariants or surprise callers with incompatible behavior. |
 | Interface segregation | Keep contracts small and role-specific, following ICollisionWorld, IShipFactory, IProjectileEmitter and read views. Avoid a service exposing all internals to every consumer. |
 | Dependency inversion | Domain behavior uses injected contracts/context commands. Do not import React, Pixi, Axios, browser storage or Web Audio into entity behavior to perform infrastructure work. |
@@ -92,7 +102,7 @@ Use manual constructor/context injection at the composition root. Add abstractio
 
 Static configuration classes are our equivalent of authored ScriptableObject data. They contain recipes/defaults, not active runtime instances. Constructors/factories turn profiles into instances with independent state.
 
-| Location under `src/game/configuration/` | Owner of the data |
+| Location under `src/game/configuration/GameConfigurationuration/` | Owner of the data |
 | --- | --- |
 | `PlayerShipConfig.ts` | Player health, collider, movement and weapon mounts |
 | `EnemyChaserConfig.ts` | Chaser movement, health, ram/AI data and loadout |
@@ -157,7 +167,7 @@ For a new weapon/projectile, author a profile and mount, then use the existing e
 - Expose read-only statistics: capacity, active, available, peak and exhaustion. Size budgets from firing rate, barrel count, TTL and active enemy cap, then measure the actual build.
 - Dispose all match-owned logical/visual objects at teardown. Pooled inactive objects do not justify retaining an abandoned match.
 
-## 9. Simulation, input, collision and AI
+## 9. GameManager, input, collision and AI
 
 - Run gameplay on the configured fixed step, independently of render FPS. Use the capped accumulator for real-time frames. HUD updates remain low-frequency snapshots, not one React state update per entity per simulation step.
 - Use active simulation time for match duration, cooldowns, navigation, projectile TTL and effects. Pause freezes these and momentum. Clear input and accumulated wall time on pause/resume; resume requires a user action.
@@ -188,9 +198,9 @@ For a new weapon/projectile, author a profile and mount, then use the existing e
 ## 11. React, Pixi and lifecycle ownership
 
 - React owns canvas markup, menus, forms, dialogs, HUD and touch controls. CSS owns presentation/layout. Pixi owns the arena and in-world entity indicators attached to that canvas. Do not implement required React menu screens entirely in Pixi.
-- UI renders semantic state and sends input/application commands. It must not directly mutate ship instances, advance combat rules through network callbacks or duplicate Simulation state as mutable React entity lists.
+- UI renders semantic state and sends input/application commands. It must not directly mutate ship instances, advance combat rules through network callbacks or duplicate GameManager state as mutable React entity lists.
 - Domain entities/systems must not depend on browser rendering APIs. Renderer reads domain views and manages its own Pixi state; moving a sprite does not move the domain entity.
-- Each match owns Simulation, input controller, renderers, animation loop, observers/listeners and match resources. Application-level decoded textures/audio caches have intentionally different lifetimes.
+- Each match owns GameManager, input controller, renderers, animation loop, observers/listeners and match resources. Application-level decoded textures/audio caches have intentionally different lifetimes.
 - Async initialization must tolerate React Strict Mode, unmount during loading, retry and restart. Serialize setup as necessary, cancel requests and check disposal after awaits. Clean up failed/abandoned partial setup.
 - Cleanup cancels RAF, disconnects observers, removes listeners, clears input, stops match loops, releases pools and destroys match-owned containers/subtextures/map surfaces/application resources.
 - Destroy owned texture frames/render surfaces without destroying shared base image sources. Release retiring GPU-context resources through supported Pixi APIs while preserving intentional decoded-image caches.
@@ -347,7 +357,7 @@ The owner replaced the water splash art with a PNG manually authored in Krita. `
 The owner required the gameplay screen to match `assets/sample.png` exactly, including the mobile buttons and the HUD in general:
 
 - The arena fills the viewport; there is no frame, header bar, footer or button captions. The map keeps its uniform contain fit and the deep-water tiling sprite extends under any letterbox area, as the owner chose on 13 October 2026 after comparing it with letterbox bands. Known trade-off: on screens whose proportion differs from the map, the ship stops at the authored map bounds while water continues beyond them.
-- The HUD is a React overlay (`src/ui/GameHud.tsx`, `GameHud.css`) using the retina HUD pieces at positions/sizes measured by template-matching them against the reference: heart and health frame with `current / max` at the top left; score, `mm:ss` clock and pause at the top right; turn-left/forward/turn-right at the bottom left; left broadside/front cannon/right broadside at the bottom right; the Jungle Gaming wordmark above the weapon cluster.
+- The HUD is a React overlay (`src/ui/hud/GameHud.tsx`, `GameHud.css`) using the retina HUD pieces at positions/sizes measured by template-matching them against the reference: heart and health frame with `current / max` at the top left; score, `mm:ss` clock and pause at the top right; turn-left/forward/turn-right at the bottom left; left broadside/front cannon/right broadside at the bottom right; the Jungle Gaming wordmark above the weapon cluster.
 - Lengths use `--hud-px`, one reference pixel. It is exact at 1800×1000 and keeps at least 0.72 of the reference on small screens so touch buttons stay about 55 CSS pixels, unless the top row would not fit.
 - The health fill follows the atlas `fill_rect`/`clip_axis` and the player's authored fill stages. Weapon readiness darkens the button face clockwise while reloading; a ready weapon looks exactly like the reference. Keyboard controls remain documented in How To Play.
 

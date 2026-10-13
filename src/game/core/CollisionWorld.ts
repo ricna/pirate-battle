@@ -1,7 +1,8 @@
-import type { LoadedMap } from '../tiledMap';
-import { circleRect, Navigation, segmentRect } from '../geometry';
-import type { Point } from '../geometry';
-import type { GameConfig } from '../configuration/types';
+import type { LoadedMap } from '../assets/TiledMapLoader';
+import { circleRect, segmentRect } from '../math/Geometry';
+import { Navigation } from '../math/Navigation';
+import type { Point } from '../math/Geometry';
+import type { GameConfig } from '../contracts/GameConfig';
 
 export interface ICollisionWorld {
   readonly width: number; readonly height: number;

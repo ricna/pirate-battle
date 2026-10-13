@@ -1,8 +1,8 @@
 import { Entity } from '../core/Entity';
 import type { ICollisionWorld } from '../core/CollisionWorld';
-import type { ShipProfile } from '../configuration/types';
-import type { Allegiance } from '../domain';
-import type { Point } from '../geometry';
+import type { ShipProfile } from '../contracts/GameConfig';
+import type { Allegiance } from '../contracts/GameDomain';
+import type { Point } from '../math/Geometry';
 import { freezeConfiguration } from '../core/Immutable';
 
 export interface ShipSnapshot extends Point {

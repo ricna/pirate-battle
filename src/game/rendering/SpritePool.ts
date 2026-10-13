@@ -1,6 +1,6 @@
 import { Container, Sprite, Texture } from 'pixi.js';
 import { ObjectPool } from '../core/ObjectPool';
-import type { PoolProfile } from '../configuration/types';
+import type { PoolProfile } from '../contracts/GameConfig';
 
 /** Authored texture required. Sprites stay attached and hidden while inactive. */
 export class SpritePool {

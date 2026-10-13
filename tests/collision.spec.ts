@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/config';
+import { createGameConfig, DEFAULT_OPTIONS } from '../src/game/configuration/GameConfiguration';
 import { ShipCollisionWorld, ContactKind } from '../src/game/core/ShipCollisionWorld';
 import { PlayerShip } from '../src/game/entities/PlayerShip';
 import { EnemyShip } from '../src/game/entities/EnemyShip';
@@ -8,10 +8,10 @@ import type { EnemyContext } from '../src/game/entities/EnemyShip';
 import { EnemyShooterConfig } from '../src/game/configuration/EnemyShooterConfig';
 import { EnemyChaser } from '../src/game/entities/EnemyChaser';
 import { EnemyChaserConfig } from '../src/game/configuration/EnemyChaserConfig';
-import { Action, GameEvent } from '../src/game/domain';
-import { Simulation } from '../src/game/simulation';
-import { distance } from '../src/game/geometry';
-import type { LoadedMap } from '../src/game/tiledMap';
+import { Action, GameEvent } from '../src/game/contracts/GameDomain';
+import { GameManager } from '../src/game/runtime/GameManager';
+import { distance } from '../src/game/math/Geometry';
+import type { LoadedMap } from '../src/game/assets/TiledMapLoader';
 
 function map(): LoadedMap {
   const json = JSON.parse(readFileSync('assets/maps/arena_00.tmj', 'utf8'));
@@ -77,7 +77,7 @@ test('Chaser ram triggers on hull contact once without a credited kill', () => {
 
 test('island contact dissipates speed and does not spam impacts while held', () => {
   const config = createGameConfig(DEFAULT_OPTIONS);
-  const game = new Simulation(config, map());
+  const game = new GameManager(config, map());
   const events: GameEvent[] = [];
   for (let step = 0; step < 180; step++) {
     game.step(config.fixedStep, new Set([Action.Forward]));

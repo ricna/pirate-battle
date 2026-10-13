@@ -1,5 +1,5 @@
 import { freezeStaticConfiguration } from '../core/Immutable';
-import { GameEvent } from '../domain';
+import { GameEvent } from '../contracts/GameDomain';
 
 export class AudioConfig {
   private constructor() {}
@@ -54,6 +54,12 @@ export class AudioConfig {
   static readonly SailingThreshold = 0.02;
   static readonly Ocean = 'ocean_ambience_loop';
   static readonly Sailing = 'ship_sailing_loop';
+  static readonly Music = {
+    id:'pirate-adventure',
+    gain:0.2,
+  } as const; 
+
+
   static requiredSounds(): readonly string[] {
     const cues = Object.values(AudioConfig.Cues);
     const eventSounds = Object.values(AudioConfig.EventSounds).flat();

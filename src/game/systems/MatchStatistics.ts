@@ -1,5 +1,5 @@
-import { Allegiance } from '../domain';
-import type { Allegiance as ShipAllegiance } from '../domain';
+import { Allegiance } from '../contracts/GameDomain';
+import type { Allegiance as ShipAllegiance } from '../contracts/GameDomain';
 
 export interface StatisticsSnapshot {
   readonly cannonballsFired: number;

@@ -4,7 +4,7 @@
 
 Game defaults are authored TypeScript data in static configuration classes. The classes and their data are frozen at runtime; changes are made in source. They are the equivalent of source-controlled ScriptableObject profiles; they are not Unity assets or .NET assemblies. No Inspector, external server or environment variable is required. Edit the files, run the checks, and rebuild the static application.
 
-| File under `src/game/configuration/` | Editable defaults |
+| File under `src/game/configuration/GameConfigurationuration/` | Editable defaults |
 | --- | --- |
 | `PlayerShipConfig.ts` | Player health, circle radius, movement, weapon mounts and visual profile |
 | `EnemyChaserConfig.ts` | Chaser health, movement, navigation and ram damage |
@@ -19,7 +19,7 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | `PresentationConfig.ts` | Crew/debris/projectile-trail profiles, guaranteed crew capacity, cosmetic pools, recoil/tint/shake, floating labels, water animation and terminal/result durations; ship wake removed by owner request |
 | `AssetConfig.ts` | Shared default atlas sources and explicitly registered standalone authored textures |
 
-`config.ts` is an entry point, not a second balance table. `GameConfigFactory.create()` gathers the registered profiles, validates them, clones their data and recursively freezes the match snapshot. `Simulation` also isolates an externally supplied configuration. Objects passed to ships cannot remain mutable aliases to their original profiles.
+`config.ts` is an entry point, not a second balance table. `GameConfigFactory.create()` gathers the registered profiles, validates them, clones their data and recursively freezes the match snapshot. `GameManager` also isolates an externally supplied configuration. Objects passed to ships cannot remain mutable aliases to their original profiles.
 
 ## Example: change player movement
 
@@ -59,7 +59,7 @@ To add a different enemy behaviour:
 4. Add its ID and positive spawn weight to `GameDefaults.Spawning.weights`. Optionally include it in `initialSequence`.
 5. Check that every authored spawn accommodates its radius; run the checks below.
 
-Simulation, projectile collision/scoring and ArenaRenderer do not branch on enemy kind. `ShipFactory` uses the registration, the new subclass supplies behaviour, and its profile supplies rendering. The core tests demonstrate a third registered subclass without changing these systems.
+GameManager, projectile collision/scoring and ArenaRenderer do not branch on enemy kind. `ShipFactory` uses the registration, the new subclass supplies behaviour, and its profile supplies rendering. The core tests demonstrate a third registered subclass without changing these systems.
 
 The initial sequence guarantees the first successful enemy types; subsequent spawns use normalized positive weights. Player distance and existing-ship separation filter authored points. If all points are unsafe or the active cap is reached, that interval is skipped. No synthetic spawn position is created.
 

@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { createGameConfig, configurationKey, DEFAULT_OPTIONS } from '../src/game/config';
+import { createGameConfig, configurationKey, DEFAULT_OPTIONS } from '../src/game/configuration/GameConfiguration';
 import { GameConfigFactory, freezeConfiguration } from '../src/game/configuration/GameConfigFactory';
 import { FactoryConfig } from '../src/game/configuration/FactoryConfig';
 import { ProjectileConfig } from '../src/game/configuration/ProjectileConfig';
 import { EnemyChaserConfig } from '../src/game/configuration/EnemyChaserConfig';
 import { ObjectPool } from '../src/game/core/ObjectPool';
-import { EntityIdSequence } from '../src/game/core/Entity';
+import { EntityIdSequence } from '../src/game/core/EntityIdSequence';
 import { CollisionWorld } from '../src/game/core/CollisionWorld';
 import { ShipFactory } from '../src/game/factories/ShipFactory';
 import { ProjectileFactory } from '../src/game/factories/ProjectileFactory';
@@ -14,9 +14,9 @@ import { ProjectileSystem } from '../src/game/systems/ProjectileSystem';
 import { WeaponController } from '../src/game/systems/WeaponController';
 import { EnemyShip } from '../src/game/entities/EnemyShip';
 import type { EnemyContext } from '../src/game/entities/EnemyShip';
-import { Action, Allegiance } from '../src/game/domain';
-import { Simulation } from '../src/game/simulation';
-import type { LoadedMap } from '../src/game/tiledMap';
+import { Action, Allegiance } from '../src/game/contracts/GameDomain';
+import { GameManager } from '../src/game/runtime/GameManager';
+import type { LoadedMap } from '../src/game/assets/TiledMapLoader';
 import { GameDefaults } from '../src/game/configuration/GameDefaults';
 
 // Domain-only fixture: real authored map geometry; no rendering or substitute runtime assets.
@@ -38,7 +38,7 @@ test('configuration snapshots reject invalid profiles and identify edited balanc
   expect(original.player.movement.maxSpeed).toBe(230);
   const edited = { ...original, playerSpawn: { x: 1280, y: 1080 }, player: { ...original.player, movement: { ...original.player.movement, maxSpeed: 320 } } };
   expect(configurationKey(edited)).not.toBe(configurationKey(original));
-  const changedGame = new Simulation(edited, map()); changedGame.step(2, new Set([Action.Forward]));
+  const changedGame = new GameManager(edited, map()); changedGame.step(2, new Set([Action.Forward]));
   expect(changedGame.player.speed).toBe(320); changedGame.dispose();
   expect(() => GameConfigFactory.validate({ ...edited, player: { ...edited.player, radius: -1 } })).toThrow();
   expect(() => GameConfigFactory.validate({ ...edited, player: { ...edited.player,
@@ -76,7 +76,7 @@ test('weapons defer a complete broadside when capacity is insufficient without c
   expect(weapons.tryFire(Action.Port, 0, fired)).toBe(true); expect(projectiles.projectiles).toHaveLength(3);
   expect(weapons.tryFire(Action.Port, 0.1, fired)).toBe(false); expect(shots).toBe(2); projectiles.dispose();
 });
-test('custom enemy registration selects its subclass without editing Simulation or rendering', () => {
+test('custom enemy registration selects its subclass without editing GameManager or rendering', () => {
   class Patrol extends EnemyShip {
     override update(context: EnemyContext): void { this.sail(true, context.dt, context.world); }
   }
@@ -84,13 +84,13 @@ test('custom enemy registration selects its subclass without editing Simulation 
   const registrations = [...FactoryConfig.Enemies, { profile, constructor: Patrol }];
   const original = GameConfigFactory.create(DEFAULT_OPTIONS, registrations);
   const config = freezeConfiguration({ ...original, spawning: { ...original.spawning, initialSequence: [profile.id] } });
-  const simulation = new Simulation(config, map(), new ShipFactory(config, registrations));
+  const simulation = new GameManager(config, map(), new ShipFactory(config, registrations));
   for (let step = 0; step < 300; step++) simulation.step(config.fixedStep, new Set());
   expect(simulation.enemies[0]!.kind).toBe(profile.id); expect(simulation.enemies[0]!.speed).toBeGreaterThan(0);
   simulation.dispose(); expect(simulation.enemies).toHaveLength(0); expect(simulation.poolStatistics().projectiles.capacity).toBe(0);
 });
 test('read ports cannot mutate private state; acceleration, braking, pause and disposal obey the lifecycle', () => {
-  const config = createGameConfig(DEFAULT_OPTIONS); const simulation = new Simulation(config, map());
+  const config = createGameConfig(DEFAULT_OPTIONS); const simulation = new GameManager(config, map());
   const geometry = map(); const island = geometry.colliders.find((c) => c.id === 8)!;
   const fastMove = new CollisionWorld(geometry, config).move(config.playerSpawn, config.player.radius, 0, 2000);
   expect(fastMove.y).toBeGreaterThanOrEqual(island.y + island.height + config.player.radius);

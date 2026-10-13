@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import type { Scenario } from '../src/data/network';
+import type { Scenario } from '../src/infrastructure/network/NetworkSimulator';
 export async function open(page: Page) {
   await page.clock.setFixedTime(new Date('2026-10-12T18:00:00Z'));
   await page.goto('/?test=1'); await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();

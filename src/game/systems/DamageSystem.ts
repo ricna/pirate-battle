@@ -1,10 +1,10 @@
-import { Allegiance, EffectKind, GameEvent } from '../domain';
+import { Allegiance, EffectKind, GameEvent } from '../contracts/GameDomain';
 import type { Ship } from '../entities/Ship';
-import type { GameConfig } from '../configuration/types';
+import type { GameConfig } from '../contracts/GameConfig';
 import type { EffectSystem } from './EffectSystem';
 import type { MatchState } from './MatchState';
-import { FeedbackKind } from '../presentation/events';
-import type { FeedbackEvent } from '../presentation/events';
+import { FeedbackKind } from '../contracts/FeedbackEvent';
+import type { FeedbackEvent } from '../contracts/FeedbackEvent';
 import type { MatchStatistics } from './MatchStatistics';
 
 export class DamageSystem {
