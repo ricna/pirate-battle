@@ -36,7 +36,7 @@ test('configuration snapshots reject invalid profiles and identify edited balanc
   expect(Reflect.set(GameDefaults, 'FixedStep', 999)).toBe(false);
   expect(() => Reflect.set(original.player.movement, 'maxSpeed', 999)).not.toThrow();
   expect(original.player.movement.maxSpeed).toBe(230);
-  const edited = { ...original, player: { ...original.player, movement: { ...original.player.movement, maxSpeed: 320 } } };
+  const edited = { ...original, playerSpawn: { x: 1280, y: 1080 }, player: { ...original.player, movement: { ...original.player.movement, maxSpeed: 320 } } };
   expect(configurationKey(edited)).not.toBe(configurationKey(original));
   const changedGame = new Simulation(edited, map()); changedGame.step(2, new Set([Action.Forward]));
   expect(changedGame.player.speed).toBe(320); changedGame.dispose();

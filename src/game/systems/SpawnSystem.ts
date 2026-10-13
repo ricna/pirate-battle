@@ -5,7 +5,12 @@ import type { Ship } from '../entities/Ship';
 
 export class SpawnSystem {
   readonly #config: GameConfig; #state: number; #nextSpawn: number; #count = 0;
-  constructor(config: GameConfig) { this.#config = config; this.#state = config.seed; this.#nextSpawn = config.spawnSeconds; }
+  /** The profile is rolled after the point, so spacing assumes the largest registered hull. */
+  readonly #largestHull: number;
+  constructor(config: GameConfig) {
+    this.#config = config; this.#state = config.seed; this.#nextSpawn = config.spawnSeconds;
+    this.#largestHull = Math.max(...Object.values(config.enemies).map((profile) => profile.hullRadius));
+  }
   #random(): number {
     const random = this.#config.random;
     this.#state = (Math.imul(random.multiplier, this.#state) + random.increment) >>> 0; return this.#state / random.modulus;
@@ -15,7 +20,7 @@ export class SpawnSystem {
       this.#nextSpawn += this.#config.spawnSeconds;
       if (enemies.length >= this.#config.spawning.maxCount) continue;
       const valid = this.#config.spawnPoints.filter((p) => distance(p, player) >= this.#config.spawning.safeDistance
-        && !enemies.some((e) => distance(e, p) < e.radius * this.#config.spawning.separationRadii));
+        && !enemies.some((e) => distance(e, p) < (e.hullRadius + this.#largestHull) * this.#config.spawning.hullSeparation));
       if (!valid.length) continue;
       const point = valid[Math.floor(this.#random() * valid.length)]!;
       let profileId = this.#config.spawning.initialSequence[this.#count];

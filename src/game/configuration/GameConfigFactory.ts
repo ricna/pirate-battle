@@ -3,6 +3,7 @@ import type { EnemyRegistration } from '../factories/ShipFactory';
 import { FactoryConfig } from './FactoryConfig';
 import { GameDefaults } from './GameDefaults';
 import { PlayerShipConfig } from './PlayerShipConfig';
+import { CollisionConfig } from './CollisionConfig';
 import type { GameConfig, ShipProfile } from './types';
 import { freezeConfiguration } from '../core/Immutable';
 export { freezeConfiguration } from '../core/Immutable';
@@ -48,13 +49,19 @@ function validateShip(profile: ShipProfile): void {
     if (!projectile.sprite) throw new Error('A projectile requires an authored sprite.');
   }
   const visual = profile.visual;
+  positive(profile.hullRadius, `${profile.id} hull radius`);
+  if (profile.hullRadius < Math.hypot(visual.width, visual.height) / 2) throw new Error(`Hull radius must contain ${profile.id}'s configured sprite bounds.`);
   stages(visual.damageStages, profile.id); stages(visual.healthFills, profile.id);
   for (const value of [visual.width, visual.height, visual.healthScale, visual.fireWidth, visual.fireHeight, visual.fireFramesPerSecond]) positive(value, profile.id);
   finite(Math.abs(visual.angleOffset), profile.id); finite(Math.abs(visual.healthOffsetY), profile.id); finite(visual.fireThreshold, profile.id);
   if (visual.fireThreshold > 1 || !visual.healthFrame || !visual.fireSprites.length || visual.fireSprites.some((s) => !s)) throw new Error(`Invalid visuals for ${profile.id}.`);
   if (profile.ai) {
-    for (const value of [profile.ai.routeInterval, profile.ai.waypointArrival, profile.ai.movementCone, profile.ai.firingCone]) positive(value, profile.id);
-    finite(profile.ai.range, profile.id); finite(profile.ai.ramDamage, profile.id);
+    const ai = profile.ai;
+    for (const value of [ai.routeInterval, ai.waypointArrival, ai.movementCone, ai.firingCone, ai.lookAhead, ai.avoidanceStep,
+      ai.separationDistance, ai.stuckSeconds, ai.stuckDistance, ai.recoverySeconds, ai.headingResponse]) positive(value, profile.id);
+    finite(ai.range, profile.id); finite(ai.ramDamage, profile.id); finite(ai.separationWeight, profile.id);
+    if (ai.turningSpeedRatio <= 0 || ai.turningSpeedRatio > 1) throw new Error(`Turning speed ratio of ${profile.id} must be in (0, 1].`);
+    if (ai.avoidanceStep > Math.PI) throw new Error(`Avoidance step of ${profile.id} must not exceed a half turn.`);
   }
 }
 export class GameConfigFactory {
@@ -72,11 +79,18 @@ export class GameConfigFactory {
       player: PlayerShipConfig.Default, playerSpawn: GameDefaults.PlayerSpawn, enemies,
       spawning: GameDefaults.Spawning, spawnPoints: GameDefaults.SpawnPoints,
       pools: GameDefaults.Pools, effects: GameDefaults.Effects, rules: GameDefaults.Rules,
+      collision: CollisionConfig.Default,
       random: GameDefaults.Random, runtime: GameDefaults.Runtime,
     });
     GameConfigFactory.validate(config); return freezeConfiguration(config);
   }
   static validate(config: GameConfig): void {
+    positive(config.collision.separation, 'collision separation');
+    positive(config.collision.minimumImpactSpeed, 'impact speed');
+    positive(config.collision.impactCooldown, 'impact cooldown');
+    if (!Number.isInteger(config.collision.slideIterations) || config.collision.slideIterations <= 0) {
+      throw new Error('Collision slide iterations must be a positive integer.');
+    }
     validateShip(config.player);
     if (!config.player.weapons.length) throw new Error('The player requires at least one authored weapon.');
     if (config.player.allegiance !== Allegiance.Player || config.player.ai) throw new Error('Invalid player profile.');
@@ -88,7 +102,14 @@ export class GameConfigFactory {
     if (config.fixedStep > config.sessionSeconds) throw new Error('Fixed step exceeds session duration.');
     if (!Number.isInteger(config.seed) || config.seed < 0 || config.seed >= config.random.modulus) throw new Error('Invalid seed.');
     if (!Number.isInteger(config.spawning.maxCount) || config.spawning.maxCount <= 0) throw new Error('Invalid enemy capacity.');
-    positive(config.spawning.safeDistance, 'safe spawn distance'); positive(config.spawning.separationRadii, 'spawn separation');
+    positive(config.spawning.safeDistance, 'safe spawn distance');
+    if (!Number.isFinite(config.spawning.hullSeparation) || config.spawning.hullSeparation < 1) {
+      throw new Error('Spawn hull separation must keep new hulls from overlapping (at least 1).');
+    }
+    const largestEnemyHull = Math.max(...Object.values(config.enemies).map((profile) => profile.hullRadius));
+    if (config.spawning.safeDistance < config.player.hullRadius + largestEnemyHull) {
+      throw new Error('Safe spawn distance must keep a new enemy hull clear of the player hull.');
+    }
     if (!config.spawnPoints.length || ![config.playerSpawn, ...config.spawnPoints].every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))) throw new Error('Invalid spawn points.');
     if (!config.spawning.weights.length) throw new Error('Enemy spawn weights are required.');
     for (const weight of config.spawning.weights) { positive(weight.weight, 'spawn weight');

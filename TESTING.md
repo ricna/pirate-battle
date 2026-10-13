@@ -14,7 +14,7 @@ Run `npm run test:e2e`. Open the delivered HTML report with `npm run test:report
 | Assets | Failed map/image responses, failed lazy engine module, accessible errors and retry/reload recovery |
 | Navigation | Forward movement, bounded rotation, central island contact, bottom/right arena limits |
 | Weapons | Front projectile, independent broadsides, three parallel vectors, cooldown and TTL |
-| Enemies | First/second spawn kinds and interval, safe spawn distance, movement, obstacle clearance and enemy fire |
+| Enemies | First/second spawn kinds and interval, safe spawn distance, movement, obstacle clearance and enemy fire; domain navigation tests below |
 | Scoring and time | Single cannonball damage, exactly one point per destroyed ship, real keyboard pilot surviving a 60s session |
 | Death and restart | Damage leads to death, game unmounts, result stable after end/refresh, new match restores initial entities |
 | Pause | Time and projectiles freeze, inputs cleared on Resume, window blur requires explicit action |
@@ -26,7 +26,7 @@ Run `npm run test:e2e`. Open the delivered HTML report with `npm run test:report
 
 ## Domain and architecture coverage
 
-The core project runs pure TypeScript without a browser or Pixi renderer. It reads the authored map collision geometry. Tests cover frozen source defaults and snapshots, invalid profiles, changed-balance identity, actual configured movement changes, bounded pool growth and double/foreign returns, complete projectile reset with fresh IDs, complete-salvo capacity reservation without consuming cooldown, custom third-enemy registration, runtime read-port immutability, acceleration/braking, high-speed ship obstacle protection, pause and idempotent disposal. The projectile case separately verifies configured acceleration and drag across reused leases.
+The core project runs pure TypeScript without a browser or Pixi renderer. It reads the authored map collision geometry. Tests cover frozen source defaults and snapshots, invalid profiles, changed-balance identity, actual configured movement changes, bounded pool growth and double/foreign returns, complete projectile reset with fresh IDs, complete-salvo capacity reservation without consuming cooldown, custom third-enemy registration, runtime read-port immutability, acceleration/braking, high-speed ship obstacle protection, pause and idempotent disposal. The projectile case separately verifies configured acceleration and drag across reused leases. `collision.spec.ts` covers swept hull contact and departure, separated enemy hulls, a single uncredited Chaser ram and bounded island-contact impacts. `navigation.spec.ts` verifies that a route towards a target inside a blocked navigation cell ends at the nearest reachable water through straight, clear corners; that a hidden Chaser and a hidden Shooter both reach a player hugging a coast (previously they sailed north and pinned themselves to the arena edge); and that a seeded 90-second battle at the 28-enemy cap keeps fewer than 15% of two-second enemy samples without progress, excluding Shooters holding inside their range.
 
 ## Instrumentation and reproducibility
 

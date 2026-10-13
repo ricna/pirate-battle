@@ -7,13 +7,13 @@ export class GameDefaults {
   static readonly Options = { sessionSeconds: 120, spawnSeconds: 5, sound: true, volume: 0.5 };
   static readonly Limits = { session: [60, 180], spawn: [2, 10], volume: [0, 1] } as const;
   static readonly OptionSteps = { session: 1, spawn: 0.5, volume: 0.05 };
-  static readonly Version = 'arena_00-v1/balance-v3';
+  static readonly Version = 'arena_00-v1/balance-v4';
   static readonly Seed = 20261012;
   static readonly FixedStep = 1 / 60;
   static readonly PlayerSpawn = { x: 1024, y: 960 };
   static readonly SpawnPoints = [{ x: 64, y: 64 }, { x: 1024, y: 64 }, { x: 1984, y: 64 },
     { x: 1984, y: 576 }, { x: 1984, y: 1088 }, { x: 1024, y: 1088 }, { x: 64, y: 1088 }, { x: 64, y: 576 }];
-  static readonly Spawning = { maxCount: 28, safeDistance: 440, separationRadii: 3,
+  static readonly Spawning = { maxCount: 28, safeDistance: 440, hullSeparation: 1.25,
     initialSequence: [ShipKind.Chaser, ShipKind.Shooter],
     weights: [{ profileId: ShipKind.Shooter, weight: 0.5 }, { profileId: ShipKind.Chaser, weight: 0.5 }] };
   static readonly Pools = {

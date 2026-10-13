@@ -119,8 +119,8 @@ Source code is maintained in the private repository. Hosting is a separate deliv
 ## Known limitations
 
 - Chromium desktop and mobile landscape emulation are the reference browsers. Physical iOS/Android audio, performance and browser-specific behaviour still require device verification.
-- Collision circles and rectangular islands prioritize predictable navigation over exact silhouette physics; enemy-to-enemy ship collision is not simulated.
+- Collision circles and rectangular islands prioritize predictable navigation over exact silhouette physics; ship hulls are circles (`hullRadius`), so hull contact is approximate around bows and sterns.
 - The Tiled loader supports this finite orthogonal map, external image tilesets and rectangular collision objects; unsupported shapes or missing required references fail visibly.
-- Navigation uses a four-neighbour grid, so routes may take wider turns near islands.
+- Enemy routes come from a four-neighbour grid reduced to straight corners, plus local steering; enemies have no shared plan, so a dense crowd at the 28-enemy cap can still queue briefly around the player.
 - LocalStorage availability/quota can prevent recovery across refresh; a visible warning is provided.
 - Test/profiling instrumentation is opt-in (`?test=1` / `?profile=1`). Test mode can observe and advance time, never assign entity positions, life or score. No server trust/security is implied by a local mock leaderboard.

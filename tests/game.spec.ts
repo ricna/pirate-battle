@@ -63,8 +63,13 @@ test('front and parallel broadsides obey independent cooldowns and expire', asyn
   await page.keyboard.up('q'); await page.keyboard.up('e'); await advance(page, 2); expect((await observe(page)).projectiles).toHaveLength(0);
 });
 test('one cannonball applies its configured damage once; one destroyed enemy awards exactly one point', async ({ page }) => {
-  await play(page); await advance(page, 12); const state = await observe(page);
-  const enemy = state.enemies.find((e) => e.kind === 'chaser')!; expect(enemy.health).toBe(state.config.enemies.chaser!.health);
+  await play(page); await advance(page, 10); let state = await observe(page);
+  // Engage the first Chaser at mid-range, leaving time for two shots before it can ram, whatever its route timing.
+  const engagementDistance = 340;
+  const approaching = () => state.enemies.find((e) => e.kind === 'chaser'
+    && Math.hypot(e.x - state.player.x, e.y - state.player.y) <= engagementDistance);
+  for (let i = 0; i < 40 && !approaching(); i++) { await advance(page, 0.1); state = await observe(page); }
+  const enemy = approaching()!; expect(enemy.health).toBe(state.config.enemies.chaser!.health);
   const desired = Math.atan2(enemy.x - state.player.x, state.player.y - enemy.y);
   const turn = Math.atan2(Math.sin(desired - state.player.angle), Math.cos(desired - state.player.angle));
   await page.keyboard.down(turn >= 0 ? 'd' : 'a'); await advance(page, Math.abs(turn) / state.config.player.movement.turnSpeed);

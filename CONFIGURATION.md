@@ -8,13 +8,14 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | --- | --- |
 | `PlayerShipConfig.ts` | Player health, circle radius, movement, weapon mounts and visual profile |
 | `EnemyChaserConfig.ts` | Chaser health, movement, navigation and ram damage |
-| `EnemyShooterConfig.ts` | Shooter health, movement, range, aim cone and weapon cooldown |
+| `EnemyShooterConfig.ts` | Shooter health, movement, navigation, range, aim cone and weapon cooldown |
 | `ProjectileConfig.ts` | Front/broadside/enemy projectile damage, speed, acceleration, drag, TTL, radius and sprite dimensions |
 | `ShipVisualConfig.ts` | Each ship's explicit intact/damaged/heavily damaged sprites, hull dimensions, fire and health indicator assets |
 | `GameDefaults.ts` | Default Options and allowed limits, simulation clock, seed, spawn points/weights/cap, pool capacities, effects, warnings and runtime budgets |
 | `FactoryConfig.ts` | Enemy profile → concrete subclass registrations |
 | `InputConfig.ts` | Keyboard bindings, pause keys and touch command labels/icons |
 | `AudioConfig.ts` | Gameplay-event sound names, simultaneous voice budget and mix gains |
+| `CollisionConfig.ts` | Hull separation, slide iteration budget, impact threshold and repeat cooldown |
 
 `config.ts` is an entry point, not a second balance table. `GameConfigFactory.create()` gathers the registered profiles, validates them, clones their data and recursively freezes the match snapshot. `Simulation` also isolates an externally supplied configuration. Objects passed to ships cannot remain mutable aliases to their original profiles.
 
@@ -51,7 +52,7 @@ Damage/health stages are listed in descending minimum-health ratios with a final
 To add a different enemy behaviour:
 
 1. Create a static configuration class whose `Default` satisfies `ShipProfile`, with a unique ID and explicit assets.
-2. Implement a subclass of `EnemyShip` and override `update(context: EnemyContext)`. Reuse protected `follow`, `steer` and `sail` methods or implement a different movement policy. Use context commands for firing/damage.
+2. Implement a subclass of `EnemyShip` and override `update(context: EnemyContext)`. Reuse protected `follow`, `steer`, `sail` and `cruise` methods or implement a different movement policy. Use context commands for firing/damage.
 3. Register `{ profile: NewEnemyConfig.Default, constructor: NewEnemy }` in `FactoryConfig.Enemies`.
 4. Add its ID and positive spawn weight to `GameDefaults.Spawning.weights`. Optionally include it in `initialSequence`.
 5. Check that every authored spawn accommodates its radius; run the checks below.
@@ -59,6 +60,36 @@ To add a different enemy behaviour:
 Simulation, projectile collision/scoring and ArenaRenderer do not branch on enemy kind. `ShipFactory` uses the registration, the new subclass supplies behaviour, and its profile supplies rendering. The core tests demonstrate a third registered subclass without changing these systems.
 
 The initial sequence guarantees the first successful enemy types; subsequent spawns use normalized positive weights. Player distance and existing-ship separation filter authored points. If all points are unsafe or the active cap is reached, that interval is skipped. No synthetic spawn position is created.
+
+`GameDefaults.Spawning.hullSeparation` is the minimum distance between a spawn point and an existing enemy, as a multiple of that enemy's hull radius plus the largest registered enemy hull radius (the profile is rolled after the point). It must be at least 1, so a new hull never starts inside another. `safeDistance` must be at least the player hull radius plus the largest enemy hull radius. A new enemy faces the target when a straight sailing line is clear, otherwise the first corner of its route, so it does not start by turning into an island.
+
+## Enemy navigation
+
+Every enemy profile has an `ai` block. `EnemyShip.follow` uses it each fixed step:
+
+1. **Goal.** When a straight line to the target keeps the navigation coast clearance (`rules.navigationInflation` tiles beyond the ship radius), the target is the goal. Otherwise the ship follows a grid route reduced to its corners. Routes are recomputed every `routeInterval` seconds and when the last corner is reached. A corner is dropped within `waypointArrival` pixels, or earlier once the next corner is directly reachable. A target hugging a coast can sit in a cell that is blocked for the inflated enemy radius; the route then ends at the nearest reachable cell, never at an empty route.
+2. **Separation.** Other enemies closer than `separationDistance` pixels push the desired heading away, scaled by `separationWeight` and by how close they are.
+3. **Avoidance.** A probe of up to `lookAhead` pixels (never past the goal) measures free water along a heading against islands, arena edges and nearby enemy hulls. When the desired heading is blocked, candidates fanned out every `avoidanceStep` radians are tried on alternating sides, starting with the side used last; the closest fully clear heading wins, otherwise the most open one.
+4. **Stuck recovery.** If a moving ship travels less than `stuckDistance` pixels in `stuckSeconds`, it sails towards the most open water for `recoverySeconds`, tries the other avoidance side and then replans.
+5. **Helm and speed.** The steered heading follows the chosen heading at `headingResponse` per second (aiming at the target while holding is direct), limited by the profile `turnSpeed`. Speed falls linearly to `turningSpeedRatio × maxSpeed` as the heading error reaches `movementCone`, and also near a coast ahead, so ships arc around corners instead of pivoting or scraping. A ship facing a coast directly stops until it has turned away.
+
+A Shooter holds position and keeps aiming while it sees the target within `range`; it fires when the aim error is below `firingCone`. A Chaser never stops and never avoids its target, so ramming still applies `ramDamage`.
+
+| Field | Unit | Default (both enemies) |
+| --- | --- | --- |
+| `routeInterval` | seconds | 0.75 |
+| `waypointArrival` | pixels | 40 |
+| `movementCone` | radians | 1.2 |
+| `lookAhead` | pixels | 150 |
+| `avoidanceStep` | radians, at most π | 0.3 |
+| `turningSpeedRatio` | fraction in (0, 1] | 0.3 |
+| `separationDistance` | pixels | 170 |
+| `separationWeight` | non-negative factor | 1.2 |
+| `stuckSeconds` / `stuckDistance` | seconds / pixels | 1 / 20 |
+| `recoverySeconds` | seconds | 0.9 |
+| `headingResponse` | 1/second | 6 |
+
+All of them are validated before a match. Navigation is deterministic and consumes no gameplay randomness.
 
 ## Pool sizing and exhaustion
 
