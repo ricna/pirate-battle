@@ -7,7 +7,7 @@ export default defineConfig({
   use: { baseURL: 'http://127.0.0.1:5173', channel: 'chromium', trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: [
     { name: 'rendering', testMatch: '**/rendering.spec.ts' },
-    { name: 'core', testMatch: ['**/core.spec.ts', '**/collision.spec.ts', '**/navigation.spec.ts'] },
+    { name: 'core', testMatch: ['**/core.spec.ts', '**/collision.spec.ts', '**/navigation.spec.ts', '**/presentation.spec.ts'] },
     { name: 'desktop', testMatch: '**/game.spec.ts', use: { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
     { name: 'mobile-landscape', testMatch: '**/game.spec.ts', use: { viewport: { width: 844, height: 390 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } },
   ],

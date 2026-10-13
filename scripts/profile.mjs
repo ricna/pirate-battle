@@ -14,7 +14,7 @@ const errors = []; page.on('pageerror', (e) => errors.push(e.message));
 await page.goto(`${url}?profile=1`);
 await page.getByRole('button', { name: 'Options', exact: true }).click();
 await page.getByLabel('Game session time').fill('180'); await page.getByLabel('Enemy spawn time').fill('10');
-await page.getByLabel('Sound enabled').uncheck(); await page.getByRole('button', { name: 'Save options' }).click();
+await page.getByLabel('Sound enabled').check(); await page.getByRole('button', { name: 'Save options' }).click();
 await page.getByRole('button', { name: 'Play', exact: true }).click(); await page.waitForFunction(() => !!window.pirateTest);
 await page.keyboard.down('Space'); await page.keyboard.down('q'); await page.keyboard.down('e'); const started = Date.now();
 let lastTurn = ''; let lastLog = 0; let moving = false; let pools = null; let renderPools = null; let config = null;
@@ -57,11 +57,12 @@ for (let i = 1; i <= 5; i++) {
 }
 const report = { date: new Date().toISOString(), browser: await browser.version(), ...graphics,
   viewport: '1280x800', deviceScaleFactor: 1, build: 'optimized Vite preview',
-  options: { sessionSeconds: 180, spawnSeconds: 10, sound: false },
+  options: { sessionSeconds: 180, spawnSeconds: 10, sound: true },
   control: 'Actual keyboard navigation around authored water boundary waypoints, all three weapons held, real-time fixed-step simulation; no state writes',
   wallSeconds: (Date.now() - started) / 1000, activeSeconds: metrics.elapsed, reason: metrics.reason,
   score: metrics.score, frames: frames.length, fps: 1000 / mean, p95FrameMs: sorted[Math.floor(sorted.length * 0.95)],
-  entityPeak: metrics.entityPeak, config, pools, renderPools, memory, errors, frameIntervalsMs: frames };
+  entityPeak: metrics.entityPeak, config, pools, renderPools, presentationPools: metrics.presentationPools, audio: metrics.audio,
+  memory, errors, frameIntervalsMs: frames };
 await mkdir('reports', { recursive: true }); await writeFile('reports/profile.json', `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({ ...report, frameIntervalsMs: undefined }, null, 2));
 await browser.close();

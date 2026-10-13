@@ -1,18 +1,35 @@
-import { Container, Rectangle, RenderTexture, Sprite, Texture } from 'pixi.js';
+import { Container, Rectangle, RenderTexture, Sprite, Texture, TilingSprite } from 'pixi.js';
 import type { Renderer } from 'pixi.js';
 import type { LoadedMap } from './tiledMap';
+import type { GameTextures } from './assets';
+import { requiredTexture } from './assets';
+import type { PresentationProfile } from './configuration/PresentationConfig';
+import type { Point } from './geometry';
 
 export class MapRenderer {
   readonly world = new Container();
   readonly #frames = new Map<number, Texture>();
   #mapTexture: RenderTexture | null = null;
   #destroyed = false;
+  readonly #water: TilingSprite;
+  readonly #presentation: PresentationProfile;
+  /** World-space water beyond each map edge: shake overscan plus any letterbox area of the current viewport. */
+  readonly #waterMargin = { x: 0, y: 0 };
+  /** Current water drift, kept so a resize between frames preserves the tile phase. */
+  readonly #waterDrift = { x: 0, y: 0 };
 
-  constructor(readonly map: LoadedMap, renderer: Pick<Renderer, 'render'>, resolution: number) {
+  constructor(readonly map: LoadedMap, renderer: Pick<Renderer, 'render'>, resolution: number, presentation: PresentationProfile, textures: GameTextures) {
     this.world.label = 'authored-arena';
+    this.#presentation = presentation;
+    this.#water = new TilingSprite({ texture: requiredTexture(textures, presentation.water.sprite) });
+    this.#setWaterMargin(presentation.water.overscan, presentation.water.overscan);
+    this.world.addChild(this.#water);
     const tiles = new Container();
     try {
+      const water = map.layers.find((layer) => layer.name === presentation.water.layer);
+      if (!water || water.data.some((gid) => gid !== presentation.water.gid)) throw new Error('Animated deep water requires the configured uniform authored water layer.');
       for (const layer of map.layers) {
+        if (layer === water) continue;
         const container = new Container();
         container.label = layer.name;
         container.visible = layer.visible;
@@ -81,6 +98,31 @@ export class MapRenderer {
     const scale = Math.min(width / worldWidth, height / worldHeight);
     this.world.scale.set(scale);
     this.world.position.set((width - worldWidth * scale) / 2, (height - worldHeight * scale) / 2);
+    // The arena keeps its contain fit inside the full-screen HUD; deep water continues under the letterbox.
+    const overscan = this.#presentation.water.overscan;
+    this.#setWaterMargin(Math.ceil(this.world.position.x / scale) + overscan, Math.ceil(this.world.position.y / scale) + overscan);
+  }
+
+  #setWaterMargin(x: number, y: number) {
+    this.#waterMargin.x = x;
+    this.#waterMargin.y = y;
+    this.#water.position.set(-x, -y);
+    this.#water.width = this.map.width * this.map.tileWidth + x * 2;
+    this.#water.height = this.map.height * this.map.tileHeight + y * 2;
+    this.#applyWaterTiles();
+  }
+
+  /** Offsets the tiles by the margin so the pattern stays anchored to the map origin while it drifts. */
+  #applyWaterTiles() {
+    this.#water.tilePosition.set(this.#waterMargin.x + this.#waterDrift.x, this.#waterMargin.y + this.#waterDrift.y);
+  }
+
+  animate(time: number, reducedMotion: boolean, shake: Point): void {
+    const water = this.#presentation.water;
+    this.#waterDrift.x = reducedMotion ? 0 : time * water.speedX;
+    this.#waterDrift.y = reducedMotion ? 0 : time * water.speedY;
+    this.#applyWaterTiles();
+    this.world.pivot.set(shake.x, shake.y);
   }
 
   destroy() {

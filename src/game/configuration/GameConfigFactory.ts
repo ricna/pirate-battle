@@ -4,6 +4,7 @@ import { FactoryConfig } from './FactoryConfig';
 import { GameDefaults } from './GameDefaults';
 import { PlayerShipConfig } from './PlayerShipConfig';
 import { CollisionConfig } from './CollisionConfig';
+import { PresentationConfig, ParticleKind } from './PresentationConfig';
 import type { GameConfig, ShipProfile } from './types';
 import { freezeConfiguration } from '../core/Immutable';
 export { freezeConfiguration } from '../core/Immutable';
@@ -51,6 +52,7 @@ function validateShip(profile: ShipProfile): void {
   const visual = profile.visual;
   positive(profile.hullRadius, `${profile.id} hull radius`);
   if (profile.hullRadius < Math.hypot(visual.width, visual.height) / 2) throw new Error(`Hull radius must contain ${profile.id}'s configured sprite bounds.`);
+  if (!visual.wreckSprite) throw new Error(`Missing wreck sprite for ${profile.id}.`);
   stages(visual.damageStages, profile.id); stages(visual.healthFills, profile.id);
   for (const value of [visual.width, visual.height, visual.healthScale, visual.fireWidth, visual.fireHeight, visual.fireFramesPerSecond]) positive(value, profile.id);
   finite(Math.abs(visual.angleOffset), profile.id); finite(Math.abs(visual.healthOffsetY), profile.id); finite(visual.fireThreshold, profile.id);
@@ -80,11 +82,44 @@ export class GameConfigFactory {
       spawning: GameDefaults.Spawning, spawnPoints: GameDefaults.SpawnPoints,
       pools: GameDefaults.Pools, effects: GameDefaults.Effects, rules: GameDefaults.Rules,
       collision: CollisionConfig.Default,
+      presentation: PresentationConfig.Default,
       random: GameDefaults.Random, runtime: GameDefaults.Runtime,
     });
     GameConfigFactory.validate(config); return freezeConfiguration(config);
   }
   static validate(config: GameConfig): void {
+    const presentation = config.presentation;
+    finite(presentation.crew.foamPulse, 'foam pulse');
+    if (presentation.crew.foamPulse >= 1 || !presentation.score.fontFamily) throw new Error('Invalid foam pulse or feedback font.');
+    for (const profile of [config.player, ...Object.values(config.enemies)]) {
+      if (profile.radius < presentation.profiles[ParticleKind.Crew].waterRadius) throw new Error('Ship radius must allow the authored crew clearance at a coastal sinking.');
+    }
+    for (const [kind, profile] of Object.entries(presentation.profiles)) {
+      for (const value of [profile.width, profile.height, profile.lifetime, profile.bobFrequency, profile.waterRadius]) positive(value, `${kind} presentation`);
+      for (const value of [profile.alpha, profile.fadeStart, profile.drag, profile.bob, profile.settleSeconds]) finite(value, `${kind} presentation`);
+      if (profile.alpha > 1 || profile.fadeStart >= 1 || profile.settleSeconds > profile.lifetime
+        || !Number.isFinite(profile.spin) || !profile.sprites.length || profile.sprites.some((sprite) => !sprite)) throw new Error(`Invalid ${kind} presentation profile.`);
+    }
+    for (const pool of [presentation.particles, presentation.crewPool]) {
+      if (![pool.initialCapacity, pool.growthSize, pool.maxCapacity].every(Number.isInteger)
+        || pool.initialCapacity < 0 || pool.growthSize <= 0 || pool.maxCapacity <= 0 || pool.initialCapacity > pool.maxCapacity) throw new Error('Invalid presentation pool.');
+    }
+    if (presentation.crew.minimum !== 2 || presentation.crew.maximum !== 5) throw new Error('Every sinking must emit 2–5 crew.');
+    const requiredCrew = presentation.crew.maximum * (config.spawning.maxCount + Math.ceil(presentation.profiles[ParticleKind.Crew].lifetime / config.spawnSeconds) + 1);
+    if (presentation.crewPool.maxCapacity < requiredCrew) throw new Error(`Crew capacity requires at least ${requiredCrew} slots for this spawn/lifetime budget.`);
+    for (const value of [presentation.eventHistoryCapacity, presentation.debris.hitCount, presentation.debris.sunkCount, presentation.score.maxCount]) {
+      if (!Number.isInteger(value) || value <= 0) throw new Error('Presentation counts must be positive integers.');
+    }
+    for (const value of [presentation.crew.scatterSpeed, presentation.crew.driftSpeed, presentation.crew.foamScale, presentation.debris.speed,
+      presentation.trail.interval, presentation.trail.offset,
+      presentation.recoil.distance, presentation.recoil.duration, presentation.damage.flashSeconds, presentation.damage.shakeSeconds,
+      presentation.damage.shakeAmplitude, presentation.damage.ramMultiplier, presentation.damage.shakeFrequency, presentation.score.lifetime,
+      presentation.score.rise, presentation.score.fontSize, presentation.score.hudSeconds, presentation.terminalSeconds, presentation.resultCountSeconds, presentation.water.overscan]) positive(value, 'presentation settings');
+    if (!presentation.crew.foamSprite || !presentation.score.prefix || !presentation.water.sprite || !presentation.water.layer
+      || !Number.isInteger(presentation.water.gid) || presentation.water.gid <= 0 || !Number.isInteger(presentation.seedSalt)
+      || !Number.isFinite(presentation.water.speedX) || !Number.isFinite(presentation.water.speedY)) throw new Error('Invalid presentation references or timing.');
+    finite(presentation.score.fadeStart, 'label fade');
+    if (presentation.score.fadeStart >= 1 || !Number.isFinite(presentation.score.offsetY) || !Number.isFinite(presentation.damage.labelOffsetY)) throw new Error('Invalid floating-label settings.');
     positive(config.collision.separation, 'collision separation');
     positive(config.collision.minimumImpactSpeed, 'impact speed');
     positive(config.collision.impactCooldown, 'impact cooldown');

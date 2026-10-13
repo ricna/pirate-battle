@@ -1,6 +1,7 @@
 import type { Action, Allegiance, EffectKind, GameEvent } from '../domain';
 import type { Point } from '../geometry';
 import type { CollisionProfile } from './CollisionConfig';
+import type { PresentationProfile } from './PresentationConfig';
 
 export interface MovementProfile {
   readonly initialSpeed: number; readonly maxSpeed: number;
@@ -19,6 +20,7 @@ export interface WeaponProfile {
 export interface ShipVisualProfile {
   readonly width: number; readonly height: number; readonly angleOffset: number;
   readonly damageStages: readonly { readonly minimumHealthRatio: number; readonly sprite: string }[];
+  readonly wreckSprite: string;
   readonly healthFrame: string; readonly healthMetadata: 'health_frame' | 'enemy_health_frame';
   readonly healthScale: number; readonly healthOffsetY: number;
   readonly healthFills: readonly { readonly minimumHealthRatio: number; readonly sprite: string }[];
@@ -64,6 +66,7 @@ export interface GameConfig {
   readonly spawnPoints: readonly Readonly<Point>[];
   readonly pools: { readonly projectiles: PoolProfile; readonly effects: PoolProfile };
   readonly collision: CollisionProfile;
+  readonly presentation: PresentationProfile;
   readonly effects: Readonly<Record<EffectKind, EffectProfile>>;
   readonly rules: { readonly pointsPerKill: number; readonly lowHealthRatio: number; readonly timeWarning: number;
     readonly clockTolerance: number; readonly geometryTolerance: number; readonly navigationInflation: number; readonly movementStepRadiusRatio: number };

@@ -10,3 +10,19 @@
 .combat-footer .controls-help{font-size:11px;margin-top:10px}.portrait-hint{display:none}
 @media(max-height:600px) and (orientation:landscape){.game{padding:4px 8px;gap:4px}.hud{height:40px;gap:8px}.counter{height:39px;min-width:120px}.counter strong{font-size:18px}.hud .round-button{width:38px;height:38px;padding:7px}.arena{width:min(100%,calc((100svh - 116px)*16/9))}.round-button{width:46px;height:46px}.combat-footer .controls-help{display:none}.touch-controls{gap:12px}.command span{font-size:9px}.command-port{margin-left:40px}}
 @media(orientation:portrait){.portrait-hint{display:block}.hud{gap:4px}.counter{min-width:90px;font-size:10px}.counter img{width:17px;height:17px}.counter strong{font-size:16px}.arena{width:100%}.command-port{margin-left:10px}.touch-controls{gap:4px}.round-button{width:45px;height:45px}.combat-footer .controls-help{max-width:350px}}
+
+.terminal-banner {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 10px 28px;
+  background: #092030dd;
+  color: #ffe8af;
+  border: 1px solid #cba35c;
+  border-radius: 4px;
+  font-size: clamp(16px, 3vw, 34px);
+  font-weight: bold;
+  pointer-events: none;
+}

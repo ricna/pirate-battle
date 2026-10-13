@@ -22,6 +22,7 @@ import type { MatchRecord } from '../data/contracts';
 import { getScenario, networkWarning, resetNetwork, setScenario } from '../data/network';
 import type { Scenario } from '../data/network';
 import { loadOptions, playerIdentity, storageWarning, writeStored } from '../data/storage';
+import { ResultScore } from './ResultScore';
 import { GameDefaults } from '../game/configuration/GameDefaults';
 function OptionsForm({ options, save, back }: { options: Options; save: (options: Options) => void; back: () => void }) {
   const [draft, setDraft] = useState(options); const [error, setError] = useState('');
@@ -73,20 +74,19 @@ export function App() {
     const heading = document.querySelector<HTMLElement>('main h1');
     if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
   }, [screen]);
-  const play = () => { audio.unlock(options); audio.play(AudioConfig.Cues.Click); setConfig(createGameConfig(options));
+  const play = () => { audio.unlock(options); audio.playUi(AudioConfig.Cues.Click, 'ui-click'); setConfig(createGameConfig(options));
     setGameId(crypto.randomUUID()); setScreen('game'); };
   const complete = (snapshot: Snapshot) => {
     if (!config || !snapshot.reason) throw new Error('A completed battle requires its configuration and end reason.');
     const record: MatchRecord = { id: gameId, playerId, playerName: 'You', date: new Date().toISOString(),
-      score: snapshot.score, duration: snapshot.elapsed, reason: snapshot.reason, config };
+      score: snapshot.score, duration: snapshot.elapsed, reason: snapshot.reason, config, statistics: snapshot.statistics };
     writeStored('last', record); setLast(record);
     if (!pendingRef.current.some((r) => r.id === record.id)) {
       const next = [...pendingRef.current, record]; pendingRef.current = next; writeStored('pending', next); setPending(next);
     }
-    setScreen('result');
   };
   const retry = () => { if (save.isPending) return; const record = pendingRef.current[0]; if (record) save.mutate(record); };
-  const mainMenu = () => { setScreen('menu'); audio.stop(); audio.play(AudioConfig.Cues.Back); };
+  const mainMenu = () => { setScreen('menu'); audio.stop(); audio.playUi(AudioConfig.Cues.Back, 'ui-back'); };
   const menuActions = {
     play,
     openOptions: () => {
@@ -115,7 +115,7 @@ export function App() {
     setNotice('Demo server reset. Local results and pending battles are preserved.');
   };
   if (screen === 'game' && config) return <GameLoadBoundary onMenu={mainMenu}><Suspense fallback={<div className="app" role="status">Loading game engine…</div>}>
-    <GameCanvas key={gameId} config={config} onComplete={complete} onAbandon={mainMenu} /></Suspense></GameLoadBoundary>;
+    <GameCanvas key={gameId} config={config} onComplete={complete} onAbandon={mainMenu} onResultReady={() => setScreen('result')} /></Suspense></GameLoadBoundary>;
   return <main className={`app app-${screen}`}>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <div id="main-content" className="shell" tabIndex={-1}>
@@ -123,15 +123,22 @@ export function App() {
         : screen === 'howToPlay' ? <HowToPlay onMainMenu={mainMenu} />
         : screen === 'records' ? <CaptainsLog tab={recordsTab} onTabChange={setRecordsTab} config={createGameConfig(options)}
           playerId={playerId} revision={revision} lastMatchId={last?.id ?? null} onMainMenu={mainMenu} />
-        : screen === 'result' && last ? <section className="panel result-panel"><p className="eyebrow">Your voyage</p><h1>Battle result</h1>
+        : screen === 'result' && last ? <section className="panel result-panel"><p className="eyebrow">{last.reason === 'death' ? 'Ship Sunk' : 'Battle Complete'}</p><h1>Battle result</h1>
           <p>{last.reason === 'time' ? 'Time expired. The voyage is complete.' : 'Your ship was lost at sea.'}</p>
-          <div className="result-score"><img src={uiAsset('hud/icon_score')} alt="" />{last.score}<span>points</span></div>
+          <div className="result-score"><img src={uiAsset('hud/icon_score')} alt="" /><ResultScore score={last.score} /><span>points</span></div>
           <p>Time played: <strong>{last.duration.toFixed(1)} seconds</strong></p>
+          {last.statistics && <dl className="battle-statistics">
+            <div><dt>Enemies sunk</dt><dd>{last.statistics.enemiesSunk}</dd></div>
+            <div><dt>Cannonballs fired</dt><dd>{last.statistics.cannonballsFired}</dd></div>
+            <div><dt>Cannonball hits</dt><dd>{last.statistics.cannonballHits}</dd></div>
+            <div><dt>Damage received</dt><dd>{last.statistics.damageReceived}</dd></div>
+            <div><dt>Health remaining</dt><dd>{last.statistics.healthRemaining}</dd></div>
+          </dl>}
           <p role="status">{pending.some((r) => r.id === last.id) ? save.isPending && save.variables?.id === last.id
             ? 'Saving battle…' : 'Battle saved locally. Submission pending.' : 'Battle registered in Ranking and Match History.'}</p>
           {errors[last.id] && <p role="alert">{errors[last.id]}</p>}
           {pending.some((r) => r.id === last.id) && <Button disabled={save.isPending} onClick={() => save.mutate(last)}>Retry submission</Button>}
-          <div className="button-row"><Button onClick={play}>Play Again</Button><Button onClick={mainMenu}>Main Menu</Button></div>
+          <div className="button-row"><Button icon="icon_restart" onClick={play}>Play Again</Button><Button variant="secondary" icon="icon_home" onClick={mainMenu}>Main Menu</Button></div>
         </section>
           : <MainMenu actions={menuActions} />}
       {(notice || storageWarning || audio.error || networkWarning) && <p role="status" className="notice">{networkWarning ?? storageWarning ?? audio.error ?? notice}</p>}

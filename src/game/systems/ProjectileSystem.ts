@@ -6,6 +6,8 @@ import type { Ship } from '../entities/Ship';
 import type { ICollisionWorld } from '../core/CollisionWorld';
 import { segmentCircle } from '../geometry';
 import type { Point } from '../geometry';
+import { ImpactKind } from '../presentation/events';
+import type { ImpactKind as ProjectileImpactKind } from '../presentation/events';
 
 export interface IProjectileEmitter {
   readonly available: number;
@@ -24,7 +26,7 @@ export class ProjectileSystem implements IProjectileEmitter {
     this.#active.push(p); this.#publish(); return true;
   }
   update(dt: number, player: Ship, enemies: readonly Ship[], world: ICollisionWorld,
-    damage: (ship: Ship, amount: number, credited: boolean) => void, impact: (point: Point) => void): void {
+    damage: (ship: Ship, amount: number, credited: boolean) => void, impact: (point: Point, kind: ProjectileImpactKind) => void): void {
     let changed = false;
     this.#active = this.#active.filter((p) => {
       let keep = player.alive;
@@ -38,9 +40,12 @@ export class ProjectileSystem implements IProjectileEmitter {
         }
         if (first !== Infinity) {
           if (victim) damage(victim, p.damage, p.owner === Allegiance.Player);
-          else impact({ x: p.x + (next.x - p.x) * first, y: p.y + (next.y - p.y) * first });
+          else impact({ x: p.x + (next.x - p.x) * first, y: p.y + (next.y - p.y) * first }, ImpactKind.Coast);
           keep = false;
-        } else { p.advance(next, dt); keep = !p.expired && world.isFree(p, 0); }
+        } else {
+          p.advance(next, dt); keep = !p.expired && world.isFree(p, 0);
+          if (!keep && world.isFree(p, 0)) impact({ x: p.x, y: p.y }, ImpactKind.Water);
+        }
       }
       if (!keep) { this.#factory.release(p); changed = true; }
       return keep;

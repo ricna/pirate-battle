@@ -26,4 +26,11 @@ export class WeaponController {
     }
     this.#cooldowns.set(action, elapsed + mount.cooldown); fired(origin, angle, mount); return true;
   }
+  readiness(elapsed: number) {
+    return Object.freeze([...this.#mounts.values()].map((mount) => {
+      const remaining = Math.max(0, (this.#cooldowns.get(mount.id) ?? 0) - elapsed);
+      return Object.freeze({ id: mount.id, ready: remaining <= this.#tolerance,
+        remaining, progress: Math.max(0, 1 - remaining / mount.cooldown) });
+    }));
+  }
 }

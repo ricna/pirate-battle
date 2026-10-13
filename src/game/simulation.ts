@@ -20,6 +20,11 @@ import { EnemyShip } from './entities/EnemyShip';
 import type { Ship as ShipEntity, ShipReadView } from './entities/Ship';
 import type { ProjectileReadView } from './entities/Projectile';
 import type { EffectReadView } from './entities/Effect';
+import { PresentationSystem } from './presentation/PresentationSystem';
+import type { PresentationReadView } from './presentation/PresentationSystem';
+import { FeedbackKind, ImpactKind } from './presentation/events';
+import { MatchStatistics } from './systems/MatchStatistics';
+import type { StatisticsSnapshot } from './systems/MatchStatistics';
 
 export type { Action, EndReason, GameEvent } from './domain';
 // Read ports deliberately exclude gameplay commands from UI/rendering consumers.
@@ -27,7 +32,8 @@ export type Ship = ShipReadView;
 export type Projectile = ProjectileReadView;
 export type Effect = EffectReadView;
 export interface Snapshot { readonly status: MatchStatus; readonly elapsed: number; readonly remaining: number;
-  readonly score: number; readonly health: number; readonly maxHealth: number; readonly enemies: number; readonly reason: EndReason | null }
+  readonly score: number; readonly health: number; readonly maxHealth: number; readonly enemies: number; readonly reason: EndReason | null;
+  readonly statistics: StatisticsSnapshot; readonly weapons: ReturnType<WeaponController['readiness']>; readonly scorePulse: boolean }
 
 /** Match aggregate: coordinates systems; concrete enemy behaviour belongs to subclasses. */
 export class Simulation {
@@ -39,6 +45,8 @@ export class Simulation {
   readonly #enemies: EnemyShip[] = []; #enemyView: readonly Ship[] = Object.freeze([]);
   #events: GameEvent[] = []; #warnedTime = false; #disposed = false;
   readonly #contactAt = new Map<string, number>();
+  readonly #presentation: PresentationSystem;
+  readonly #statistics = new MatchStatistics();
   constructor(config: GameConfig, map: LoadedMap, factory?: IShipFactory) {
     GameConfigFactory.validate(config);
     this.#config = freezeConfiguration(structuredClone(config)); this.#map = map;
@@ -47,7 +55,9 @@ export class Simulation {
     this.#match = new MatchState(this.#config); this.#spawning = new SpawnSystem(this.#config);
     this.#projectiles = new ProjectileSystem(new ProjectileFactory(this.#config.pools.projectiles, this.#ids));
     this.#effects = new EffectSystem(this.#config, this.#ids);
-    this.#damage = new DamageSystem(this.#config, this.#effects, this.#match, (event) => this.#events.push(event));
+    this.#presentation = new PresentationSystem(this.#config, this.#world);
+    this.#damage = new DamageSystem(this.#config, this.#effects, this.#match, (event) => this.#events.push(event),
+      (event) => this.#presentation.accept(event), this.#statistics);
     this.#player = this.#factory.createPlayer(this.#ids.next());
     if (!this.#world.isFree(this.#player, this.#player.radius)) throw new Error('Authored player spawn is obstructed.');
     for (const profile of Object.values(this.#config.enemies)) for (const point of this.#config.spawnPoints)
@@ -62,6 +72,13 @@ export class Simulation {
   get enemies(): readonly Ship[] { return this.#enemyView; }
   get projectiles(): readonly Projectile[] { return this.#projectiles.readView; }
   get effects(): readonly Effect[] { return this.#effects.readView; }
+  get presentation(): PresentationReadView { return this.#presentation.readView; }
+  setReducedMotion(value: boolean): void { this.#presentation.setReducedMotion(value); }
+  advancePresentation(dt: number): void {
+    if (this.#disposed || this.status !== MatchStatus.Ended) return;
+    this.#effects.update(dt);
+    this.#presentation.update(dt);
+  }
   get status(): MatchStatus { return this.#match.status; }
   get elapsed(): number { return this.#match.elapsed; }
   get score(): number { return this.#match.score; }
@@ -72,6 +89,9 @@ export class Simulation {
     if (!weapon) throw new Error('A ship requires its weapon controller.');
     weapon.tryFire(action, this.elapsed, (origin, angle, mount) => {
       this.#effects.emit(origin, EffectKind.Muzzle, angle); this.#events.push(mount.event);
+      this.#statistics.fired(ship.allegiance, mount.longitudinalOffsets.length);
+      this.#presentation.accept({ kind: FeedbackKind.Shot, shipId: ship.id, allegiance: ship.allegiance,
+        point: { ...origin }, angle, weapon: mount.id });
     });
   }
   pause(): void { this.#match.pause(); }
@@ -105,11 +125,13 @@ export class Simulation {
       this.#contactAt.set(key, this.elapsed);
       if (!this.#events.includes(GameEvent.ShipCollision)) this.#events.push(GameEvent.ShipCollision);
       this.#effects.emit(contact.point, EffectKind.Impact);
+      this.#presentation.accept({ kind: FeedbackKind.Contact, contact, playerId: this.#player.id });
     }
     if (!this.#player.alive) { this.#match.finish(EndReason.Death); return; }
     this.#projectiles.update(dt, this.#player, this.#enemies, this.#world,
-      (ship, amount, credited) => this.#damage.apply(ship, amount, credited), (point) => {
-        this.#effects.emit(point, EffectKind.Impact); this.#events.push(GameEvent.Impact);
+      (ship, amount, credited) => this.#damage.apply(ship, amount, credited), (point, impact) => {
+        this.#events.push(impact === ImpactKind.Water ? GameEvent.WaterImpact : GameEvent.CoastImpact);
+        this.#presentation.accept({ kind: FeedbackKind.ProjectileImpact, point, impact });
       });
     let removed = false;
     for (let i = this.#enemies.length - 1; i >= 0; i--) if (!this.#enemies[i]!.alive) {
@@ -117,6 +139,7 @@ export class Simulation {
     }
     if (removed) this.#enemyView = Object.freeze(this.#enemies.map((e) => e.view));
     this.#effects.update(dt);
+    this.#presentation.update(dt, this.#projectiles.readView);
     if (this.#match.remaining <= this.#config.rules.timeWarning && !this.#warnedTime) {
       this.#warnedTime = true; this.#events.push(GameEvent.TimeWarning);
     }
@@ -125,7 +148,8 @@ export class Simulation {
   }
   drainEvents(): GameEvent[] { const events = this.#events; this.#events = []; return events; }
   snapshot(): Snapshot { return { status: this.status, elapsed: this.elapsed, remaining: this.#match.remaining,
-    score: this.score, health: this.#player.health, maxHealth: this.#player.maxHealth, enemies: this.#enemies.length, reason: this.reason }; }
+    score: this.score, health: this.#player.health, maxHealth: this.#player.maxHealth, enemies: this.#enemies.length, reason: this.reason,
+    statistics: this.#statistics.snapshot(this.#player.health), weapons: this.#weapons.get(this.#player.id)!.readiness(this.elapsed), scorePulse: this.#presentation.scorePulse }; }
   observation() { return { player: this.#player.snapshot(), enemies: this.#enemies.map((e) => e.snapshot()),
     projectiles: this.#projectiles.projectiles.map((p) => p.snapshot()) }; }
   poolStatistics() { return { projectiles: this.#projectiles.statistics(), effects: this.#effects.statistics() }; }
@@ -134,5 +158,6 @@ export class Simulation {
     this.#projectiles.dispose(); this.#effects.dispose(); this.#weapons.clear(); this.#enemies.length = 0;
     this.#enemyView = Object.freeze([]); this.#events.length = 0;
     this.#contactAt.clear(); this.#world.setBodies([]); this.#world.drainContacts();
+    this.#presentation.dispose();
   }
 }

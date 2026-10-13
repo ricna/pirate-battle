@@ -4,6 +4,7 @@ import { requiredTexture } from './assets';
 import type { Ship, Simulation } from './simulation';
 import { SpritePool } from './rendering/SpritePool';
 import metadata from '../../assets/spritesheet/ui_sheet.json';
+import { PresentationRenderer } from './presentation/PresentationRenderer';
 
 interface ShipView { root: Container; ship: Sprite; frame: Sprite; fill: Sprite; fire: Sprite; health: number; ownedFill?: Texture }
 export class ArenaRenderer {
@@ -12,11 +13,14 @@ export class ArenaRenderer {
   readonly #ships = new Map<number, ShipView>();
   readonly #bullets = new Map<number, Sprite>(); readonly #effects = new Map<number, Sprite>();
   readonly #bulletPool: SpritePool; readonly #effectPool: SpritePool;
+  readonly #presentation: PresentationRenderer;
+  readonly #waterFeedbackLayer = new Container(); readonly #scoreLayer = new Container();
   #disposed = false;
   constructor(world: Container, simulation: Simulation, textures: GameTextures) {
     this.#simulation = simulation; this.#textures = textures;
     this.#layer.label = 'combat-entities'; world.addChild(this.#layer);
-    this.#layer.addChild(this.#shipLayer, this.#projectileLayer, this.#effectLayer);
+    this.#layer.addChild(this.#waterFeedbackLayer, this.#shipLayer, this.#projectileLayer, this.#effectLayer, this.#scoreLayer);
+    this.#presentation = new PresentationRenderer(this.#waterFeedbackLayer, this.#scoreLayer, simulation.presentation, textures, simulation.config.presentation);
     const projectile = simulation.config.player.weapons[0]?.projectile;
     if (!projectile) throw new Error('The player requires a projectile profile for the rendering pool.');
     this.#bulletPool = new SpritePool(this.#projectileLayer, simulation.config.pools.projectiles, this.#texture(projectile.sprite));
@@ -54,13 +58,20 @@ export class ArenaRenderer {
       view.ship.texture = this.#texture(this.#selectedSprite(visual.damageStages, ratio));
       view.ship.width = visual.width; view.ship.height = visual.height;
       view.root.position.set(ship.x, ship.y); view.ship.rotation = ship.angle + visual.angleOffset;
+      const feedback = sim.presentation.shipFeedback(ship.id);
+      const settings = sim.config.presentation;
+      view.ship.tint = feedback && sim.presentation.time - feedback.damageAt < settings.damage.flashSeconds
+        ? settings.damage.flashTint : 0xffffff;
+      const recoil = feedback && !sim.presentation.reducedMotion
+        ? Math.max(0, 1 - (sim.presentation.time - feedback.shotAt) / settings.recoil.duration) * settings.recoil.distance : 0;
+      view.ship.position.set(feedback ? -Math.sin(feedback.shotAngle) * recoil : 0, feedback ? Math.cos(feedback.shotAngle) * recoil : 0);
       view.fire.visible = ratio <= visual.fireThreshold;
-      view.fire.texture = this.#texture(visual.fireSprites[Math.floor(sim.elapsed * visual.fireFramesPerSecond) % visual.fireSprites.length]!);
+      view.fire.texture = this.#texture(visual.fireSprites[Math.floor(sim.presentation.time * visual.fireFramesPerSecond) % visual.fireSprites.length]!);
       if (view.health !== ship.health) {
         const fillTexture = this.#texture(this.#selectedSprite(visual.healthFills, ratio));
         const rect = metadata.frames[visual.healthMetadata].ui.layout.fill_rect;
         const cropped = new Texture({ source: fillTexture.source,
-          frame: new Rectangle(0, 0, rect.x + rect.w * ratio, fillTexture.height) });
+          frame: new Rectangle(fillTexture.frame.x, fillTexture.frame.y, rect.x + rect.w * ratio, fillTexture.height) });
         view.fill.texture = cropped; view.ownedFill?.destroy(false); view.ownedFill = cropped; view.health = ship.health;
       }
     }
@@ -80,12 +91,15 @@ export class ArenaRenderer {
       if (!sprite) { sprite = this.#effectPool.acquire(texture); this.#effects.set(effect.id, sprite); }
       sprite.texture = texture; sprite.position.set(effect.x, effect.y);
       sprite.width = sprite.height = profile.size; sprite.alpha = 1 - effect.age / effect.duration * profile.fade;
+      sprite.rotation = effect.angle;
     }
+    this.#presentation.draw();
   }
-  poolStatistics() { return { projectiles: this.#bulletPool.statistics(), effects: this.#effectPool.statistics() }; }
+  poolStatistics() { return { projectiles: this.#bulletPool.statistics(), effects: this.#effectPool.statistics(), presentation: this.#presentation.statistics() }; }
   destroy(): void {
     if (this.#disposed) return; this.#disposed = true;
     this.#bulletPool.dispose(); this.#effectPool.dispose();
+    this.#presentation.destroy();
     this.#layer.destroy({ children: true }); for (const view of this.#ships.values()) view.ownedFill?.destroy(false);
     this.#ships.clear(); this.#bullets.clear(); this.#effects.clear();
   }
