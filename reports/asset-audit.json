@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-13T17:49:13.503Z",
+  "generatedAt": "2026-10-13T17:49:39.242Z",
   "method": "Inventory, PNG dimensions, ships XML rectangles, UI JSON metadata and static literal references. References are candidates, not proof that an event occurs. Dynamic UI/frame assembly requires the documented usage review.",
   "counts": {
-    "allAssetFiles": 528,
+    "allAssetFiles": 534,
     "defaultPngs": 234,
     "shipXmlFrames": 102,
     "uiJsonFrames": 36,
-    "sounds": 27,
+    "sounds": 28,
     "categories": {
       "effects": 5,
       "ships": 30,
@@ -2682,6 +2682,11 @@
       ]
     },
     {
+      "name": "576054__istudeny__pirat-battle",
+      "seconds": 13.978412698412699,
+      "literalReferences": []
+    },
+    {
       "name": "game_complete",
       "seconds": 1.5,
       "literalReferences": [
@@ -2836,8 +2841,12 @@
     "assets/authored/water_splash.svg",
     "assets/logo_jungle_gaming.svg",
     "assets/maps/arena_00.tmj",
+    "assets/maps/arena_01.tmj",
     "assets/maps/pirate-battle.tiled-project",
     "assets/maps/terrain.tsj",
+    "assets/sounds/extra/adventure-pirate-adventure-361663-license.txt",
+    "assets/sounds/extra/ebunny-pirate-adventure-361663.mp3",
+    "assets/sounds/extra/SoundCredits.txt",
     "assets/spritesheet/ships_miscellaneous_sheet.xml",
     "assets/spritesheet/ships_miscellaneous_sheet_retina.xml",
     "assets/spritesheet/ui_sheet.json",
