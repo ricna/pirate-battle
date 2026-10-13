@@ -6,7 +6,8 @@ export class GameDefaults {
   private constructor() {}
   static readonly Options = { sessionSeconds: 120, spawnSeconds: 5, sound: true, volume: 0.5 };
   static readonly Limits = { session: [60, 180], spawn: [2, 10], volume: [0, 1] } as const;
-  static readonly OptionSteps = { session: 1, spawn: 0.5, volume: 0.05 };
+  /** Change per Options button press: seconds, seconds and volume fraction. */
+  static readonly OptionSteps = { session: 10, spawn: 0.2, volume: 0.1 };
   static readonly Version = 'arena_00-v1/balance-v4';
   static readonly Seed = 20261012;
   static readonly FixedStep = 1 / 60;

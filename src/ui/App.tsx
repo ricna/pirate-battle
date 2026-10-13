@@ -9,10 +9,11 @@ import type { RecordsTab } from './CaptainsLog';
 import { DemoNetworkTools } from './DemoNetworkTools';
 import { HowToPlay } from './HowToPlay';
 import { MainMenu } from './MainMenu';
+import { OptionsScreen } from './OptionsScreen';
 import { MenuArt } from './MenuArt';
 import { useTransientNotice } from './useTransientNotice';
-import { createGameConfig, DEFAULT_OPTIONS, LIMITS, validOptions } from '../game/config';
-import type { GameConfig, Options } from '../game/config';
+import { createGameConfig } from '../game/config';
+import type { GameConfig } from '../game/config';
 import type { Snapshot } from '../game/simulation';
 import { audio } from '../game/audio';
 import { AudioConfig } from '../game/configuration/AudioConfig';
@@ -23,26 +24,6 @@ import { getScenario, networkWarning, resetNetwork, setScenario } from '../data/
 import type { Scenario } from '../data/network';
 import { loadOptions, playerIdentity, storageWarning, writeStored } from '../data/storage';
 import { ResultScore } from './ResultScore';
-import { GameDefaults } from '../game/configuration/GameDefaults';
-function OptionsForm({ options, save, back }: { options: Options; save: (options: Options) => void; back: () => void }) {
-  const [draft, setDraft] = useState(options); const [error, setError] = useState('');
-  return <section className="panel options-panel"><h1>Options</h1><p>Prepare your next voyage.</p>
-    <form noValidate onSubmit={(event) => { event.preventDefault();
-      if (!validOptions(draft)) { setError(`Session time must be ${LIMITS.session[0]}–${LIMITS.session[1]} seconds. Spawn time must be ${LIMITS.spawn[0]}–${LIMITS.spawn[1]} seconds.`); return; }
-      save(draft); }}>
-      <label>Game session time <span>{LIMITS.session[0]}–{LIMITS.session[1]} seconds</span><input type="number" name="session" min={LIMITS.session[0]} max={LIMITS.session[1]} step={GameDefaults.OptionSteps.session} required
-        value={Number.isNaN(draft.sessionSeconds) ? '' : draft.sessionSeconds}
-        onChange={(e) => setDraft({ ...draft, sessionSeconds: e.target.valueAsNumber })} /></label>
-      <label>Enemy spawn time <span>{LIMITS.spawn[0]}–{LIMITS.spawn[1]} seconds</span><input type="number" name="spawn" min={LIMITS.spawn[0]} max={LIMITS.spawn[1]} step={GameDefaults.OptionSteps.spawn} required
-        value={Number.isNaN(draft.spawnSeconds) ? '' : draft.spawnSeconds}
-        onChange={(e) => setDraft({ ...draft, spawnSeconds: e.target.valueAsNumber })} /></label>
-      <label className="check"><input type="checkbox" checked={draft.sound} onChange={(e) => setDraft({ ...draft, sound: e.target.checked })} /> Sound enabled</label>
-      <label>Volume <output>{Math.round(draft.volume * 100)}%</output><input type="range" min={LIMITS.volume[0]} max={LIMITS.volume[1]} step={GameDefaults.OptionSteps.volume} value={draft.volume}
-        onChange={(e) => setDraft({ ...draft, volume: e.target.valueAsNumber })} /></label>
-      {error && <p role="alert">{error}</p>}<div className="button-row"><Button type="submit">Save options</Button><Button type="button" onClick={back}>Back</Button></div>
-      <button type="button" className="text-button" onClick={() => setDraft(DEFAULT_OPTIONS)}>Restore default options</button>
-    </form></section>;
-}
 export function App() {
   const [options, setOptions] = useState(loadOptions); const [playerId] = useState(playerIdentity);
   const [screen, setScreen] = useState<'menu' | 'options' | 'howToPlay' | 'records' | 'game' | 'result'>('menu');
@@ -119,7 +100,7 @@ export function App() {
   return <main className={`app app-${screen}`}>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <div id="main-content" className="shell" tabIndex={-1}>
-      {screen === 'options' ? <OptionsForm options={options} save={(value) => { writeStored('options', value); setOptions(value); setNotice('Options saved.'); mainMenu(); }} back={mainMenu} />
+      {screen === 'options' ? <OptionsScreen options={options} onChange={(value) => { writeStored('options', value); setOptions(value); }} onMainMenu={mainMenu} />
         : screen === 'howToPlay' ? <HowToPlay onMainMenu={mainMenu} />
         : screen === 'records' ? <CaptainsLog tab={recordsTab} onTabChange={setRecordsTab} config={createGameConfig(options)}
           playerId={playerId} revision={revision} lastMatchId={last?.id ?? null} onMainMenu={mainMenu} />

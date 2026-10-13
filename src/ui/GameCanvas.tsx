@@ -11,8 +11,10 @@ import type { Snapshot } from '../game/simulation';
 import { InputController } from '../game/input';
 import { audio } from '../game/audio';
 import { AudioConfig } from '../game/configuration/AudioConfig';
-import { InputConfig } from '../game/configuration/InputConfig';
-import { Button, ControlsHelp, Dialog, uiAsset } from './components';
+import { Button, Dialog } from './components';
+import { MatchStatusHud, TouchControls } from './GameHud';
+import type { TouchInput } from './GameHud';
+import { MenuArt } from './MenuArt';
 import './GameCanvas.css';
 export interface GameObservation { snapshot: Snapshot; player: ReturnType<Simulation['observation']>['player']; enemies: ReturnType<Simulation['observation']>['enemies'];
   projectiles: ReturnType<Simulation['observation']>['projectiles']; pools: ReturnType<Simulation['poolStatistics']>; renderPools: ReturnType<ArenaRenderer['poolStatistics']>; effects: number; config: GameConfig;
@@ -22,7 +24,6 @@ export interface GameObservation { snapshot: Snapshot; player: ReturnType<Simula
 declare global { interface Window { pirateTest?: { observe: (includeFrames?: boolean) => GameObservation; advance?: (seconds: number) => void };
   pirateMetrics?: { frames: number[]; entityPeak: number; elapsed: number; score: number; reason: string | null;
     audio: ReturnType<typeof audio.observation>; presentationPools: ReturnType<Simulation['presentation']['statistics']> } } }
-const commands = InputConfig.Controls;
 export function GameCanvas({ config, onComplete, onAbandon, onResultReady }: {
   config: GameConfig; onComplete: (snapshot: Snapshot) => void; onAbandon: () => void; onResultReady: () => void;
 }) {
@@ -159,13 +160,12 @@ export function GameCanvas({ config, onComplete, onAbandon, onResultReady }: {
   const paused = snapshot?.status === 'paused';
   const ended = snapshot?.status === 'ended';
   const commandsDisabled = status !== 'ready' || paused || ended;
+  const touchInput: TouchInput = {
+    press: (source, action) => inputRef.current?.press(source, action),
+    release: (source) => inputRef.current?.release(source),
+    focusArena: () => rootRef.current?.focus(),
+  };
   return <section ref={rootRef} className="game" tabIndex={0} aria-label="Gameplay controls">
-    <header className="hud" aria-label="Match status">
-      <div className="counter"><img src={uiAsset('hud/icon_heart')} alt="" /> <span>Health <strong>{snapshot?.health ?? config.player.health}</strong></span></div>
-      <div className="counter"><img src={uiAsset('hud/icon_score')} alt="" /> <span>Score <strong>{snapshot?.score ?? 0}</strong></span></div>
-      <div className="counter"><img src={uiAsset('hud/icon_time')} alt="" /> <span>Time <strong>{Math.ceil(snapshot?.remaining ?? config.sessionSeconds)}s</strong></span></div>
-      <button className="round-button" aria-label="Pause game" disabled={commandsDisabled} onClick={pause}><img src={uiAsset('controls/icon_pause')} alt="" /></button>
-    </header>
     <div ref={viewportRef} className="arena" aria-busy={status === 'loading'}>
       <canvas key={attempt} ref={canvasRef} aria-label="Naval battle arena" />
       {ended && <div className="terminal-banner" role="status">{snapshot.reason === 'death' ? 'Ship Sunk' : 'Battle Complete'}</div>}
@@ -173,25 +173,15 @@ export function GameCanvas({ config, onComplete, onAbandon, onResultReady }: {
       {status === 'error' && <div className="arena-message" role="alert"><p>Unable to load the arena.</p><p>{error}</p>
         <Button onClick={() => setAttempt((v) => v + 1)}>Try again</Button><Button onClick={onAbandon}>Main Menu</Button></div>}
     </div>
-    <footer className="combat-footer">
-      <div className="touch-controls">{commands.map(({ action, label, icon }) => <button key={action} type="button"
-        className={`round-button command command-${action}`} aria-label={label} disabled={commandsDisabled}
-        onPointerDown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); rootRef.current?.focus();
-          inputRef.current?.press(`touch-${e.pointerId}`, action); e.currentTarget.dataset.held = 'true'; }}
-        onPointerUp={(e) => { inputRef.current?.release(`touch-${e.pointerId}`); delete e.currentTarget.dataset.held; }}
-        onPointerCancel={(e) => { inputRef.current?.release(`touch-${e.pointerId}`); delete e.currentTarget.dataset.held; }}
-        onLostPointerCapture={(e) => { inputRef.current?.release(`touch-${e.pointerId}`); delete e.currentTarget.dataset.held; }}
-        onKeyDown={(e) => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); inputRef.current?.press(`button-${action}`, action); } }}
-        onKeyUp={() => inputRef.current?.release(`button-${action}`)} onBlur={() => inputRef.current?.release(`button-${action}`)}>
-        <img src={uiAsset(`controls/icon_${icon}`)} alt="" /><span>{label}</span></button>)}</div>
-      <ControlsHelp />
-    </footer>
+    <MatchStatusHud config={config} snapshot={snapshot} canPause={!commandsDisabled} onPause={pause} />
+    <TouchControls snapshot={snapshot} disabled={commandsDisabled} input={touchInput} />
+    <img className="hud-studio-logo" src={MenuArt.StudioLogo} alt="Jungle Gaming" />
     <p className="sr-only" role="status">{status === 'loading' ? 'Loading arena' : paused ? 'Game paused' : ended ? 'Battle ended' : 'Game active'}</p>
     {paused && <Dialog title={abandon ? 'Leave this battle?' : 'Battle paused'} onClose={() => { if (abandon) setAbandon(false); else resume(); }}>
       <p>{abandon ? 'This unfinished battle will not be saved.' : 'Time, movement and weapons are suspended. Resume when you are ready.'}</p>
       <p className="portrait-hint">Rotate your device to landscape before resuming.</p>
-      {abandon ? <><Button onClick={() => setAbandon(false)}>Stay here</Button><Button onClick={onAbandon}>Leave battle</Button></>
-        : <><Button onClick={resume}>Resume</Button><Button onClick={() => setAbandon(true)}>Main Menu</Button></>}
+      {abandon ? <><Button variant="secondary" onClick={() => setAbandon(false)}>Stay here</Button><Button icon="icon_close" onClick={onAbandon}>Leave battle</Button></>
+        : <><Button icon="icon_play" onClick={resume}>Resume</Button><Button variant="secondary" icon="icon_home" onClick={() => setAbandon(true)}>Main Menu</Button></>}
     </Dialog>}
   </section>;
 }

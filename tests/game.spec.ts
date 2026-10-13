@@ -1,19 +1,24 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { advance, defendUntilFinished, observe, open, options, play, scenario } from './helpers';
+import { advance, defendUntilFinished, observe, open, options, play, scenario, setOption } from './helpers';
 const pageErrors = new Map<Page, string[]>();
 test.beforeEach(async ({ page }) => { const errors: string[] = []; pageErrors.set(page, errors);
   page.on('pageerror', (error) => errors.push(error.message)); await open(page); });
 test.afterEach(async ({ page }) => { expect(pageErrors.get(page), 'No unhandled application errors').toEqual([]); pageErrors.delete(page); });
 test('options validate, persist, and isolate new matches', async ({ page }) => {
   await page.getByRole('button', { name: 'Options', exact: true }).click();
-  await page.getByLabel('Game session time').fill('59'); await page.getByLabel('Enemy spawn time').fill('0');
-  await page.getByRole('button', { name: 'Save options' }).click(); await expect(page.getByRole('alert')).toContainText('60–180');
-  await page.getByLabel('Game session time').fill('60'); await page.getByLabel('Enemy spawn time').fill('10');
-  await page.getByRole('button', { name: 'Save options' }).click(); await page.reload();
-  await page.getByRole('button', { name: 'Options', exact: true }).click();
-  await expect(page.getByLabel('Game session time')).toHaveValue('60'); await expect(page.getByLabel('Enemy spawn time')).toHaveValue('10');
-  await page.getByRole('button', { name: 'Back', exact: true }).click(); await play(page);
+  const session = page.getByRole('group', { name: 'Game session time', exact: true });
+  const spawn = page.getByRole('group', { name: 'Enemy spawn time', exact: true });
+  await expect(session).toHaveAccessibleDescription(/60–180 seconds/); await expect(spawn).toHaveAccessibleDescription(/2–10 seconds/);
+  // Steppers only produce valid values: each limit disables the button that would leave the documented range.
+  await setOption(page, 'Game session time', '60 s'); await expect(session.getByRole('button', { name: /^Decrease/ })).toBeDisabled();
+  await setOption(page, 'Enemy spawn time', '10 s'); await expect(spawn.getByRole('button', { name: /^Increase/ })).toBeDisabled();
+  await page.getByRole('button', { name: 'Restore default options' }).click();
+  await expect(session.locator('output')).toHaveText('120 s'); await expect(spawn.locator('output')).toHaveText('5 s');
+  await setOption(page, 'Game session time', '60 s'); await setOption(page, 'Enemy spawn time', '10 s');
+  await page.reload(); await page.getByRole('button', { name: 'Options', exact: true }).click();
+  await expect(session.locator('output')).toHaveText('60 s'); await expect(spawn.locator('output')).toHaveText('10 s');
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click(); await play(page);
   expect((await observe(page)).config.sessionSeconds).toBe(60);
 });
 test('authored map loading failure is visible and retry succeeds', async ({ page }) => {
@@ -62,7 +67,7 @@ test('front and parallel broadsides obey independent cooldowns and expire', asyn
   await advance(page, 0.5); expect((await observe(page)).projectiles.length).toBeLessThanOrEqual(7);
   await page.keyboard.up('q'); await page.keyboard.up('e'); await advance(page, 2); expect((await observe(page)).projectiles).toHaveLength(0);
 });
-test('one cannonball applies its configured damage once; one destroyed enemy awards exactly one point', async ({ page }) => {
+test('one cannonball applies its configured damage once; one destroyed enemy awards exactly one point', async ({ page }, testInfo) => {
   await play(page); await advance(page, 10); let state = await observe(page);
   // Engage the first Chaser at mid-range, leaving time for two shots before it can ram, whatever its route timing.
   const engagementDistance = 340;
@@ -81,12 +86,22 @@ test('one cannonball applies its configured damage once; one destroyed enemy awa
   await advance(page, 0.36); await page.keyboard.down('Space'); await advance(page, 1 / 60); await page.keyboard.up('Space');
   for (let i = 0; i < 20; i++) { await advance(page, 0.05); if (!(await observe(page)).enemies.some((e) => e.id === enemy.id)) break; }
   expect((await observe(page)).enemies.some((e) => e.id === enemy.id)).toBe(false);
-  expect((await observe(page)).snapshot.score).toBe(1); await advance(page, 1);
+  expect((await observe(page)).snapshot.score).toBe(1);
+  await advance(page, 0.5);
+  const feedback = await observe(page);
+  const emission = feedback.presentation.crew.find((crew) => crew.shipId === enemy.id)!;
+  expect(emission.count).toBeGreaterThanOrEqual(2); expect(emission.count).toBeLessThanOrEqual(5);
+  expect(feedback.presentation.particles.filter((particle) => particle.kind === 'crew' && particle.sourceShipId === enemy.id)).toHaveLength(emission.count);
+  expect(feedback.snapshot.statistics.enemiesSunk).toBe(1);
+  expect(feedback.snapshot.statistics.cannonballHits).toBe(2);
+  const screenshot = await page.screenshot({ path: `reports/combat-feedback-${testInfo.project.name}.png` });
+  await testInfo.attach('sinking-crew-foam-debris', { body: screenshot, contentType: 'image/png' });
+  await advance(page, 0.5);
   expect((await observe(page)).snapshot.score).toBe(1);
 });
-test('missing ship image fails visibly and can be loaded on retry', async ({ page }) => {
+test('missing ship atlas fails visibly and can be loaded on retry', async ({ page }) => {
   let fail = true;
-  await page.context().route('**/assets/png/default/ships/ship_7.png', async (route) => {
+  await page.context().route('**/assets/spritesheet/ships_miscellaneous_sheet.png', async (route) => {
     if (fail) { fail = false; await route.fulfill({ status: 404, body: 'Missing' }); } else await route.continue();
   });
   await page.getByRole('button', { name: 'Play', exact: true }).click(); await expect(page.getByRole('alert')).toContainText('Unable to load the arena');
@@ -135,6 +150,45 @@ test('death stops combat and result survives refresh', async ({ page }) => {
   expect(await page.evaluate(() => !!window.pirateTest)).toBe(false);
   await page.reload(); await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBe(result);
+});
+test('terminal sinking persists once before revealing results and keeps crew visible', async ({ page }, testInfo) => {
+  await play(page);
+  let state = await observe(page);
+  for (let step = 0; step < 120 && state.snapshot.status !== 'ended'; step++) {
+    await advance(page, 1); state = await observe(page);
+  }
+  expect(state.snapshot.reason).toBe('death');
+  await expect(page.getByRole('status').filter({ hasText: 'Ship Sunk' })).toBeVisible();
+  const emission = state.presentation.crew.find((crew) => crew.shipId === state.player.id)!;
+  expect(emission.count).toBeGreaterThanOrEqual(2); expect(emission.count).toBeLessThanOrEqual(5);
+  expect(state.presentation.particles.filter((particle) => particle.kind === 'crew' && particle.sourceShipId === state.player.id)).toHaveLength(emission.count);
+  const saved = await page.evaluate(() => localStorage.getItem('pirate.last'));
+  expect(saved).not.toBeNull();
+  const before = state.snapshot;
+  await advance(page, 0.2);
+  state = await observe(page);
+  expect(state.snapshot.elapsed).toBe(before.elapsed); expect(state.snapshot.score).toBe(before.score);
+  expect(state.snapshot.statistics).toEqual(before.statistics);
+  const capture = await page.screenshot({ path: `reports/terminal-feedback-${testInfo.project.name}.png` });
+  await testInfo.attach('player-sinking-before-result', { body: capture, contentType: 'image/png' });
+  await advance(page, state.config.presentation.terminalSeconds);
+  await expect(page.getByRole('heading', { name: 'Battle result' })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBe(saved);
+});
+test('reduced-motion preference preserves input, feedback and pause cleanup', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await play(page); await page.keyboard.down('w'); await page.keyboard.down('Space'); await advance(page, 0.5);
+  const active = await observe(page);
+  expect(active.presentation.reducedMotion).toBe(true);
+  expect(active.player.speed).toBeGreaterThan(0);
+  expect(active.presentation.particles.length).toBeGreaterThan(0);
+  await page.keyboard.press('p');
+  await advance(page, 1);
+  expect((await observe(page)).presentation).toEqual(active.presentation);
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await advance(page, 0.1);
+  expect((await observe(page)).presentation.time).toBeGreaterThan(active.presentation.time);
+  await page.keyboard.up('w'); await page.keyboard.up('Space');
 });
 test('pause freezes simulation and cooldowns, focus loss requires explicit resume', async ({ page }) => {
   await play(page); await page.keyboard.down('w'); await page.keyboard.down('Space'); await advance(page, 0.1);
@@ -217,9 +271,14 @@ test('post-commit timeout retries idempotently and late requests do not replace 
 test('versioned menu, arena and result visual baselines; layout fits supported screens', async ({ page }) => {
   await expect(page).toHaveScreenshot('menu.png', { fullPage: true });
   await play(page); await expect(page).toHaveScreenshot('arena.png');
-  const bounds = await page.locator('.arena').boundingBox(); const size = page.viewportSize()!;
-  expect(bounds!.x).toBeGreaterThanOrEqual(0); expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(size.width);
-  expect(bounds!.y + bounds!.height).toBeLessThan(size.height);
+  // As in assets/sample.png, the arena fills the screen and every HUD element stays fully visible above it.
+  const size = page.viewportSize()!;
+  expect(await page.locator('.arena').boundingBox()).toEqual({ x: 0, y: 0, width: size.width, height: size.height });
+  for (const element of await page.locator('.match-hud > *, .command').all()) {
+    const box = (await element.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0); expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(size.width); expect(box.y + box.height).toBeLessThanOrEqual(size.height);
+  }
   await advance(page, 120); await expect(page.locator('.result-panel')).toContainText('Battle registered');
   await expect(page).toHaveScreenshot('result.png', { fullPage: true });
 });

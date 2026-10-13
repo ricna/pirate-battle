@@ -16,10 +16,19 @@ export async function scenario(page: Page, value: Scenario) {
   const details = page.locator('.network-tools'); if (await details.getAttribute('open') === null) await details.locator('summary').click();
   await page.getByLabel('Network scenario').selectOption(value);
 }
+// Presses the setting's minus/plus buttons until it shows `target` (each press is saved immediately).
+export async function setOption(page: Page, label: string, target: string) {
+  const setting = page.getByRole('group', { name: label, exact: true }); const value = setting.locator('output');
+  for (let presses = 0; presses < 40 && await value.textContent() !== target; presses++) {
+    const increase = Number.parseFloat((await value.textContent())!) < Number.parseFloat(target);
+    await setting.getByRole('button', { name: increase ? /^Increase/ : /^Decrease/ }).click();
+  }
+  await expect(value).toHaveText(target);
+}
 export async function options(page: Page, duration: number, spawn: number) {
   await page.getByRole('button', { name: 'Options', exact: true }).click();
-  await page.getByLabel('Game session time').fill(String(duration)); await page.getByLabel('Enemy spawn time').fill(String(spawn));
-  await page.getByRole('button', { name: 'Save options' }).click();
+  await setOption(page, 'Game session time', `${duration} s`); await setOption(page, 'Enemy spawn time', `${spawn} s`);
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
 }
 // Steering uses actual keyboard controls and advances the actual fixed-step rules.
 // It never writes positions, health, scores, entities or cooldowns.

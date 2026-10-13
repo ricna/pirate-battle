@@ -24,8 +24,17 @@ test('static water stays continuous at fractional viewport and DPI scales', asyn
             const canvas = document.querySelector('canvas')!;
             const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
             if (!gl) throw new Error('The arena must have its initialized WebGL context.');
+            // The full-screen arena letterboxes the map; measure the row near the bottom of the drawn map,
+            // located as the lowest non-background pixel of the centre column (WebGL rows start at the bottom).
+            const background = window.pirateTest!.observe().config.runtime.background;
+            const backgroundRgb = [1, 3, 5].map((offset) => parseInt(background.slice(offset, offset + 2), 16));
+            const column = new Uint8Array(gl.drawingBufferHeight * 4);
+            gl.readPixels(Math.floor(gl.drawingBufferWidth / 2), 0, 1, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, column);
+            let mapBottom = 0;
+            while (mapBottom < gl.drawingBufferHeight
+              && backgroundRgb.every((value, channel) => column[mapBottom * 4 + channel] === value)) mapBottom++;
             const row = new Uint8Array(gl.drawingBufferWidth * 4);
-            const y = gl.drawingBufferHeight - Math.ceil(15 * devicePixelRatio);
+            const y = mapBottom + Math.ceil(15 * devicePixelRatio);
             gl.readPixels(0, y, gl.drawingBufferWidth, 1, gl.RGBA, gl.UNSIGNED_BYTE, row);
             const from = Math.ceil(gl.drawingBufferWidth * 0.3); const to = Math.floor(gl.drawingBufferWidth * 0.7);
             const blackColumns: number[] = [];

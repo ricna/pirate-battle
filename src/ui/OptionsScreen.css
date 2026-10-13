@@ -1,0 +1,133 @@
+/*
+ * Options board reproducing assets/sample_options.png.
+ * Lengths are pixels of that 1800×1000 reference multiplied by --options-px. The board is taller than the
+ * reference because the Sound and Volume rows follow the two required settings, so tall screens fit the whole
+ * board; short landscape phones keep at least 0.75 of the reference for touch targets and scroll instead.
+ */
+
+.app-options {
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.app-options .shell {
+  width: auto;
+}
+
+.options-board {
+  --options-px: max(min(var(--sample-px), 100svh / 980), min(0.75px, 100vw / 840));
+  /* The authored panel border is drawn at 0.78 of its retina size, as on the main menu board. */
+  --panel-border-scale: 0.78;
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc(781 * var(--options-px));
+  margin: calc(12 * var(--options-px)) auto;
+  padding-bottom: calc(30 * var(--options-px));
+  border-style: solid;
+  border-width: calc(80 * var(--panel-border-scale) * var(--options-px)) calc(64 * var(--panel-border-scale) * var(--options-px));
+  /* Retina nine-slice borders: twice the logical 40/32 borders of ui_sheet.json. */
+  border-image: url('../../assets/png/retina/ui/menu/panel_menu.png') 80 64 fill stretch;
+  filter: drop-shadow(0 calc(8 * var(--options-px)) calc(14 * var(--options-px)) #07172966);
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+}
+
+.options-board h1 {
+  margin: calc(63 * var(--options-px)) 0 0;
+  font-size: calc(40 * var(--options-px));
+  line-height: 1;
+  letter-spacing: -0.027em;
+  text-transform: uppercase;
+  color: #ffebbc;
+  text-shadow: 0 calc(3 * var(--options-px)) 0 #13212c;
+}
+
+.options-setting {
+  margin-top: calc(25 * var(--options-px));
+}
+
+.options-board h1 + .options-setting {
+  margin-top: calc(32.2 * var(--options-px));
+}
+
+.options-label {
+  margin: 0;
+  font-size: calc(16 * var(--options-px));
+  line-height: 1;
+  color: #d8c9a9;
+}
+
+/* The minus and plus buttons sit 331 reference pixels apart, edge to edge, with the value centred. */
+.options-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(331 * var(--options-px));
+  height: calc(50 * var(--options-px));
+  margin-top: calc(33 * var(--options-px));
+}
+
+.options-value {
+  font-size: calc(23 * var(--options-px));
+  font-variant-numeric: tabular-nums;
+  color: #ffebbc;
+}
+
+.options-step {
+  position: relative;
+  width: calc(50 * var(--options-px));
+  height: calc(50 * var(--options-px));
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: url('../../assets/png/retina/ui/controls/button_round_normal.png') center / 100% 100% no-repeat;
+}
+
+.options-step:hover {
+  background-image: url('../../assets/png/retina/ui/controls/button_round_hover.png');
+}
+
+.options-step:active {
+  background-image: url('../../assets/png/retina/ui/controls/button_round_pressed.png');
+}
+
+.options-step:disabled {
+  opacity: 0.45;
+}
+
+.options-step img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(18 * var(--options-px));
+  height: calc(18 * var(--options-px));
+  transform: translate(-50%, -50%);
+}
+
+.options-board .options-main-menu {
+  width: calc(344 * var(--options-px));
+  min-width: 0;
+  height: calc(92 * var(--options-px));
+  margin-top: calc(17 * var(--options-px));
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: calc(24 * var(--options-px));
+  line-height: 1;
+  text-transform: uppercase;
+  color: #382b1f;
+  text-shadow: none;
+}
+
+.options-board .options-restore {
+  margin-top: calc(8 * var(--options-px));
+  padding: calc(8 * var(--options-px));
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: max(calc(15 * var(--options-px)), 12px);
+  font-weight: normal;
+}
