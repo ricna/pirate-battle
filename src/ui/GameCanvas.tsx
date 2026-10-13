@@ -79,7 +79,7 @@ export function GameCanvas({ config, onComplete, onAbandon }: {
         for (const texture of Object.values(textures)) sources.add(texture.source);
         if (disposed) { destroy(); return; }
         const simulation = new Simulation(config, map); simRef.current = simulation;
-        mapView = new MapRenderer(map); application.stage.addChild(mapView.world);
+        mapView = new MapRenderer(map, application.renderer, config.runtime.staticMapResolution); application.stage.addChild(mapView.world);
         arena = new ArenaRenderer(mapView.world, simulation, textures);
         const resizeCanvas = () => { if (disposed) return;
           application.renderer.resize(Math.max(1, host!.clientWidth), Math.max(1, host!.clientHeight));

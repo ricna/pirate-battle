@@ -112,6 +112,8 @@ export class GameConfigFactory {
     for (const value of [config.runtime.maxFrameSeconds, config.runtime.hudIntervalMs, config.runtime.maxResolution,
       config.runtime.maxFrameSamples, config.runtime.maxTestAdvance]) positive(value, 'runtime settings');
     finite(config.runtime.profileWarmupSeconds, 'profiling warmup'); finite(config.runtime.mapProgressWeight, 'map progress weight');
+    if (!Number.isInteger(config.runtime.staticMapResolution) || config.runtime.staticMapResolution <= 0)
+      throw new Error('Static map resolution must be a positive integer to preserve whole-pixel tile edges.');
     if (config.runtime.mapProgressWeight > 1) throw new Error('Invalid map progress weight.');
     for (const value of Object.values(config.random)) positive(value, 'random settings');
     if (config.random.modulus !== 2 ** 32 || !Number.isInteger(config.random.multiplier) || !Number.isInteger(config.random.increment))

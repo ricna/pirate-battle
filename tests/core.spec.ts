@@ -38,7 +38,7 @@ test('configuration snapshots reject invalid profiles and identify edited balanc
   expect(original.player.movement.maxSpeed).toBe(230);
   const edited = { ...original, player: { ...original.player, movement: { ...original.player.movement, maxSpeed: 320 } } };
   expect(configurationKey(edited)).not.toBe(configurationKey(original));
-  const changedGame = new Simulation(edited, map()); changedGame.step(1, new Set([Action.Forward]));
+  const changedGame = new Simulation(edited, map()); changedGame.step(2, new Set([Action.Forward]));
   expect(changedGame.player.speed).toBe(320); changedGame.dispose();
   expect(() => GameConfigFactory.validate({ ...edited, player: { ...edited.player, radius: -1 } })).toThrow();
   expect(() => GameConfigFactory.validate({ ...edited, player: { ...edited.player,
@@ -99,13 +99,17 @@ test('read ports cannot mutate private state; acceleration, braking, pause and d
   expect(simulation.player.health).toBe(config.player.health);
   simulation.step(config.fixedStep, new Set([Action.Forward]));
   expect(simulation.player.speed).toBeCloseTo(config.player.movement.acceleration * config.fixedStep);
-  for (let step = 0; step < 20; step++) simulation.step(config.fixedStep, new Set([Action.Forward]));
+  const accelerationSteps = Math.ceil(config.player.movement.maxSpeed / config.player.movement.acceleration / config.fixedStep);
+  for (let step = 0; step < accelerationSteps; step++) simulation.step(config.fixedStep, new Set([Action.Forward]));
   expect(simulation.player.speed).toBe(config.player.movement.maxSpeed);
   simulation.pause(); const frozen = simulation.observation(); simulation.step(1, new Set([Action.Forward]));
   expect(simulation.observation()).toEqual(frozen); simulation.resume();
-  for (let step = 0; step < 10; step++) simulation.step(config.fixedStep, new Set());
+  simulation.step(config.fixedStep, new Set());
+  expect(simulation.player.speed).toBeGreaterThan(0); expect(simulation.player.speed).toBeLessThan(config.player.movement.maxSpeed);
+  const brakingSteps = Math.ceil(config.player.movement.maxSpeed / config.player.movement.deceleration / config.fixedStep);
+  for (let step = 0; step < brakingSteps; step++) simulation.step(config.fixedStep, new Set());
   expect(simulation.player.speed).toBe(0);
-  simulation.step(config.fixedStep, new Set([Action.Front])); expect(simulation.poolStatistics().projectiles.active).toBe(1);
+  simulation.step(config.fixedStep, new Set([Action.Port])); expect(simulation.poolStatistics().projectiles.active).toBe(3);
   simulation.dispose(); simulation.dispose(); expect(simulation.poolStatistics().projectiles.active).toBe(0);
   const elapsed = simulation.elapsed; simulation.step(1, new Set()); expect(simulation.elapsed).toBe(elapsed);
 });

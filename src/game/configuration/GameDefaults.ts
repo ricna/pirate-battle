@@ -7,7 +7,7 @@ export class GameDefaults {
   static readonly Options = { sessionSeconds: 120, spawnSeconds: 5, sound: true, volume: 0.5 };
   static readonly Limits = { session: [60, 180], spawn: [2, 10], volume: [0, 1] } as const;
   static readonly OptionSteps = { session: 1, spawn: 0.5, volume: 0.05 };
-  static readonly Version = 'arena_00-v1/balance-v2';
+  static readonly Version = 'arena_00-v1/balance-v3';
   static readonly Seed = 20261012;
   static readonly FixedStep = 1 / 60;
   static readonly PlayerSpawn = { x: 1024, y: 960 };
@@ -29,6 +29,7 @@ export class GameDefaults {
     clockTolerance: 1e-8, geometryTolerance: 1e-9, navigationInflation: 0.15, movementStepRadiusRatio: 0.5 };
   static readonly Random = { multiplier: 1664525, increment: 1013904223, modulus: 4294967296 };
   static readonly Runtime = { maxFrameSeconds: 0.25, hudIntervalMs: 250, maxResolution: 2,
+    staticMapResolution: 1,
     profileWarmupSeconds: 5, maxFrameSamples: 20000, mapProgressWeight: 0.6,
     background: '#123744', maxTestAdvance: 180 };
 }

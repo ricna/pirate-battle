@@ -1,12 +1,16 @@
-import { Container, Rectangle, Sprite, Texture } from 'pixi.js';
+import { Container, Rectangle, RenderTexture, Sprite, Texture } from 'pixi.js';
+import type { Renderer } from 'pixi.js';
 import type { LoadedMap } from './tiledMap';
 
 export class MapRenderer {
   readonly world = new Container();
   readonly #frames = new Map<number, Texture>();
+  #mapTexture: RenderTexture | null = null;
+  #destroyed = false;
 
-  constructor(readonly map: LoadedMap) {
+  constructor(readonly map: LoadedMap, renderer: Pick<Renderer, 'render'>, resolution: number) {
     this.world.label = 'authored-arena';
+    const tiles = new Container();
     try {
       for (const layer of map.layers) {
         const container = new Container();
@@ -14,7 +18,7 @@ export class MapRenderer {
         container.visible = layer.visible;
         container.alpha = layer.opacity;
         container.position.set(layer.offsetX, layer.offsetY);
-        this.world.addChild(container);
+        tiles.addChild(container);
 
         layer.data.forEach((rawGid, index) => {
           if (rawGid === 0) return;
@@ -38,9 +42,17 @@ export class MapRenderer {
           container.addChild(sprite);
         });
       }
+      // Bake authored layers at integer resolution before fitting a single quad.
+      // Separate scaled tile quads can leave rasterization cracks at shared edges.
+      this.#mapTexture = RenderTexture.create({ width: map.width * map.tileWidth,
+        height: map.height * map.tileHeight, resolution, scaleMode: 'nearest', antialias: false });
+      renderer.render({ container: tiles, target: this.#mapTexture, clear: true });
+      this.world.addChild(new Sprite(this.#mapTexture));
     } catch (error) {
       this.destroy();
       throw error;
+    } finally {
+      tiles.destroy({ children: true });
     }
   }
 
@@ -72,10 +84,13 @@ export class MapRenderer {
   }
 
   destroy() {
+    if (this.#destroyed) return;
+    this.#destroyed = true;
     this.world.removeFromParent();
     this.world.destroy({ children: true });
     // Frames are owned here; the shared, cached atlas image remains reusable.
     for (const texture of this.#frames.values()) texture.destroy(false);
     this.#frames.clear();
+    this.#mapTexture?.destroy(true); this.#mapTexture = null;
   }
 }

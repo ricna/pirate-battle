@@ -39,6 +39,18 @@ test('movement, rotation, island collision and arena limits', async ({ page }) =
   await page.keyboard.down('w'); await advance(page, 6); await page.keyboard.up('w');
   const final = (await observe(page)).player; expect(final.x).toBeGreaterThan(1950); expect(final.x).toBeLessThanOrEqual(2048 - final.radius);
 });
+test('player acceleration and braking are gradual and stop without held input', async ({ page }) => {
+  await play(page); const initial = (await observe(page)).player;
+  await page.keyboard.down('w'); await advance(page, 0.25);
+  const starting = (await observe(page)).player;
+  expect(starting.speed).toBeGreaterThan(0); expect(starting.speed).toBeLessThan(230); expect(starting.y).toBeLessThan(initial.y);
+  await advance(page, 0.75); expect((await observe(page)).player.speed).toBe(230);
+  await page.keyboard.up('w'); await advance(page, 0.5); const coasting = (await observe(page)).player;
+  expect(coasting.speed).toBeGreaterThan(0); expect(coasting.speed).toBeLessThan(230); expect(coasting.y).toBeLessThan(starting.y);
+  await advance(page, 1.5); const stopped = (await observe(page)).player; expect(stopped.speed).toBeCloseTo(0, 10);
+  await advance(page, 0.25); const settled = (await observe(page)).player;
+  expect(settled.speed).toBe(0); expect(settled.y).toBe(stopped.y);
+});
 test('front and parallel broadsides obey independent cooldowns and expire', async ({ page }) => {
   await play(page); await page.keyboard.down('Space'); await advance(page, 1 / 60);
   expect((await observe(page)).projectiles).toHaveLength(1);
@@ -124,7 +136,8 @@ test('pause freezes simulation and cooldowns, focus loss requires explicit resum
   await page.keyboard.press('p'); const paused = await observe(page); await advance(page, 20);
   expect((await observe(page)).snapshot.elapsed).toBe(paused.snapshot.elapsed); expect((await observe(page)).projectiles).toEqual(paused.projectiles);
   await page.getByRole('button', { name: 'Resume', exact: true }).click(); await advance(page, 0.1);
-  const resumed = (await observe(page)).player; expect(resumed.speed).toBe(0); expect(Math.abs(resumed.y - paused.player.y)).toBeLessThan(10);
+  const resumed = (await observe(page)).player; expect(resumed.speed).toBeLessThan(paused.player.speed);
+  expect(Math.abs(resumed.y - paused.player.y)).toBeLessThan(10);
   await page.evaluate(() => window.dispatchEvent(new Event('blur'))); await expect(page.getByRole('dialog')).toBeVisible();
   await advance(page, 10); expect((await observe(page)).snapshot.elapsed).toBeCloseTo(0.2, 5);
   await page.getByRole('button', { name: 'Resume', exact: true }).click();

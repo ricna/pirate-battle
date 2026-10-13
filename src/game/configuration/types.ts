@@ -51,6 +51,7 @@ export interface GameConfig {
     readonly clockTolerance: number; readonly geometryTolerance: number; readonly navigationInflation: number; readonly movementStepRadiusRatio: number };
   readonly random: { readonly multiplier: number; readonly increment: number; readonly modulus: number };
   readonly runtime: { readonly maxFrameSeconds: number; readonly hudIntervalMs: number; readonly maxResolution: number;
+    readonly staticMapResolution: number;
     readonly profileWarmupSeconds: number; readonly maxFrameSamples: number; readonly mapProgressWeight: number;
     readonly background: string; readonly maxTestAdvance: number };
 }

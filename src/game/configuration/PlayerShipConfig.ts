@@ -8,7 +8,7 @@ export class PlayerShipConfig {
   private constructor() {}
   static readonly Default: ShipProfile = {
     id: ShipKind.Player, allegiance: Allegiance.Player, health: 100, radius: 34,
-    movement: { initialSpeed: 0, maxSpeed: 230, acceleration: 1600, deceleration: 2200, turnSpeed: 2.6 },
+    movement: { initialSpeed: 0, maxSpeed: 230, acceleration: 230, deceleration: 115, turnSpeed: 2.6 },
     weapons: [
       { id: Action.Front, angleOffset: 0, muzzleOffset: 58, longitudinalOffsets: [0], cooldown: 0.35,
         event: GameEvent.FrontShot, projectile: ProjectileConfig.PlayerFront },
