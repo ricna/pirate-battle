@@ -3,6 +3,7 @@ import { GameConfigFactory } from '../game/configuration/GameConfigFactory';
 // The shared stylesheet loads first so screen stylesheets imported by components can refine it.
 import './App.css';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useMutation } from '@tanstack/react-query';
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })));
 import { Button } from './components/Button';
@@ -42,6 +43,7 @@ export function App() {
   const [recordsTab, setRecordsTab] = useState<RecordsTab>('ranking');
   const [config, setConfig] = useState<GameConfig | null>(null);
   const [gameId, setGameId] = useState('');
+  const [resultReady, setResultReady] = useState(false);
   const [last, setLast] = useState(() => matches.last());
   const [pending, setPending] = useState(() => matches.pending());
   const pendingRef = useRef(pending);
@@ -90,10 +92,12 @@ export function App() {
     }
   }, [screen]);
   const play = () => {
+    audio.stopMatchSounds();
     audio.unlock(options);
     audio.playUi(AudioConfig.Cues.Click, 'ui-click');
     setConfig(GameConfigFactory.create(options));
     setGameId(crypto.randomUUID());
+    setResultReady(false);
     setScreen('game');
   };
   const complete = (snapshot: Snapshot) => {
@@ -156,88 +160,102 @@ export function App() {
     queryClient.clear();
     setNotice('Demo server reset. Local results and pending battles are preserved.');
   };
-  if (screen === 'game' && config)
-    return (
-      <GameLoadBoundary onMenu={mainMenu}>
-        <Suspense
-          fallback={
-            <div className="app" role="status">
-              Loading game engine…
-            </div>
+  return (
+    <>
+      {(screen === 'game' || (screen === 'result' && !resultReady)) && config && (
+        <GameLoadBoundary onMenu={mainMenu}>
+          <Suspense
+            fallback={
+              <div className="app" role="status">
+                Loading game engine…
+              </div>
+            }
+          >
+            <GameCanvas
+              key={gameId}
+              config={config}
+              onComplete={complete}
+              onAbandon={mainMenu}
+              resultRevealing={screen === 'result'}
+              onResultReveal={() => setScreen('result')}
+              onResultReady={() => setResultReady(true)}
+            />
+          </Suspense>
+        </GameLoadBoundary>
+      )}
+      {screen !== 'game' && (
+        <main
+          className={`app app-${screen}`}
+          style={
+            screen === 'result' && config
+              ? ({
+                  '--result-fade': `${config.presentation.resultFadeSeconds}s`,
+                } as CSSProperties)
+              : undefined
           }
         >
-          <GameCanvas
-            key={gameId}
-            config={config}
-            onComplete={complete}
-            onAbandon={mainMenu}
-            onResultReady={() => setScreen('result')}
-          />
-        </Suspense>
-      </GameLoadBoundary>
-    );
-  return (
-    <main className={`app app-${screen}`}>
-      <a className="skip-link" href="#main-content">
-        Skip to content
-      </a>
-      <div id="main-content" className="shell" tabIndex={-1}>
-        {screen === 'options' ? (
-          <OptionsScreen
-            options={options}
-            onChange={(value) => {
-              optionsRepository.save(value);
-              setOptions(value);
-            }}
-            onMainMenu={mainMenu}
-          />
-        ) : screen === 'howToPlay' ? (
-          <HowToPlay onMainMenu={mainMenu} />
-        ) : screen === 'records' ? (
-          <CaptainsLog
-            tab={recordsTab}
-            onTabChange={setRecordsTab}
-            config={GameConfigFactory.create(options)}
-            playerId={playerId}
-            revision={revision}
-            lastMatchId={last?.id ?? null}
-            onMainMenu={mainMenu}
-          />
-        ) : screen === 'result' && last ? (
-          <ResultScreen
-            record={last}
-            pending={pending.some((record) => record.id === last.id)}
-            submitting={save.isPending && save.variables?.id === last.id}
-            submissionBusy={save.isPending}
-            error={errors[last.id]}
-            onRetry={() => save.mutate(last)}
-            onPlayAgain={play}
-            onMainMenu={mainMenu}
-          />
-        ) : (
-          <MainMenu actions={menuActions} />
-        )}
-        {(notice || storage.warning || network.warning) && (
-          <p role="status" className="notice">
-            {network.warning ?? storage.warning ?? notice}
-          </p>
-        )}
-        {pending.length > 0 && (
-          <aside className="pending-banner" aria-label="Pending submissions">
-            <div>
-              <p>{pending.length} battle(s) awaiting registration. You can keep playing.</p>
-              {screen !== 'result' && pending[0] && errors[pending[0].id] && (
-                <p role="alert">{errors[pending[0].id]}</p>
-              )}
-            </div>
-            <Button className="compact" disabled={save.isPending} onClick={retry}>
-              {save.isPending ? 'Submitting…' : 'Retry pending battle'}
-            </Button>
-          </aside>
-        )}
-      </div>
-      <DemoNetworkTools scenario={scenario} onSelect={selectScenario} onReset={resetDemoServer} />
-      <img className="studio-logo" src={MenuArt.StudioLogo} alt="Jungle Gaming" />
-    </main>
+          <a className="skip-link" href="#main-content">
+            Skip to content
+          </a>
+          <div id="main-content" className="shell" tabIndex={-1}>
+            {screen === 'options' ? (
+              <OptionsScreen
+                options={options}
+                onChange={(value) => {
+                  optionsRepository.save(value);
+                  setOptions(value);
+                }}
+                onMainMenu={mainMenu}
+              />
+            ) : screen === 'howToPlay' ? (
+              <HowToPlay onMainMenu={mainMenu} />
+            ) : screen === 'records' ? (
+              <CaptainsLog
+                tab={recordsTab}
+                onTabChange={setRecordsTab}
+                config={GameConfigFactory.create(options)}
+                playerId={playerId}
+                revision={revision}
+                lastMatchId={last?.id ?? null}
+                onMainMenu={mainMenu}
+              />
+            ) : screen === 'result' && last ? (
+              <ResultScreen
+                record={last}
+                pending={pending.some((record) => record.id === last.id)}
+                submitting={save.isPending && save.variables?.id === last.id}
+                submissionBusy={save.isPending}
+                error={errors[last.id]}
+                onRetry={() => save.mutate(last)}
+                onPlayAgain={play}
+                onMainMenu={mainMenu}
+              />
+            ) : (
+              <MainMenu actions={menuActions} />
+            )}
+            {(notice || storage.warning || network.warning) && (
+              <p role="status" className="notice">
+                {network.warning ?? storage.warning ?? notice}
+              </p>
+            )}
+            {pending.length > 0 && (
+              <aside className="pending-banner" aria-label="Pending submissions">
+                <div>
+                  <p>{pending.length} battle(s) awaiting registration. You can keep playing.</p>
+                  {screen !== 'result' && pending[0] && errors[pending[0].id] && (
+                    <p role="alert">{errors[pending[0].id]}</p>
+                  )}
+                </div>
+                <Button className="compact" disabled={save.isPending} onClick={retry}>
+                  {save.isPending ? 'Submitting…' : 'Retry pending battle'}
+                </Button>
+              </aside>
+            )}
+          </div>
+          <DemoNetworkTools scenario={scenario} onSelect={selectScenario} onReset={resetDemoServer} />
+          <img className="studio-logo" src={MenuArt.StudioLogo} alt="Jungle Gaming" />
+        </main>
+      )}
+    </>
   );
 }

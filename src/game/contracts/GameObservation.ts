@@ -16,6 +16,10 @@ export interface GameObservation {
   colliders: GameManager['map']['colliders'];
   frames: number[];
   entityPeak: number;
+  terminal: {
+    elapsed: number;
+    resultRevealing: boolean;
+  };
   presentation: {
     particles: GameManager['presentation']['particles'];
     crew: GameManager['presentation']['crewEmissions'];

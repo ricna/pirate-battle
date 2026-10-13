@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { AudioConfig } from '../src/game/configuration/AudioConfig';
 import { advance, defendUntilFinished, observe, open, options, play, scenario, setOption } from './helpers';
 const pageErrors = new Map<Page, string[]>();
 test.beforeEach(async ({ page }) => { const errors: string[] = []; pageErrors.set(page, errors);
@@ -153,12 +154,21 @@ test('death stops combat and result survives refresh', async ({ page }) => {
 });
 test('terminal sinking persists once before revealing results and keeps crew visible', async ({ page }, testInfo) => {
   await play(page);
+  await expect.poll(async () => (await observe(page)).audio.decoded).toBe(AudioConfig.requiredSounds().length);
+  const track = page.locator('audio');
+  const normalMusicVolume = await track.evaluate((element: HTMLAudioElement) => element.volume);
   let state = await observe(page);
   for (let step = 0; step < 120 && state.snapshot.status !== 'ended'; step++) {
     await advance(page, 1); state = await observe(page);
   }
   expect(state.snapshot.reason).toBe('death');
-  await expect(page.getByRole('status').filter({ hasText: 'Ship Sunk' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Game Over' })).toBeVisible();
+  expect(state.audio.played[AudioConfig.Cues.GameOver]).toBe(1);
+  expect(state.audio.played.game_over).toBeUndefined();
+  expect(state.audio.music.volume).toBeCloseTo(normalMusicVolume * AudioConfig.DeathMusicGain);
+  expect(await track.evaluate((element: HTMLAudioElement) => element.volume)).toBeCloseTo(normalMusicVolume * AudioConfig.DeathMusicGain);
+  await expect(page.locator('.terminal-banner')).toHaveCSS('animation-duration', '1s');
+  await expect(page.getByRole('heading', { name: 'Battle result' })).toHaveCount(0);
   const emission = state.presentation.crew.find((crew) => crew.shipId === state.player.id)!;
   expect(emission.count).toBeGreaterThanOrEqual(2); expect(emission.count).toBeLessThanOrEqual(5);
   expect(state.presentation.particles.filter((particle) => particle.kind === 'crew' && particle.sourceShipId === state.player.id)).toHaveLength(emission.count);
@@ -171,9 +181,28 @@ test('terminal sinking persists once before revealing results and keeps crew vis
   expect(state.snapshot.statistics).toEqual(before.statistics);
   const capture = await page.screenshot({ path: `reports/terminal-feedback-${testInfo.project.name}.png` });
   await testInfo.attach('player-sinking-before-result', { body: capture, contentType: 'image/png' });
-  await advance(page, state.config.presentation.terminalSeconds);
+  await advance(page, state.config.presentation.terminalSeconds - state.terminal.elapsed - 0.01);
+  await expect(page.getByRole('heading', { name: 'Battle result' })).toHaveCount(0);
+  await advance(page, 0.02);
+  await expect(page.locator('.game')).toHaveClass(/game-result-revealing/);
+  await expect(page.locator('.app-result')).toHaveCSS('animation-duration', '1s');
+  await expect(page.locator('.terminal-banner')).toHaveCSS('animation-name', 'terminal-disappear');
+  await expect(page.locator('.arena canvas')).toHaveCount(1);
+  await page.waitForTimeout(450);
+  const crossfade = await page.screenshot({ path: `reports/game-over-crossfade-${testInfo.project.name}.png` });
+  await testInfo.attach('result-crossfade-with-arena', { body: crossfade, contentType: 'image/png' });
+  await advance(page, state.config.presentation.resultFadeSeconds - 0.01);
   await expect(page.getByRole('heading', { name: 'Battle result' })).toBeVisible();
+  await expect(page.locator('.game')).toHaveCount(0);
+  expect(await track.evaluate((element: HTMLAudioElement) => element.paused)).toBe(false);
+  expect(await track.evaluate((element: HTMLAudioElement) => element.volume)).toBeCloseTo(normalMusicVolume * AudioConfig.DeathMusicGain);
   expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBe(saved);
+  // The real Web Audio source restores the mix on natural completion, after surviving canvas teardown.
+  await expect.poll(() => track.evaluate((element: HTMLAudioElement) => element.volume), { timeout: 18000 }).toBeCloseTo(normalMusicVolume);
+  await page.getByRole('button', { name: 'Play Again' }).click();
+  await page.waitForFunction(() => !!window.pirateTest);
+  expect((await observe(page)).audio.music.mixGain).toBe(1);
+  expect((await observe(page)).snapshot.status).toBe('playing');
 });
 test('reduced-motion preference preserves input, feedback and pause cleanup', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -280,5 +309,6 @@ test('versioned menu, arena and result visual baselines; layout fits supported s
     expect(box.x + box.width).toBeLessThanOrEqual(size.width); expect(box.y + box.height).toBeLessThanOrEqual(size.height);
   }
   await advance(page, 120); await expect(page.locator('.result-panel')).toContainText('Battle registered');
+  await expect(page.locator('.app-result')).toHaveCSS('opacity', '1');
   await expect(page).toHaveScreenshot('result.png', { fullPage: true });
 });

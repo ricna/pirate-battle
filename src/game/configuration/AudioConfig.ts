@@ -15,7 +15,7 @@ export class AudioConfig {
     Pause: 'game_pause',
     Resume: 'game_resume',
     Complete: 'game_complete',
-    GameOver: 'game_over',
+    GameOver: 'extra/576054__istudeny__pirat-battle',
     Start: 'game_start',
   } as const;
   static readonly EventSounds: Readonly<Record<GameEvent, readonly string[]>> = {
@@ -62,6 +62,7 @@ export class AudioConfig {
   static readonly SailingThreshold = 0.02;
   static readonly Ocean = 'ocean_ambience_loop';
   static readonly Sailing = 'ship_sailing_loop';
+  static readonly DeathMusicGain = 0.08;
   static readonly Music = {
     id: 'pirate-adventure',
     url: new URL('../../../assets/sounds/extra/ebunny-pirate-adventure-361663.mp3', import.meta.url).href,

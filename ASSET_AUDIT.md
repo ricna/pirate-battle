@@ -82,7 +82,7 @@ All file names below end in `.wav`. `AudioConfig.requiredSounds()` enumerates ex
 | `ship_sailing_loop` | Real player speed above its threshold, including residual coasting; gain follows normalized speed and stops at rest. |
 | `game_start` | Successful battle initialization. |
 | `game_pause`, `game_resume` | Effective pause/explicit resume transitions. |
-| `game_over`, `game_complete` | Real defeat/time completion, once per new result; not replayed on result refresh. These voices survive arena teardown. |
+| `extra/576054__istudeny__pirat-battle`, `game_complete` | Real defeat/time completion, once per new result; not replayed on result refresh. These voices survive arena teardown. The owner's extra WAV replaces `game_over`, which remains unused source audio. |
 | `ui_click` | Activating authored buttons. |
 | `ui_back` | Returning to the menu. |
 | `ui_open`, `ui_close` | Dialog mount/unmount. |
@@ -99,8 +99,8 @@ Audio uses independent cosmetic variation, persisted mute/volume and at most 16 
 | B02/B03 | Authored muzzle/explosion/debris, recoil, damage tint/labels, contextual splash and bounded world shake; HUD/input coordinates remain fixed. |
 | B04 | Dedicated guaranteed-capacity crew pool, 2–5 once per sinking, six variants, short dispersion/drift/bob/foam, water clearance and timed fade; isolated domain tests and actual cannon-input captures. |
 | B05 | Kill-identity reward guard, actual points in floating text, HUD pulse and score cue; damage/hit/kill statistics remain real. |
-| B06 | Immediate stable-record persistence, then a configured 2.4s terminal presentation and result reveal; no further combat advancement. Result has defeat/completion titles, real statistics and reduced-motion-aware score count-up. |
-| B07 | Explicit 27-file mapping, bounded/prioritized voices, speed-driven sailing and terminal voice survival; reproducible contexts above. |
+| B06 | Immediate stable-record persistence, then 3s of destruction/Game Over fade-in and a 1s result/Game Over crossfade; no further combat advancement. Result has defeat/completion titles, real statistics and reduced-motion-aware score count-up. |
+| B07 | Explicit active catalog of 26 original WAVs plus the owner's death WAV, bounded/prioritized voices, speed-driven sailing and terminal voice survival; reproducible contexts above. |
 | B08/B09 | Repeated original water with fixed coast/props, stern marks following historical positions and trails behind cannonballs. Pause/reduced motion and match disposal apply. |
 | B10 | Shared gameplay/UI atlas frames, explicit standalone policy and per-ship authored wreck/visual profiles. |
 | B11 | Independent simultaneous controls, authored pressed/hover states, weapon readiness, critical health/time, focus and orientation handling. |
@@ -110,4 +110,4 @@ Audio uses independent cosmetic variation, persisted mute/volume and at most 16 
 
 ## Continuous OST integration - 13 October 2026
 
-The owner's `sounds/extra/ebunny-pirate-adventure-361663.mp3` is explicitly registered by AudioConfig.Music, streamed by MusicPlayer and coordinated by AudioManager. One React-authored element persists across all screens and match cycles, with gesture unlock, loop, master mute/volume and independent music volume. The audit report now lists MP3 files and candidate references under `music`; playback/lifecycle evidence comes from the browser music regressions. The required original effect catalog remains exactly 27 WAVs; an additional owner-supplied WAV in extra is inventoried but is not selected as a replacement for a missing cue.
+The owner's `sounds/extra/ebunny-pirate-adventure-361663.mp3` is explicitly registered by AudioConfig.Music, streamed by MusicPlayer and coordinated by AudioManager. One React-authored element persists across all screens and match cycles, with gesture unlock, loop, master mute/volume and independent music volume. The audit report now lists MP3 files and candidate references under `music`; playback/lifecycle evidence comes from the browser music regressions. The owner's subsequent death-sound request selects `sounds/extra/576054__istudeny__pirat-battle.wav` instead of the original `game_over.wav`: 26 original effects plus this additional cue are decoded. The original cue is intentionally unused, not a missing reference.

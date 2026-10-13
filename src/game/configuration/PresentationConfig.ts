@@ -67,6 +67,8 @@ export interface PresentationProfile {
     readonly hudSeconds: number;
   };
   readonly terminalSeconds: number;
+  readonly terminalFadeInSeconds: number;
+  readonly resultFadeSeconds: number;
   readonly resultCountSeconds: number;
   readonly water: {
     readonly layer: string;
@@ -194,7 +196,9 @@ export class PresentationConfig {
       maxCount: 32,
       hudSeconds: 0.45,
     },
-    terminalSeconds: 2.4,
+    terminalSeconds: 3,
+    terminalFadeInSeconds: 1,
+    resultFadeSeconds: 1,
     resultCountSeconds: 0.7,
     water: { layer: 'water', gid: 73, sprite: 'tiles/tile_73', speedX: 2.5, speedY: 1.5, overscan: 12 },
   };

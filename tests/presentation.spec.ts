@@ -91,8 +91,10 @@ test('configuration rejects budgets that would silently omit required survivors'
   expect(() => GameConfigFactory.validate({ ...config, presentation: { ...config.presentation,
     crewPool: { initialCapacity: 1, growthSize: 1, maxCapacity: 5 } } })).toThrow(/Crew capacity/);
 });
-test('audio catalog maps every supplied WAV and no synthesized substitute', () => {
+test('audio catalog maps supplied WAVs and the owner-selected death cue without substitutes', () => {
   const supplied = readdirSync('assets/sounds').filter((file) => file.endsWith('.wav')).map((file) => file.slice(0, -4)).sort();
   expect(supplied).toHaveLength(27);
-  expect([...AudioConfig.requiredSounds()].sort()).toEqual(supplied);
+  const active = supplied.filter((name) => name !== 'game_over');
+  active.push('extra/576054__istudeny__pirat-battle');
+  expect([...AudioConfig.requiredSounds()].sort()).toEqual(active.sort());
 });

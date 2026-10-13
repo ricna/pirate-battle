@@ -145,3 +145,11 @@ Application preferences live in `src/application/configuration/OptionsConfig.ts`
 The effective music gain is `masterVolume * musicVolume * AudioConfig.Music.gain`, or silence when Sound is Off. Music streams through one React-authored audio element with loop enabled. It starts on a pointer or keyboard gesture and continues across menus, combat, combat pause, results and repeated matches. Mute or Music volume 0 pauses playback without rewinding; reenabling resumes the same track. Refresh creates a new application lifetime, so a new gesture is required. Browsers may suspend background media independently.
 
 Sound effects remain decoded/cached Web Audio buffers with the configured bounded voice budget. The music element is a separate streaming channel and cannot be evicted by combat effects. Music/audio failures are published to React and shown visibly; a later gesture can retry the authored asset.
+
+### Player-death mix and transitions
+
+`AudioConfig.Cues.GameOver` explicitly selects `extra/576054__istudeny__pirat-battle` (the owner's approximately 14-second WAV). It plays at its authored rate, once per death, with terminal priority. The original `game_over.wav` remains as unused source audio. The recursive WAV manifest supports that registered subdirectory; missing assets still report a load error.
+
+`AudioConfig.DeathMusicGain = 0.08` multiplies the effective OST volume temporarily. The music keeps playing, and persisted master/music options are unchanged. Natural completion of the death cue restores the mix, including after arena teardown; Main Menu/Play Again stop remaining match effects and restore it immediately. A revision guard prevents a retired cue from restoring a later mix. Mute and zero volume continue to apply.
+
+`PresentationConfig.Default.terminalSeconds = 3` is the destruction window before result reveal. `terminalFadeInSeconds = 1` fades **Game Over** (or Battle Complete for time expiry) in during this window. `resultFadeSeconds = 1` fades the result screen in and the terminal text out together. These positive durations are validated and frozen in the match snapshot; the arena remains alive until their combined 4-second window finishes. Combat and final-record persistence end immediately, independently of presentation. Only death ducks the OST.

@@ -145,6 +145,21 @@ kbd {
   font-size: 14px;
   flex: 1;
 }
+.app-result {
+  position: relative;
+  z-index: 1;
+  animation: result-appear var(--result-fade) ease-in-out both;
+}
+
+@keyframes result-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .result-panel {
   width: min(600px, 100%);
   margin: 25px auto;

@@ -75,3 +75,15 @@ Earlier exploratory runs exposed incorrect moved asset lookup paths and text enc
 
 
 The final optimized profile completed 180 real active seconds with music/effects enabled, 17 credited kills, no unhandled application errors, approximately 60 FPS and P95 16.8 ms, followed by five lifecycle cycles. PERFORMANCE.md and reports/profile.json contain the exact revision, workload, pool/audio statistics and heap samples; the incomplete boundary-pilot attempt is preserved separately.
+
+## Player-death cue and crossfade verification — 13 October 2026
+
+The final isolated run passed **71/71 tests** in 7.2 minutes on port 5194, including desktop/mobile visual baselines (unchanged), terminal feedback, natural death-cue completion, early Main Menu/Play Again, music preferences, failures/retry and persistence. Typecheck, lint/architecture check, Prettier format check and production build passed. Concurrent Options work was preserved. The final report is `reports/game-over-playwright/index.html`; its test artifacts use `reports/game-over-test-results` to avoid another run cleaning the shared default folder.
+
+To reproduce that isolation in PowerShell, set `PIRATE_TEST_PORT=5194`, `PIRATE_TEST_OUTPUT_DIR=reports/game-over-test-results` and `PIRATE_TEST_REPORT_DIR=reports/game-over-playwright` before `npm run test:e2e`. Unset these optional variables to keep the existing default report/output locations.
+
+The terminal regression observes actual player death, one playback of the extra WAV, OST volume reduced from 0.1 to 0.008, unchanged combat/statistics/record while presentation advances, no result before 3 seconds, and the same arena beneath the 1-second result/banner crossfade. Teardown leaves the death cue playing; its real Web Audio completion restores the music. The added music scenario leaves/restarts before the cue finishes and verifies immediate mix restoration. `reports/terminal-feedback-*` and `reports/game-over-crossfade-*` retain captures.
+
+Production preview at port 5195 also passed on 1280×800 desktop and 844×390 landscape mobile emulation. `reports/game-over-production-verification.json` records HTTP 200 for the hashed death WAV, one death playback, simultaneous partial result/banner opacity with one canvas during the fade, music time advancing at volume 0.008 through teardown, and volume 0.1 restored on Main Menu, with no application page errors. `reports/game-over-production-*` contains the corresponding rendered captures. The bundled WAV's SHA-256 equals the unchanged source. These checks establish playback/lifecycle behavior in Chromium, not subjective listening or physical-device compatibility; no new performance profile is claimed for this presentation change.
+
+The first complete run had 67 passes and two failures: a concurrent test run removed a trace file during browser cleanup, and a result baseline was captured during the new opacity animation. Output/report directories were isolated and the result baseline now waits for full opacity. The final run passed without changing any baselines or adding retries.

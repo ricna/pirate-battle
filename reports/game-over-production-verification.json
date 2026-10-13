@@ -1,0 +1,68 @@
+[
+  {
+    "name": "desktop",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "musicBefore": {
+      "volume": 0.1,
+      "time": 0.42863,
+      "src": "http://127.0.0.1:5195/assets/ebunny-pirate-adventure-361663-ZaMT1e8q.mp3"
+    },
+    "musicAfter": {
+      "volume": 0.008,
+      "time": 4.837787,
+      "paused": false
+    },
+    "restored": 0.1,
+    "terminalSeconds": 3,
+    "resultFadeSeconds": 1,
+    "deathCueCount": 1,
+    "transition": {
+      "resultOpacity": 0.414343,
+      "bannerOpacity": 0.736653,
+      "canvasCount": 1
+    },
+    "wavResponses": [
+      {
+        "url": "http://127.0.0.1:5195/assets/576054__istudeny__pirat-battle-DiRCZzYo.wav",
+        "status": 200
+      }
+    ],
+    "errors": []
+  },
+  {
+    "name": "mobile-landscape",
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "musicBefore": {
+      "volume": 0.1,
+      "time": 0.522539,
+      "src": "http://127.0.0.1:5195/assets/ebunny-pirate-adventure-361663-ZaMT1e8q.mp3"
+    },
+    "musicAfter": {
+      "volume": 0.008,
+      "time": 4.612204,
+      "paused": false
+    },
+    "restored": 0.1,
+    "terminalSeconds": 3,
+    "resultFadeSeconds": 1,
+    "deathCueCount": 1,
+    "transition": {
+      "resultOpacity": 0.585648,
+      "bannerOpacity": 0.629332,
+      "canvasCount": 1
+    },
+    "wavResponses": [
+      {
+        "url": "http://127.0.0.1:5195/assets/576054__istudeny__pirat-battle-DiRCZzYo.wav",
+        "status": 200
+      }
+    ],
+    "errors": []
+  }
+]

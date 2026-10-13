@@ -236,6 +236,8 @@ export class GameConfigFactory {
       presentation.score.fontSize,
       presentation.score.hudSeconds,
       presentation.terminalSeconds,
+      presentation.terminalFadeInSeconds,
+      presentation.resultFadeSeconds,
       presentation.resultCountSeconds,
       presentation.water.overscan,
     ])

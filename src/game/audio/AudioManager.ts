@@ -2,12 +2,14 @@ import type { Options } from '../../application/configuration/Options';
 import type { GameEvent } from '../contracts/GameDomain';
 import type { MusicPlayer } from './MusicPlayer';
 import type { SoundEffectPlayer } from './SoundEffectPlayer';
+import { AudioConfig } from '../configuration/AudioConfig';
 
-/** Application audio coordinator. Match commands affect effects and ambience only. */
+/** Application audio coordinator; death can temporarily duck the persistent OST without restarting it. */
 export class AudioManager {
   readonly #effects: SoundEffectPlayer;
   readonly #music: MusicPlayer;
   #options: Options;
+  #deathMixRevision = 0;
   constructor(effects: SoundEffectPlayer, music: MusicPlayer, options: Options) {
     this.#options = { ...options };
     this.#effects = effects;
@@ -31,7 +33,15 @@ export class AudioManager {
     this.#music.unlock();
   }
   play(name: string, loop = false): void {
-    this.#effects.play(name, loop);
+    if (name !== AudioConfig.Cues.GameOver) {
+      this.#effects.play(name, loop);
+      return;
+    }
+    const revision = this.#deathMixRevision;
+    const restore = () => {
+      if (revision === this.#deathMixRevision) this.setDeathMusicDucked(false);
+    };
+    if (!this.#effects.play(name, loop, restore)) restore();
   }
   playUi(name: string, group = name): void {
     this.#effects.playUi(name, group);
@@ -45,8 +55,13 @@ export class AudioManager {
   stopMatchLoops(): void {
     this.#effects.stopLoops();
   }
+  setDeathMusicDucked(ducked: boolean): void {
+    this.#deathMixRevision++;
+    this.#music.setMixGain(ducked ? AudioConfig.DeathMusicGain : 1);
+  }
   stopMatchSounds(): void {
     this.#effects.stop();
+    this.setDeathMusicDucked(false);
   }
   readonly subscribe = (listener: () => void): (() => void) => {
     const effects = this.#effects.subscribe(listener);

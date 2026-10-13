@@ -102,6 +102,8 @@ To demonstrate recovery: choose outage, finish a battle, refresh, select success
 
 ## Audio and assets
 
+Player death plays the owner's additional pirate-battle WAV and lowers the OST to 8% of its configured mix. Destruction remains visible for 3 seconds as **Game Over** fades in; then results fade in over 1 second while Game Over fades out. The death sound survives the transition, and music recovers when it finishes or when leaving/restarting. The match is saved immediately, before these animations. Time expiry keeps its separate completion cue.
+
 Menus use the supplied title, panel and button states. The main menu reproduces `assets/sample_menu.png`: Play and Options, the ship emblem, then Ranking, Match History and How To Play. Ranking and Match History open the Captain's Log tabs; How To Play explains the game and controls and only returns to the main menu. Pixi uses the supplied ship deterioration states, cannonballs, fire, explosions and health indicators. The player's Tiled map is retained. Web Audio reuses supplied WAV buffers for ocean/sailing loops, weapons, damage, score, pause and completion. The first user gesture unlocks audio; initial sounds may wait for decoding. Options provide mute/volume. Sound loading failures are nonfatal and visible when returning to menus.
 
 See [ASSETS.md](ASSETS.md) for attribution and asset ownership. No generated visual or audio replacement is used.

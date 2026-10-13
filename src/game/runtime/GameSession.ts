@@ -19,6 +19,7 @@ export interface GameSessionCallbacks {
   readonly onSnapshot: (snapshot: Snapshot | null) => void;
   readonly onError: (message: string) => void;
   readonly onComplete: (snapshot: Snapshot) => void;
+  readonly onResultReveal: () => void;
   readonly onResultReady: () => void;
 }
 
@@ -57,6 +58,7 @@ export class GameSession {
   #finished = false;
   #terminalElapsed = 0;
   #revealed = false;
+  #transitionComplete = false;
   #entityPeak = 0;
 
   constructor(dependencies: GameSessionDependencies) {
@@ -213,14 +215,22 @@ export class GameSession {
 
   #advanceTerminal(seconds: number): void {
     const game = this.#game;
-    if (!game || !this.#finished || this.#revealed || document.hidden) return;
+    if (!game || !this.#finished || this.#transitionComplete || document.hidden) return;
     const { config } = this.#dependencies;
-    const remaining = Math.min(seconds, config.presentation.terminalSeconds - this.#terminalElapsed);
+    const totalSeconds = config.presentation.terminalSeconds + config.presentation.resultFadeSeconds;
+    const remaining = Math.min(seconds, totalSeconds - this.#terminalElapsed);
     game.advancePresentation(remaining);
     this.#terminalElapsed += remaining;
-    if (this.#terminalElapsed + config.rules.clockTolerance >= config.presentation.terminalSeconds) {
-      this.#recordMetrics();
+    if (
+      !this.#revealed &&
+      this.#terminalElapsed + config.rules.clockTolerance >= config.presentation.terminalSeconds
+    ) {
       this.#revealed = true;
+      this.#dependencies.callbacks.onResultReveal();
+    }
+    if (this.#terminalElapsed + config.rules.clockTolerance >= totalSeconds) {
+      this.#recordMetrics();
+      this.#transitionComplete = true;
       this.#dependencies.callbacks.onResultReady();
     }
   }
@@ -254,6 +264,7 @@ export class GameSession {
       this.#clearHeldButtons();
       this.#recordMetrics();
       audio.stopMatchLoops();
+      audio.setDeathMusicDucked(game.reason === 'death');
       audio.play(game.reason === 'time' ? AudioConfig.Cues.Complete : AudioConfig.Cues.GameOver);
       callbacks.onComplete(game.snapshot());
       this.#advanceTerminal(Math.max(0, this.#accumulator));
@@ -330,6 +341,10 @@ export class GameSession {
       colliders: game.map.colliders,
       frames: includeFrames ? this.#samples : [],
       entityPeak: this.#entityPeak,
+      terminal: {
+        elapsed: this.#terminalElapsed,
+        resultRevealing: this.#revealed,
+      },
     });
   }
 
@@ -382,6 +397,7 @@ export class GameSession {
     this.#game = null;
     if (this.#finished) this.#dependencies.audio.stopMatchLoops();
     else this.#dependencies.audio.stopMatchSounds();
+    if (!this.#transitionComplete) this.#dependencies.audio.setDeathMusicDucked(false);
     if (this.#instrument) delete window.pirateTest;
     this.#reducedMotion.removeEventListener('change', this.#motionChanged);
     window.removeEventListener('blur', this.pause);

@@ -13,6 +13,7 @@ export class MusicPlayer {
   #unlocked = false;
   #enabled = false;
   #volume = 0;
+  #mixGain = 1;
   #pending = false;
   #revision = 0;
   #error: string | null = null;
@@ -77,6 +78,12 @@ export class MusicPlayer {
     this.#synchronize();
   }
 
+  setMixGain(gain: number): void {
+    if (!Number.isFinite(gain) || gain < 0 || gain > 1) throw new Error('Music mix gain must be in [0, 1].');
+    this.#mixGain = gain;
+    this.#synchronize();
+  }
+
   readonly #loadFailed = (): void => {
     this.#setError('The soundtrack could not be loaded. Check the authored MP3 and your connection.');
   };
@@ -84,7 +91,7 @@ export class MusicPlayer {
   #synchronize(): void {
     const element = this.#element;
     if (!element) return;
-    element.volume = this.#volume;
+    element.volume = this.#volume * this.#mixGain;
     element.muted = !this.#enabled;
     if (!this.#enabled || !this.#unlocked || this.#volume === 0) {
       element.pause();
@@ -118,7 +125,8 @@ export class MusicPlayer {
       id: this.#profile.id,
       playing: !!this.#element && !this.#element.paused,
       time: this.#element?.currentTime ?? 0,
-      volume: this.#volume,
+      volume: this.#volume * this.#mixGain,
+      mixGain: this.#mixGain,
       unlocked: this.#unlocked,
     });
   }

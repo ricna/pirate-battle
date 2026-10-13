@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { GameConfig } from '../../game/contracts/GameConfig';
 import type { Snapshot } from '../../game/runtime/GameManager';
 import { GameSession } from '../../game/runtime/GameSession';
@@ -17,11 +18,15 @@ export function GameCanvas({
   onComplete,
   onAbandon,
   onResultReady,
+  onResultReveal,
+  resultRevealing,
 }: {
   config: GameConfig;
   onComplete: (snapshot: Snapshot) => void;
   onAbandon: () => void;
   onResultReady: () => void;
+  onResultReveal: () => void;
+  resultRevealing: boolean;
 }) {
   const services = useApplicationServices();
   const { audio } = services;
@@ -30,8 +35,8 @@ export function GameCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const queue = useRef<Promise<void>>(Promise.resolve());
   const sessionRef = useRef<GameSession | null>(null);
-  const callbacks = useRef({ onComplete, onResultReady });
-  callbacks.current = { onComplete, onResultReady };
+  const callbacks = useRef({ onComplete, onResultReady, onResultReveal });
+  callbacks.current = { onComplete, onResultReady, onResultReveal };
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState('');
   const [progress, setProgress] = useState(0);
@@ -66,6 +71,7 @@ export function GameCanvas({
             onSnapshot: setSnapshot,
             onError: setError,
             onComplete: (value) => callbacks.current.onComplete(value),
+            onResultReveal: () => callbacks.current.onResultReveal(),
             onResultReady: () => callbacks.current.onResultReady(),
           },
         });
@@ -93,12 +99,23 @@ export function GameCanvas({
     focusArena: () => rootRef.current?.focus(),
   };
   return (
-    <section ref={rootRef} className="game" tabIndex={0} aria-label="Gameplay controls">
+    <section
+      ref={rootRef}
+      className={`game${resultRevealing ? ' game-result-revealing' : ''}`}
+      style={
+        {
+          '--terminal-fade-in': `${config.presentation.terminalFadeInSeconds}s`,
+          '--result-fade': `${config.presentation.resultFadeSeconds}s`,
+        } as CSSProperties
+      }
+      tabIndex={0}
+      aria-label="Gameplay controls"
+    >
       <div ref={viewportRef} className="arena" aria-busy={status === 'loading'}>
         <canvas key={attempt} ref={canvasRef} aria-label="Naval battle arena" />
         {ended && (
           <div className="terminal-banner" role="status">
-            {snapshot.reason === 'death' ? 'Ship Sunk' : 'Battle Complete'}
+            {snapshot.reason === 'death' ? 'Game Over' : 'Battle Complete'}
           </div>
         )}
         {status === 'loading' && (

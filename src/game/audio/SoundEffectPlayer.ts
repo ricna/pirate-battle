@@ -1,7 +1,7 @@
 import type { Options } from '../../application/configuration/Options';
 import type { GameEvent } from '../contracts/GameDomain';
 
-const files = import.meta.glob('../../../assets/sounds/*.wav', {
+const files = import.meta.glob('../../../assets/sounds/**/*.wav', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -96,6 +96,7 @@ export class SoundEffectPlayer {
     pitchRange: Readonly<{ minimum: number; maximum: number }> | null,
     cooldown: number,
     priority: number,
+    onEnded?: () => void,
   ): boolean {
     if (!this.#enabled || !this.#context || !this.#gain || (loop && this.#loops.has(name))) return false;
     const buffer = this.#buffers.get(name);
@@ -127,23 +128,25 @@ export class SoundEffectPlayer {
       source.disconnect();
       volume.disconnect();
       this.#voices.delete(source);
+      onEnded?.();
     };
     if (loop) this.#loops.set(name, source);
     source.start();
     return true;
   }
-  play(name: string, loop = false) {
+  play(name: string, loop = false, onEnded?: () => void): boolean {
     const terminal = name === AudioConfig.Cues.Complete || name === AudioConfig.Cues.GameOver;
-    this.#play(
+    return this.#play(
       name,
       loop,
-      loop ? null : AudioConfig.CuePitchVariation,
+      loop || name === AudioConfig.Cues.GameOver ? null : AudioConfig.CuePitchVariation,
       AudioConfig.UiCooldown,
       loop
         ? AudioConfig.Priorities.ambient
         : terminal
           ? AudioConfig.Priorities.terminal
           : AudioConfig.Priorities.ui,
+      onEnded,
     );
   }
   playUi(name: string, group: string = name) {

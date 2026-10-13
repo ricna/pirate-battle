@@ -4,8 +4,8 @@ const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: './tests', fullyParallel: false, workers: 1, timeout: 60000,
   expect: { timeout: 8000, toHaveScreenshot: { maxDiffPixelRatio: 0.01 } },
-  reporter: [['list'], ['html', { outputFolder: 'reports/playwright', open: 'never' }]],
-  outputDir: 'test-results',
+  reporter: [['list'], ['html', { outputFolder: process.env.PIRATE_TEST_REPORT_DIR ?? 'reports/playwright', open: 'never' }]],
+  outputDir: process.env.PIRATE_TEST_OUTPUT_DIR ?? 'test-results',
   use: { baseURL, channel: 'chromium', trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: [
     { name: 'rendering', testMatch: '**/rendering.spec.ts' },

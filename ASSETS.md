@@ -16,3 +16,5 @@ The personal Portuguese tutorial and its earlier educational diagram remain outs
 ## Owner-supplied soundtrack
 
 The owner supplied `assets/sounds/extra/ebunny-pirate-adventure-361663.mp3` and authorized it as the continuous OST. `AudioConfig.Music` registers that exact asset. It streams through the React-authored audio element owned by `MusicPlayer`; it is separate from the original 27-WAV effect catalog and the effect voice budget. The track is preserved unchanged and bundled by Vite.
+
+The owner also selected `assets/sounds/extra/576054__istudeny__pirat-battle.wav` for player death. `AudioConfig.Cues.GameOver` registers the exact extra WAV; the original `game_over.wav` is preserved as unused source audio. The new WAV is unchanged stereo PCM, 44.1 kHz, approximately 13.978 seconds, decoded through the existing Web Audio voice system and bundled by Vite. `assets/sounds/extra/SoundCredits.txt` records the owner-provided source/attribution references. The death cue temporarily ducks the OST and survives the transition to results.
