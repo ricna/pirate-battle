@@ -1,6 +1,6 @@
 # Performance evidence
 
-The retained numbers below measure balance-v2, before the balance-v3 gradual movement tuning and static-map render surface. They remain historical baseline evidence. Re-profile the final build after the concurrent audio/game adjustments finish; no new balance-v3 FPS or heap result is claimed by the rendering/movement regression tests.
+The historical tables below retain the earlier balance-v2 baseline. Its raw report is preserved in `reports/profile-before-refactor.json`. The final refactor measurement is recorded separately below; workloads differ, so these are not a before/after speedup comparison.
 
 
 ## Reference environment
@@ -24,11 +24,11 @@ In a second terminal:
 npm run profile
 ```
 
-The optimized preview defaults to port 4173. PROFILE_URL can select another origin. The script navigates through real keyboard inputs, holds all three weapon commands and follows the authored water boundary. It observes configuration/entities but never writes positions, health, score or cooldowns. Turns are biased toward the outside boundary because movement uses discrete fixed steps. Profiling keeps the real simulation clock; it does not accelerate 180 seconds.
+The optimized preview defaults to port 4173. PROFILE_URL can select another origin. The current default pilot aims at the nearest observed enemy through real keyboard inputs while holding all three weapons. `PROFILE_PILOT=boundary` selects the earlier authored-boundary pilot. It observes configuration/entities but never writes positions, health, score or cooldowns. Turns are biased toward the outside boundary because movement uses discrete fixed steps. Profiling keeps the real simulation clock; it does not accelerate 180 seconds.
 
 Configuration: normal balance version arena_00-v1/balance-v2, seed 20261012, 180s session, 10s spawns, player 100 HP, sound muted, full arena visible. The first five active seconds are excluded from frame statistics to avoid initial warmup. Entity count includes the player, enemies, live cannonballs and temporary effects; static map sprites are separate.
 
-`reports/profile.json` contains the latest complete three-minute run, raw frame intervals and five-cycle heap samples. `scripts/profile.mjs` exits unsuccessfully if its pilot dies before 180 active seconds or if an unhandled page error occurs; incomplete exploratory runs are preserved only in the personal Docs folder.
+`reports/profile.json` contains the latest refactor run, raw frame intervals and five-cycle heap samples. `scripts/profile.mjs` exits unsuccessfully if its pilot dies before 180 active seconds or if an unhandled page error occurs; incomplete exploratory runs are preserved only in the personal Docs folder.
 
 ## Frame and entity results
 
@@ -81,3 +81,27 @@ Compiled JavaScript, image/audio caches, React and Pixi pools may warm over init
 - Refresh rate, browser scheduling, GPU drivers, other desktop workloads and profiling overhead affect frame intervals.
 - Heap snapshots themselves can add diagnostic overhead; the independent 25-cycle investigation is not used to calculate combat FPS.
 - A deterministic gameplay seed does not make an external real-time keyboard pilot frame-exact across machines. If it dies, the script reports that failure; a completed run is required for three-minute evidence.
+
+
+## Final structural refactor and persistent OST - 13 October 2026
+
+Source revision `1cee43d9ebda0a3c6eaa7672cd9d51ef8af78a25` contains runtime implementation `ae203b2` plus its documentation/evidence commit. Build: optimized Vite preview, `arena_00-v1/balance-v4`, seed 20261012; Chromium 156.0.8078.4, Windows, RTX 3060 / ANGLE Direct3D11, 1280x800 at 1x. The 180-second session uses 10-second spawns, all three weapons held, nearest-enemy aiming through actual keyboard inputs at the authored spawn, normal fixed-step real time, Sound On, master Volume 50% and Music volume 100%. No health, score, position or clock writes were used.
+
+| Metric | Measured result |
+| --- | --- |
+| Active gameplay | 180 s, ended by time |
+| Mean FPS | 60.00 |
+| P95 frame interval | 16.80 ms |
+| Frame samples after warmup | 10500 |
+| Peak entities including cosmetics | 78 |
+| Peak effect voices / authored limit | 16 / 16 |
+| Cached effect buffers | 27 |
+| Persistent music at match end | Playing, gain 0.1, position 183.91 s |
+| Unhandled application errors | 0 |
+| Score from actual credited kills | 17 |
+
+Five post-match start/play/leave cycles ran through the actual test clock and UI lifecycle, with GC before each retained-heap sample. Samples in MiB (initial then cycles 1-5): 8.974, 8.987, 9.140, 9.208, 9.344, 9.395. Growth over this short series was 0.422 MiB. That includes application caches/browser warmup and is not proof of a leak or zero leaks. JS heap figures do not account for all native media/GPU memory. `reports/profile.json` preserves full configuration, frame intervals, pool statistics, audio counts and heap bytes.
+
+The earlier boundary-navigation attempt died at 65.22 active seconds under the final balance. Its report is preserved as `reports/profile-boundary-pilot.json`; it does not establish three-minute survival, and it is not used as the completed performance run. It exercised movement/sailing audio and also completed its five cleanup cycles. The pre-refactor baseline is preserved separately in `reports/profile-before-refactor.json`; its workload and audio state differ.
+
+This is one desktop Chromium workload. It does not measure physical mobile hardware, every browser, all spawn-pressure settings or subjective audio quality. Gameplay balance was unchanged by the structural/audio refactor; the profiling pilot selects actual inputs only.

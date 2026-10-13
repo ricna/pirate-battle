@@ -14,7 +14,7 @@ React authors the canvas, menus, dialogs, HUD, touch controls and one persistent
 | game/runtime/GameManager | Encapsulated match aggregate coordinating entities and systems |
 | game/entities | Entity/Ship inheritance, player/enemy behaviours, projectile and effect lifecycles |
 | game/core, factories, systems | Collision-world interface, bounded pools, registered construction, weapons, spawning, damage and match state |
-| game/math/Geometry | Circle/rectangle contacts, swept projectile intersections and BFS grid routes (nearest reachable cell when the target cell is blocked) |
+| game/math | Pure Geometry contacts/intersections and encapsulated Navigation BFS routes (nearest reachable cell when the target cell is blocked) |
 | game/input/InputController | Gameplay-scoped keyboard and independent touch sources |
 | game/rendering/ArenaRenderer | Ships, health, deterioration, cannonballs and effects from explicit PNGs |
 | game/runtime/GameSession | Per-match initialization, fixed-step clock, RAF, resize, pause, terminal presentation and disposal |

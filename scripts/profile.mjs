@@ -3,7 +3,10 @@ import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import process from 'node:process';
 import console from 'node:console';
+import { execFileSync } from 'node:child_process';
 const url = process.env.PROFILE_URL ?? 'http://127.0.0.1:4173/';
+const pilot = process.env.PROFILE_PILOT ?? 'defend';
+if (!['defend', 'boundary'].includes(pilot)) throw new Error('Unknown profiling pilot.');
 // Outward-biased headings hold the authored boundary lanes despite discrete turns.
 const route = [{ axis: 'y', boundary: 1118, angle: Math.PI }, { axis: 'x', boundary: 2014, angle: Math.PI / 2 },
   { axis: 'y', boundary: 34, angle: 0 }, { axis: 'x', boundary: 34, angle: -Math.PI / 2 }, { axis: 'y', boundary: 1118, angle: Math.PI }];
@@ -25,6 +28,7 @@ let lastTurn = ''; let lastLog = 0; let moving = false; let pools = null; let re
 while (Date.now() - started < 210000 && await page.evaluate(() => !!window.pirateTest)) {
   const state = await page.evaluate(() => window.pirateTest?.observe());
   if (!state) break; pools = state.pools; renderPools = state.renderPools; config = state.config;
+  if (pilot === 'boundary') {
   if (Math.abs(state.player[route[waypoint].axis] - route[waypoint].boundary) < 0.01) waypoint = waypoint === route.length - 1 ? 1 : waypoint + 1;
   const difference = Math.atan2(Math.sin(route[waypoint].angle - state.player.angle), Math.cos(route[waypoint].angle - state.player.angle));
   const angularStep = state.config.player.movement.turnSpeed * state.config.fixedStep;
@@ -34,6 +38,19 @@ while (Date.now() - started < 210000 && await page.evaluate(() => !!window.pirat
   if (key !== lastTurn) { if (lastTurn) await page.keyboard.up(lastTurn); if (key) await page.keyboard.down(key); lastTurn = key; }
   const shouldMove = Math.abs(turn) < angularStep * 0.49;
   if (shouldMove !== moving) { if (shouldMove) await page.keyboard.down('w'); else await page.keyboard.up('w'); moving = shouldMove; }
+  } else {
+    // Same observed nearest-target steering as the gameplay regression, using real keyboard input only.
+    const enemy = [...state.enemies].sort((a, b) =>
+      Math.hypot(a.x - state.player.x, a.y - state.player.y) - Math.hypot(b.x - state.player.x, b.y - state.player.y))[0];
+    const desired = enemy ? Math.atan2(enemy.x - state.player.x, state.player.y - enemy.y) : state.player.angle;
+    const difference = Math.atan2(Math.sin(desired - state.player.angle), Math.cos(desired - state.player.angle));
+    const key = Math.abs(difference) < 0.02 ? '' : difference > 0 ? 'd' : 'a';
+    if (key !== lastTurn) {
+      if (lastTurn) await page.keyboard.up(lastTurn);
+      if (key) await page.keyboard.down(key);
+      lastTurn = key;
+    }
+  }
   if (state.snapshot.elapsed - lastLog >= 30) { console.log(`Active time ${state.snapshot.elapsed.toFixed(1)}s, health ${state.snapshot.health}, score ${state.snapshot.score}, position ${state.player.x.toFixed(0)},${state.player.y.toFixed(0)}, route ${waypoint}`); lastLog = state.snapshot.elapsed; }
   await page.waitForTimeout(15);
 }
@@ -60,9 +77,13 @@ for (let i = 1; i <= 5; i++) {
   memory.push({ cycle: i, heapBytes: await heap() });
 }
 const report = { date: new Date().toISOString(), browser: await browser.version(), ...graphics,
+  revision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   viewport: '1280x800', deviceScaleFactor: 1, build: 'optimized Vite preview',
   options: { sessionSeconds: 180, spawnSeconds: 10, sound: true },
-  control: 'Actual keyboard navigation around authored water boundary waypoints, all three weapons held, real-time fixed-step simulation; no state writes',
+  pilot,
+  control: pilot === 'boundary'
+    ? 'Actual keyboard navigation around authored water boundary waypoints, all three weapons held, real-time fixed-step simulation; no state writes'
+    : 'Actual keyboard nearest-enemy aiming at the authored spawn, all three weapons held, real-time fixed-step simulation; no state writes',
   wallSeconds: (Date.now() - started) / 1000, activeSeconds: metrics.elapsed, reason: metrics.reason,
   score: metrics.score, frames: frames.length, fps: 1000 / mean, p95FrameMs: sorted[Math.floor(sorted.length * 0.95)],
   entityPeak: metrics.entityPeak, config, pools, renderPools, presentationPools: metrics.presentationPools, audio: metrics.audio,

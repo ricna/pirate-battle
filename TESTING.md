@@ -72,3 +72,6 @@ The complete suite includes domain registration/pooling/read-view/collision case
 The optimized production preview was also captured at 1800x1000 and 844x390. `reports/options-music-desktop.png` and `reports/options-music-mobile-landscape.png` show the authored Options composition with the new control; the mobile board intentionally scrolls. `reports/music-verification.json` records one element, the hashed production MP3 URL, loop=true, advancing time and effective volume 0.1 in both contexts. MP3 duration reported by Chromium was 194.29875 seconds.
 
 Earlier exploratory runs exposed incorrect moved asset lookup paths and text encoding, which were corrected before the final run. Tests were rerun against a fresh origin after code changes stopped; no failed result was hidden by changing screenshot baselines or enabling retries.
+
+
+The final optimized profile completed 180 real active seconds with music/effects enabled, 17 credited kills, no unhandled application errors, approximately 60 FPS and P95 16.8 ms, followed by five lifecycle cycles. PERFORMANCE.md and reports/profile.json contain the exact revision, workload, pool/audio statistics and heap samples; the incomplete boundary-pilot attempt is preserved separately.
