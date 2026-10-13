@@ -11,3 +11,8 @@ The accepted gameplay brief authorized complementary authored foam/wake/trail ar
 The upstream challenge contains no separate asset licence file. This submission uses its materials for that challenge; it does not assert a new licence or broader redistribution rights for the supplied assets. Third-party packages retain their respective licences in their distributions.
 
 The personal Portuguese tutorial and its earlier educational diagram remain outside this repository in the candidate's Docs directory; they are not game assets or part of the published build.
+
+
+## Owner-supplied soundtrack
+
+The owner supplied `assets/sounds/extra/ebunny-pirate-adventure-361663.mp3` and authorized it as the continuous OST. `AudioConfig.Music` registers that exact asset. It streams through the React-authored audio element owned by `MusicPlayer`; it is separate from the original 27-WAV effect catalog and the effect voice budget. The track is preserved unchanged and bundled by Vite.

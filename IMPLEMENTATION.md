@@ -102,7 +102,7 @@ Use manual constructor/context injection at the composition root. Add abstractio
 
 Static configuration classes are our equivalent of authored ScriptableObject data. They contain recipes/defaults, not active runtime instances. Constructors/factories turn profiles into instances with independent state.
 
-| Location under `src/game/configuration/GameConfigurationuration/` | Owner of the data |
+| Location under `src/game/configuration/` | Owner of the data |
 | --- | --- |
 | `PlayerShipConfig.ts` | Player health, collider, movement and weapon mounts |
 | `EnemyChaserConfig.ts` | Chaser movement, health, ram/AI data and loadout |
@@ -110,16 +110,16 @@ Static configuration classes are our equivalent of authored ScriptableObject dat
 | `ProjectileConfig.ts` | Projectile identity, damage, initial/max speed, acceleration, braking, radius, TTL, sprite and dimensions |
 | `ShipVisualConfig.ts` | Ship PNG selection, damage stages, dimensions/orientation, health metadata and fire frames |
 | `FactoryConfig.ts` | Explicit profile-to-constructor registrations |
-| `GameDefaults.ts` | Options/default limits, map/balance version, seed, spawn points/weights/caps, pools, effects, rules and runtime budgets |
+| `GameDefaults.ts` | map/balance version, seed, spawn points/weights/caps, pools, effects, rules and runtime budgets |
 | `InputConfig.ts` | Authored keyboard/touch bindings |
 | `AudioConfig.ts` | Cue/event mappings, loops, voice budget, mix and audio variation parameters |
-| `types.ts` | Readonly configuration contracts |
+| `../contracts/GameConfig.ts` | Readonly configuration contracts |
 | `GameConfigFactory.ts` | Validation, cloning and freezing a new match snapshot |
 
 ### No magic numbers or scattered strings
 
 - Every tunable gameplay value belongs to an appropriate profile/configuration class: acceleration, braking, maximum speed, turn rate, health, damage, ranges, cooldowns, barrel offsets, TTL, AI intervals, spawn limits, capacities, thresholds and runtime budgets.
-- Entity types, actions, allegiances, status, end reasons and game events use named domain symbols in `domain.ts`, not repeated arbitrary string comparisons.
+- Entity types, actions, allegiances, status, end reasons and game events use named domain symbols in `game/contracts/GameDomain.ts`, not repeated arbitrary string comparisons.
 - Asset names belong to authored visual/audio profiles or explicit asset manifests. Never derive a required ship sprite from an enemy number or select a substitute on error.
 - Shared API paths, persistence keys and other infrastructure identifiers should have an authoritative definition in their owning data module. Do not put network/UI constants in a ship profile simply to centralize everything.
 - UI copy belongs to UI modules; shared messages/constants should have a clear owner. A new localization system is not automatically required. Algorithm code must not depend on duplicated presentation strings.
@@ -132,7 +132,7 @@ Static configuration classes are our equivalent of authored ScriptableObject dat
 - Distances/dimensions use logical world pixels; speed uses pixels/second; acceleration/braking uses pixels/second²; angles use radians; turn speed uses radians/second; gameplay durations use seconds. Label milliseconds explicitly where a UI/runtime interface uses them.
 - Ship acceleration/braking and projectile parameters are independent per profile. A change to one ship must not silently change another's movement.
 - Each new match receives a cloned, recursively frozen GameConfig. Editing source data must not mutate an existing match snapshot.
-- Options override only the documented public settings: session duration, spawn interval, sound and volume. They do not overwrite authored speed/damage/sprite profiles. Persisted Options may take precedence over newly shipped defaults.
+- Options override only the documented public settings: session duration, spawn interval, sound, master volume and music volume. They do not overwrite authored speed/damage/sprite profiles. Persisted Options may take precedence over newly shipped defaults.
 - Input/audio application settings are authored separately; do not misrepresent them as mutable per-entity combat state or assume every audio setting is already serialized in GameConfig.
 - Adding a gameplay setting also requires its typed contract, validation, snapshot serialization, configuration identity and client instructions to be considered together.
 - Completed records preserve the gameplay snapshot. Change `GameDefaults.Version` for released map/rule/balance changes. The full snapshot fingerprint separates ranking configurations; it is not cryptographic security.
@@ -210,7 +210,7 @@ For a new weapon/projectile, author a profile and mount, then use the existing e
 
 ## 12. Audio
 
-- Use authored WAVs and AudioConfig cue/event mappings. Domain logic emits semantic events; it does not play files through Web Audio directly.
+- Use authored WAV effects, the explicit MP3 soundtrack and AudioConfig cue/event mappings. Domain logic emits semantic events; it does not play files through Web Audio directly.
 - Unlock audio through a user gesture. Cache decoded buffers and keep a bounded voice budget. Coalesce/rate-limit repeated events using authored parameters.
 - Keep any variation lists, pitch ranges, gains and cooldowns in configuration. Audio variation is independent of deterministic gameplay randomness.
 - Respect persisted mute/volume. Stop ocean/sailing loops on pause, leaving combat and teardown; disconnect finished sources and prevent overlapping loop duplication on restart.
@@ -366,6 +366,6 @@ The owner required the gameplay screen to match `assets/sample.png` exactly, inc
 The owner required the Options screen to match `assets/sample_options.png`, keeping sound settings and the restore action:
 
 - The board reproduces the reference measurements in `--options-px` reference pixels: title, Game session time and Enemy spawn time rows with authored round minus/plus buttons, then MAIN MENU. Sound (Off/On) and Volume follow the two required rows in the same style; Restore default options is a text action below MAIN MENU. Tall screens fit the whole board; short landscape phones keep at least 0.75 of the reference and scroll.
-- Steppers produce only valid values: the step sizes live in `GameDefaults.OptionSteps`, and each documented limit disables the button that would leave the range. Every press is saved immediately; there is no Save button. Ranges remain available to assistive technology as each setting's description.
+- Steppers produce only valid values: the step sizes live in `OptionsConfig.Steps`, and each documented limit disables the button that would leave the range. Every press is saved immediately; there is no Save button. Ranges remain available to assistive technology as each setting's description.
 
 For navigation in the owner's local environment, the personal wiki entry is [Implementation context](../Docs/13-contexto-de-implementacao.md). This optional link is outside the clone; all mandatory rules are contained in this document and the repository's AGENTS.md.

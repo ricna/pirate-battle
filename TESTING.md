@@ -59,3 +59,16 @@ Ship wake removal (13 October 2026): the presentation regression advances actual
 The new rendering project reads actual WebGL pixels after a zero-time render through the test clock. It checks continuous water across five viewport sizes and four DPI factors (1, 1.25, 1.5, 2), waits for the ResizeObserver's canvas dimensions, and attaches a wide screenshot. The pre-fix canvas at width 1319 exposed one background pixel [18,55,68] between independently scaled tile quads. Static map composition eliminates that crack. Two E2E cases verify a gradual one-second player ramp and two-second braking, with a numerical tolerance at the precise stopping-time boundary.
 
 Use npm run test:e2e with the configured reporters to write reports/playwright. A CLI --reporter override selects Playwright's default output folder instead; the verified final report has been copied into the delivered reports/playwright directory.
+
+
+## Refactor and continuous OST verification - 13 October 2026
+
+Runtime source revision: `ae203b2` (preceded by structural migration `43dfeab`). The final fresh Vite run used `PIRATE_TEST_PORT=5186` and the configured reporters: **69 passed** in 3.4 minutes. No visual baselines were updated. Typecheck, Prettier format check, lint/architecture check and production build passed. The architecture check covered 100 source files. Vite still reports its existing large-chunk advisory; it is not a build failure.
+
+The complete suite includes domain registration/pooling/read-view/collision cases, 20 viewport/DPI rendering combinations, desktop and landscape mobile keyboard/touch behavior, pause/focus, terminal feedback, asset/module failures, persistence, ranking/history and idempotent submission. The renderer's frozen GameReadView explicitly excludes step/pause/resume/disposal commands.
+
+`music.spec.ts` adds three scenarios in each browser project: one authored audio element survives menu navigation, combat pause and three abandonment/restart cycles, with a real wrap at the end of the MP3; Music volume persists, preserves legacy option fields and combines with master mute/volume; media loading failure is visible and a later gesture retries the explicit asset. Playback and media time are observed; these checks do not claim subjective listening or physical-device compatibility.
+
+The optimized production preview was also captured at 1800x1000 and 844x390. `reports/options-music-desktop.png` and `reports/options-music-mobile-landscape.png` show the authored Options composition with the new control; the mobile board intentionally scrolls. `reports/music-verification.json` records one element, the hashed production MP3 URL, loop=true, advancing time and effective volume 0.1 in both contexts. MP3 duration reported by Chromium was 194.29875 seconds.
+
+Earlier exploratory runs exposed incorrect moved asset lookup paths and text encoding, which were corrected before the final run. Tests were rerun against a fresh origin after code changes stopped; no failed result was hidden by changing screenshot baselines or enabling retries.

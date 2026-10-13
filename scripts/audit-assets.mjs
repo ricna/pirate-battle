@@ -44,6 +44,10 @@ const sounds = assets.filter((file) => extname(file) === '.wav').map((file) => {
 const categories = Object.fromEntries([...new Set(pngs.map((item) => item.category))].map((name) => [name, pngs.filter((item) => item.category === name).length]));
 const mismatches = pngs.filter((item) => item.atlas && (item.atlas.width !== item.width || item.atlas.height !== item.height));
 const report = {
+  music: assets.filter((file) => extname(file) === '.mp3').map((file) => ({
+    file: relative(root, file).replaceAll('\\', '/'),
+    literalReferences: contents.filter((item) => item.text.includes(basename(file))).map((item) => item.file),
+  })),
   generatedAt: new Date().toISOString(),
   method: 'Inventory, PNG dimensions, ships XML rectangles, UI JSON metadata and static literal references. References are candidates, not proof that an event occurs. Dynamic UI/frame assembly requires the documented usage review.',
   counts: { allAssetFiles: assets.length, defaultPngs: pngs.length, shipXmlFrames: frames.length, uiJsonFrames: Object.keys(ui.frames).length, sounds: sounds.length, categories },

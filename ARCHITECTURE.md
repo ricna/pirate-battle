@@ -2,13 +2,13 @@
 
 ## Ownership and boundaries
 
-`main.tsx` starts MSW, then mounts React with a shared TanStack Query provider. `App.tsx` owns screens, persisted options, the current recursively frozen match configuration, the last result and the pending submission queue. Gameplay is loaded lazily, reducing work before Play.
+`main.tsx` constructs one `ApplicationServices` composition root, starts its `NetworkSimulator`, then mounts React with the injected QueryClient and `ServicesProvider`. There are no exported global audio/API/storage managers. `App.tsx` owns screen selection and React state; application repositories own preferences, identity and record persistence. Gameplay and the texture library load lazily after Play.
 
-React authors the canvas, menus, forms, dialogs, semantic HUD and touch buttons. Pixi owns rendering resources attached to that canvas. A match owns one `GameManager`, `InputController`, `MapRenderer`, `ArenaRenderer`, animation-frame loop and ResizeObserver. React never mirrors the continuously changing entity collections.
+React authors the canvas, menus, dialogs, HUD, touch controls and one persistent audio element. `GameCanvas` is a view adapter: it supplies authored elements and UI callbacks to a `GameSession`. That session owns one `GameManager`, `InputController`, `MapRenderer`, `ArenaRenderer`, animation-frame loop and ResizeObserver. React receives semantic snapshots instead of continuously changing entity collections. `ArenaRenderer` accepts only a frozen `GameReadView`, which excludes domain mutation/lifecycle commands.
 
 | Module | Responsibility |
 | --- | --- |
-| game/configuration/GameConfigurationuration | Static authored profiles, factory registrations, validation and frozen snapshots |
+| game/configuration | Static authored profiles, factory registrations, validation and frozen snapshots |
 | game/assets/TiledMapLoader | Validated authored-map/tileset/image loading and progress |
 | game/rendering/MapRenderer | Authored tile composition at integer resolution, single cached map surface, Tiled flip transforms |
 | game/runtime/GameManager | Encapsulated match aggregate coordinating entities and systems |
@@ -17,9 +17,10 @@ React authors the canvas, menus, forms, dialogs, semantic HUD and touch buttons.
 | game/math/Geometry | Circle/rectangle contacts, swept projectile intersections and BFS grid routes (nearest reachable cell when the target cell is blocked) |
 | game/input/InputController | Gameplay-scoped keyboard and independent touch sources |
 | game/rendering/ArenaRenderer | Ships, health, deterioration, cannonballs and effects from explicit PNGs |
-| game/audio/AudioManager | Cached Web Audio buffers, bounded voices, loop and lifecycle control |
-| ui/GameCanvas | Initialization, resize, fixed-step accumulator, pause events and low-frequency snapshots |
-| ui/GameHud | Full-screen overlay HUD from `assets/sample.png`: health bar, score, clock, pause and the two touch clusters with weapon cooldown faces |
+| game/runtime/GameSession | Per-match initialization, fixed-step clock, RAF, resize, pause, terminal presentation and disposal |
+| game/audio | AudioManager coordinates SoundEffectPlayer and streamed MusicPlayer with different lifetimes |
+| ui/game/GameCanvas | Authored React canvas view, UI state, retry and translation to session commands |
+| ui/hud | MatchStatusHud and TouchControls reproduce the authored gameplay HUD |
 | application/records/MatchRecord, api, network, storage | Typed REST records, Axios/Query, MSW and persistence |
 
 ## GameManager clock and input
@@ -68,9 +69,9 @@ Web Audio unlocks on a user gesture and decodes only cues registered by `AudioCo
 
 ## Lifecycle and Strict Mode
 
-Initialization is serialized through a component-owned promise queue. Async setup checks disposal after Pixi initialization and asset loading. Map fetches are aborted on cleanup. An abandoned initialization destroys its resources as soon as the pending operation resolves. Retry receives a fresh React-authored canvas.
+Initialization is serialized through a view-owned promise queue. Each attempt creates a `GameSession`; it checks disposal after Pixi initialization and asset loading. Map fetches abort on cleanup. An abandoned initialization destroys partial resources after the pending operation settles. Retry receives a fresh React-authored canvas. GameSession owns and cancels both render and deferred focus frames; resume returns keyboard focus after React closes the modal.
 
-Cleanup cancels animation frames, disconnects ResizeObserver, removes keyboard/window/document listeners, clears input, stops audio, destroys entity containers and owned subtextures, destroys map frames without destroying shared image sources, unloads cached sources from the retiring GPU context using the public TextureSource.unload API, and destroys the Pixi Application without removing React's canvas. Decoded images remain cached; renderer-specific GPU data is reuploaded on the next match. Restart mounts a new match with a new UUID and reset simulation. Abandonment never calls the completion callback.
+Cleanup cancels animation frames, disconnects ResizeObserver, removes keyboard/window/document listeners, clears input, stops match effects/ambience, destroys owned renderer resources and unloads retiring GPU sources without removing React's canvas. Application texture/audio caches survive between matches. The persistent soundtrack also survives match cleanup; its element belongs to ServicesProvider. Restart creates a new match UUID and GameManager. Abandonment never calls the completion callback.
 
 ## REST contracts and consistency
 
@@ -92,4 +93,51 @@ Confirmed and pending records survive refresh on the same origin. MSW state is l
 
 Playwright runs isolated desktop and landscape mobile Chromium contexts, real keyboard/multiple-touch inputs, deterministic dates, seeded gameplay and controlled simulation time. The opt-in observation/clock API cannot assign combat state. Visual baselines cover menu, stable arena and result. Optimized real-time profiling measures frame intervals and entity peaks, followed by five start/play/leave heap checks; raw reports accompany the source.
 
-See README, TESTING and PERFORMANCE for commands, results and supported scope. Portrait combat, arbitrary Tiled shapes, exact hull silhouettes, enemy ship-to-ship physics, physical-device validation and a shared production leaderboard are outside this submission's documented scope.
+See README, TESTING and PERFORMANCE for commands, results and supported scope. Portrait combat, arbitrary Tiled shapes, exact hull silhouettes, physical-device validation and a shared production leaderboard are outside this submission's documented scope.
+
+
+## Team module convention and composition
+
+All source modules use PascalCase matching the primary class or public React component. Types and pure functions live in descriptive PascalCase modules. Folders use lowercase responsibility names. Framework entry/declaration files `main.tsx` and `vite-env.d.ts` are exceptions. Hooks use React's `use` function prefix in PascalCase files. There are no legacy re-export modules; imports identify the actual owner. Prettier and `.editorconfig` standardize source formatting and UTF-8; the architecture check enforces filenames, individual public classes/components and domain dependency restrictions.
+
+```text
+src/
+  application/
+    ApplicationServices.ts       composition root and lazy shared texture library
+    ServicesContext.ts           required React injection context
+    configuration/               Options, OptionsConfig, OptionsRepository
+    records/                     MatchRecord, MatchRepository, PlayerIdentityRepository
+  game/
+    contracts/                   readonly configuration, domain symbols, events, render/audio ports
+    configuration/               authored gameplay/audio/visual profiles and GameConfigFactory
+    core/                        Entity, EntityIdSequence, collision worlds, ObjectPool
+    entities/                    Ship hierarchy, Projectile, Effect
+    factories/                   registered ShipFactory and ProjectileFactory
+    systems/                     weapons, spawning, damage, projectiles, effects, match state/statistics
+    runtime/                     GameManager and GameSession
+    input/                       InputController
+    math/                        pure Geometry functions and Navigation
+    assets/                      TiledMapLoader and application-owned GameTextureLibrary
+    rendering/                   MapRenderer, ArenaRenderer, SpritePool
+    presentation/                bounded cosmetic particles, feedback system and renderer
+    audio/                       AudioManager, SoundEffectPlayer, MusicPlayer
+  infrastructure/
+    network/                     injected RecordsApi and NetworkSimulator
+    storage/                     LocalStorageStore adapter with private warning state
+  ui/
+    App.tsx                      application screen/state coordinator
+    screens/                     MainMenu, OptionsScreen, HowToPlay, CaptainsLog, ResultScreen
+    components/                  shared Button, Dialog, SettingStepper, boundary and provider
+    hud/                         MatchStatusHud and TouchControls
+    game/                        GameCanvas and its stylesheet
+    records/                     RemotePanel and ResultScore
+    assets/                      authored MenuArt and UiAssets lookup
+    hooks/                       UseApplicationServices and UseTransientNotice
+    development/                 demo network controls
+```
+
+A manager is an owner/coordinator, not a place to collect unrelated responsibilities. GameManager delegates rules to domain systems. GameSession delegates rendering, input, asset loading and audio, holding their match lifetime. ApplicationServices is the only application service composition root and is created explicitly in main. React consumers receive that instance through useApplicationServices; missing provider wiring throws visibly.
+
+AudioManager delegates effects to SoundEffectPlayer and persistent music to MusicPlayer. ServicesProvider authors the audio element and attaches it to the music player. Captured pointer/keyboard gestures unlock playback; later gestures can retry a media failure. Options changes immediately configure both players. The music channel streams one explicit MP3 at `masterVolume * musicVolume * authoredGain` and never competes with the effect voice budget. Music keeps position through menu transitions, combat pause, results, abandonment and restart; mute pauses it and reenabling resumes it. IMatchAudio exposes only match sound commands/observations so GameSession cannot control application music ownership. Provider disposal removes gesture listeners and detaches its audio element.
+
+Extend a ship through its profile, subclass and factory registration. Extend gameplay through a focused domain system and explicit command/read contracts. Add a screen in ui/screens and supply actions from App. Add a persistent preference in Options/OptionsConfig/OptionsRepository, including migration and validation. Register authored assets in their configuration manifests; never hide a missing reference with generated content.

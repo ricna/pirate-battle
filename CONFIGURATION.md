@@ -4,14 +4,14 @@
 
 Game defaults are authored TypeScript data in static configuration classes. The classes and their data are frozen at runtime; changes are made in source. They are the equivalent of source-controlled ScriptableObject profiles; they are not Unity assets or .NET assemblies. No Inspector, external server or environment variable is required. Edit the files, run the checks, and rebuild the static application.
 
-| File under `src/game/configuration/GameConfigurationuration/` | Editable defaults |
+| File under `src/game/configuration/` | Editable defaults |
 | --- | --- |
 | `PlayerShipConfig.ts` | Player health, circle radius, movement, weapon mounts and visual profile |
 | `EnemyChaserConfig.ts` | Chaser health, movement, navigation and ram damage |
 | `EnemyShooterConfig.ts` | Shooter health, movement, navigation, range, aim cone and weapon cooldown |
 | `ProjectileConfig.ts` | Front/broadside/enemy projectile damage, speed, acceleration, drag, TTL, radius and sprite dimensions |
 | `ShipVisualConfig.ts` | Each ship's explicit intact/damaged/heavily damaged sprites, hull dimensions, fire and health indicator assets |
-| `GameDefaults.ts` | Default Options and allowed limits, simulation clock, seed, spawn points/weights/cap, pool capacities, effects, warnings and runtime budgets |
+| `GameDefaults.ts` | Simulation clock, seed, spawn points/weights/cap, pool capacities, effects, warnings and runtime budgets |
 | `FactoryConfig.ts` | Enemy profile → concrete subclass registrations |
 | `InputConfig.ts` | Keyboard bindings, pause keys and touch command labels/icons |
 | `AudioConfig.ts` | UI cues, gameplay-event sound variants, pitch ranges, repeat cooldowns, voice priorities/budget and mix gains |
@@ -19,7 +19,7 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | `PresentationConfig.ts` | Crew/debris/projectile-trail profiles, guaranteed crew capacity, cosmetic pools, recoil/tint/shake, floating labels, water animation and terminal/result durations; ship wake removed by owner request |
 | `AssetConfig.ts` | Shared default atlas sources and explicitly registered standalone authored textures |
 
-`config.ts` is an entry point, not a second balance table. `GameConfigFactory.create()` gathers the registered profiles, validates them, clones their data and recursively freezes the match snapshot. `GameManager` also isolates an externally supplied configuration. Objects passed to ships cannot remain mutable aliases to their original profiles.
+`GameConfigFactory.create()` gathers the registered profiles, validates them, clones their data and recursively freezes the match snapshot. `GameManager` also isolates an externally supplied configuration. Objects passed to ships cannot remain mutable aliases to their original profiles.
 
 ## Example: change player movement
 
@@ -112,7 +112,7 @@ Opt-in `?test=1` / `?profile=1` observations include logical and renderer pool s
 
 ## Options, snapshots and delivery
 
-Options controls only bounded session duration, spawn interval, sound and volume. They override those default settings for new matches and persist locally. They do not overwrite static ship/projectile profiles. Already-saved Options retain their saved values when the shipped defaults change; use Options to change them or remove only `pirate.options` from browser storage when intentionally testing new defaults.
+Options controls bounded session duration, spawn interval, sound, master volume and music volume. They override those default settings for new matches and persist locally. They do not overwrite static ship/projectile profiles. Already-saved Options retain their saved values when the shipped defaults change; use Options to change them or remove only `pirate.options` from browser storage when intentionally testing new defaults.
 
 Gameplay profiles, pools and rules are frozen for each match. Audio mute/volume are application-level settings. Input bindings and the audio mix table are authored application configuration. Source editing during development may trigger Vite's reload; do not treat a hot reload as an in-game balance editor.
 
@@ -134,3 +134,14 @@ For standalone gameplay art, `AssetConfig.Standalone` maps a logical key to its 
 Player defaults now use acceleration 230 pixels/s² and braking 115 pixels/s², giving approximately one second to maximum speed and two seconds to stop in unobstructed water. Full-speed braking distance is approximately 230 logical pixels. Test in free water, since obstacles can stop travel before braking finishes. Enemy profiles retain their independent settings.
 
 GameDefaults.Runtime.staticMapResolution is a positive integer (default 1). Authored tile layers are composed once at that resolution into an owned render surface before fitting the whole arena, preventing one-pixel gaps at fractional display scales. This changes rendering only; the Tiled map and its collisions remain authored inputs.
+
+
+## Application options and continuous soundtrack
+
+Application preferences live in `src/application/configuration/OptionsConfig.ts`, with the typed contract in `Options.ts` and persistence/migration in `OptionsRepository.ts`. Gameplay tuning remains in the game configuration profiles. Defaults: session 120 s, spawn 5 s, Sound On, master Volume 50%, Music volume 100%. Steps are 10 s, 0.2 s and 10% for both volume controls; all volumes are validated in [0, 1]. Existing saved options without `musicVolume` receive only its authored default; existing time, spawn, sound and master volume survive. Invalid stored settings produce a warning. A valid change or Restore saves the complete new schema immediately.
+
+`AudioConfig.Music` explicitly selects the authored MP3 through a bundler-visible URL, identifies it as `pirate-adventure` and sets its mix gain to 0.2. Replace this URL to select another authored track; a missing file must be fixed rather than substituted. Vite includes the MP3 in the production build.
+
+The effective music gain is `masterVolume * musicVolume * AudioConfig.Music.gain`, or silence when Sound is Off. Music streams through one React-authored audio element with loop enabled. It starts on a pointer or keyboard gesture and continues across menus, combat, combat pause, results and repeated matches. Mute or Music volume 0 pauses playback without rewinding; reenabling resumes the same track. Refresh creates a new application lifetime, so a new gesture is required. Browsers may suspend background media independently.
+
+Sound effects remain decoded/cached Web Audio buffers with the configured bounded voice budget. The music element is a separate streaming channel and cannot be evicted by combat effects. Music/audio failures are published to React and shown visibly; a later gesture can retry the authored asset.

@@ -50,9 +50,9 @@ Combat supports **landscape** on mobile. Rotating to portrait pauses the battle.
 
 ## Options and balance
 
-Options persist after refresh: session time **60–180 seconds** in 10-second steps, enemy spawn interval **2–10 seconds** in 0.2-second steps, sound on/off and volume in 10% steps. The screen reproduces `assets/sample_options.png` with minus/plus buttons; every press is a valid value and is saved immediately, so there is no separate Save action. Restore default options resets and saves all four. Defaults are 120 seconds, 5 seconds, sound enabled and volume 50%. The spawn minimum limits pressure and entity growth; the maximum ensures both enemy types appear even in the shortest session.
+Options persist after refresh: session time **60–180 seconds** in 10-second steps, enemy spawn interval **2–10 seconds** in 0.2-second steps, sound on/off, master volume and independent music volume in 10% steps. The screen reproduces `assets/sample_options.png` with minus/plus buttons; every press is a valid value and is saved immediately, so there is no separate Save action. Restore default options resets and saves all preferences. Defaults are 120 seconds, 5 seconds, sound enabled, master volume 50% and music volume 100%. The spawn minimum limits pressure and entity growth; the maximum ensures both enemy types appear even in the shortest session.
 
-Static classes under `src/game/configuration/GameConfigurationuration/` author ship, projectile, visual, factory, pool and runtime defaults. Each match receives a validated, recursively frozen snapshot. Version `arena_00-v1/balance-v3` includes acceleration/braking; seed `20261012` keeps spawning deterministic. See [CONFIGURATION.md](CONFIGURATION.md) for the client guide, editable files, units, examples and new-enemy registration. Increment the version when changing rules or map geometry.
+Static classes under `src/game/configuration/` author ship, projectile, visual, factory, pool and runtime defaults. Each match receives a validated, recursively frozen snapshot. Version `arena_00-v1/balance-v4` includes acceleration/braking; seed `20261012` keeps spawning deterministic. See [CONFIGURATION.md](CONFIGURATION.md) for the client guide, editable files, units, examples and new-enemy registration. Increment the version when changing rules or map geometry.
 
 Player: 100 HP, radius 34, maximum speed 230 pixels/s, acceleration 230 pixels/s² (about 1s to maximum), braking 115 pixels/s² (about 2s to stop), turn 2.6 radians/s. Chaser: 40 HP, speed 125, ram damage 25. Shooter: 65 HP, speed 100, range 580, damage 12, cooldown 2.2s. Player front cannon: damage 25, cooldown 0.35s. Each broadside ball: damage 22, cooldown 1.1s. Player bullets travel at 780 pixels/s; enemy bullets at 340; lifetime is 1.6s. Enemy turn rate is 2.1 radians/s. Active enemies are capped at 28.
 
@@ -124,3 +124,14 @@ Source code is maintained in the private repository. Hosting is a separate deliv
 - Enemy routes come from a four-neighbour grid reduced to straight corners, plus local steering; enemies have no shared plan, so a dense crowd at the 28-enemy cap can still queue briefly around the player.
 - LocalStorage availability/quota can prevent recovery across refresh; a visible warning is provided.
 - Test/profiling instrumentation is opt-in (`?test=1` / `?profile=1`). Test mode can observe and advance time, never assign entity positions, life or score. No server trust/security is implied by a local mock leaderboard.
+
+
+## Team structure and audio lifecycle
+
+Source files use PascalCase matching their primary class/component. Responsibility folders are lowercase. Start at `src/main.tsx`, which constructs `ApplicationServices`, starts `NetworkSimulator` and injects services through `ServicesProvider`. React screens live under `src/ui/screens`; shared controls, HUD, hooks and the canvas view have separate folders.
+
+`GameSession` owns each match's browser/Pixi lifecycle; `GameManager` coordinates its encapsulated entities and systems. Renderers receive a frozen `GameReadView`. `AudioManager` composes `SoundEffectPlayer` and `MusicPlayer`. The authored Pirate Adventure OST loops continuously after the first click/touch/key, including during menus, paused combat, results and restarts. Options includes an independent Music volume control; Sound and master Volume affect both channels. Refresh requires another user gesture.
+
+`src/application` owns preferences and record repositories; `src/infrastructure` supplies browser storage, Axios and the origin-local MSW server. Dependencies are supplied through the composition root, not exported global managers. [ARCHITECTURE.md](ARCHITECTURE.md) documents the ownership map and extension workflow.
+
+Use `npm run format` to format source, `npm run format:check` to check it, and `npm run architecture:check` for filenames, class/component ownership and domain dependency boundaries. `npm run lint` includes the architecture check. `.editorconfig` requires UTF-8 and consistent indentation. `PIRATE_TEST_PORT` optionally selects an isolated fresh Vite origin for E2E checks.

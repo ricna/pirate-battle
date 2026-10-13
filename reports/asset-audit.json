@@ -1,8 +1,16 @@
 {
-  "generatedAt": "2026-10-13T17:49:39.242Z",
+  "music": [
+    {
+      "file": "assets/sounds/extra/ebunny-pirate-adventure-361663.mp3",
+      "literalReferences": [
+        "src/game/configuration/AudioConfig.ts"
+      ]
+    }
+  ],
+  "generatedAt": "2026-10-13T18:38:02.299Z",
   "method": "Inventory, PNG dimensions, ships XML rectangles, UI JSON metadata and static literal references. References are candidates, not proof that an event occurs. Dynamic UI/frame assembly requires the documented usage review.",
   "counts": {
-    "allAssetFiles": 534,
+    "allAssetFiles": 536,
     "defaultPngs": 234,
     "shipXmlFrames": 102,
     "uiJsonFrames": 36,
@@ -365,8 +373,8 @@
       "literalReferences": [
         "src/game/configuration/PresentationConfig.ts",
         "src/game/configuration/ShipVisualConfig.ts",
-        "src/ui/HowToPlay.tsx",
-        "src/ui/MenuArt.ts"
+        "src/ui/assets/MenuArt.ts",
+        "src/ui/screens/HowToPlay.tsx"
       ]
     },
     {
@@ -459,7 +467,7 @@
       },
       "literalReferences": [
         "src/game/configuration/ShipVisualConfig.ts",
-        "src/ui/HowToPlay.tsx"
+        "src/ui/screens/HowToPlay.tsx"
       ]
     },
     {
@@ -2295,9 +2303,9 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/CaptainsLog.css",
-        "src/ui/GameHud.css",
-        "src/ui/OptionsScreen.css"
+        "src/ui/hud/GameHud.css",
+        "src/ui/screens/CaptainsLog.css",
+        "src/ui/screens/OptionsScreen.css"
       ]
     },
     {
@@ -2307,9 +2315,9 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/CaptainsLog.css",
-        "src/ui/GameHud.css",
-        "src/ui/OptionsScreen.css"
+        "src/ui/hud/GameHud.css",
+        "src/ui/screens/CaptainsLog.css",
+        "src/ui/screens/OptionsScreen.css"
       ]
     },
     {
@@ -2319,9 +2327,9 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/CaptainsLog.css",
-        "src/ui/GameHud.css",
-        "src/ui/OptionsScreen.css"
+        "src/ui/hud/GameHud.css",
+        "src/ui/screens/CaptainsLog.css",
+        "src/ui/screens/OptionsScreen.css"
       ]
     },
     {
@@ -2379,7 +2387,7 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/OptionsScreen.tsx"
+        "src/ui/components/SettingStepper.tsx"
       ]
     },
     {
@@ -2389,7 +2397,7 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/GameHud.tsx"
+        "src/ui/hud/MatchStatusHud.tsx"
       ]
     },
     {
@@ -2407,7 +2415,7 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/OptionsScreen.tsx"
+        "src/ui/components/SettingStepper.tsx"
       ]
     },
     {
@@ -2449,7 +2457,7 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/GameHud.css"
+        "src/ui/hud/GameHud.css"
       ]
     },
     {
@@ -2520,7 +2528,7 @@
       "atlas": null,
       "literalReferences": [
         "src/game/configuration/ShipVisualConfig.ts",
-        "src/ui/GameHud.css"
+        "src/ui/hud/GameHud.css"
       ]
     },
     {
@@ -2530,8 +2538,8 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/components.tsx",
-        "src/ui/GameHud.tsx"
+        "src/ui/assets/UiAssets.ts",
+        "src/ui/hud/MatchStatusHud.tsx"
       ]
     },
     {
@@ -2541,7 +2549,7 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/GameHud.tsx"
+        "src/ui/hud/MatchStatusHud.tsx"
       ]
     },
     {
@@ -2551,7 +2559,7 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/GameHud.tsx"
+        "src/ui/hud/MatchStatusHud.tsx"
       ]
     },
     {
@@ -2622,9 +2630,9 @@
       "atlas": null,
       "literalReferences": [
         "src/ui/App.css",
-        "src/ui/CaptainsLog.css",
-        "src/ui/MainMenu.css",
-        "src/ui/OptionsScreen.css"
+        "src/ui/screens/CaptainsLog.css",
+        "src/ui/screens/MainMenu.css",
+        "src/ui/screens/OptionsScreen.css"
       ]
     },
     {
@@ -2634,7 +2642,7 @@
       "category": "ui",
       "atlas": null,
       "literalReferences": [
-        "src/ui/MenuArt.ts"
+        "src/ui/assets/MenuArt.ts"
       ]
     }
   ],
@@ -2837,12 +2845,14 @@
   "otherResources": [
     "assets/authored/foam_ring.svg",
     "assets/authored/projectile_trail.svg",
+    "assets/authored/shipt-trail.png~",
     "assets/authored/Splash.kra",
     "assets/authored/water_splash.svg",
     "assets/logo_jungle_gaming.svg",
     "assets/maps/arena_00.tmj",
     "assets/maps/arena_01.tmj",
     "assets/maps/pirate-battle.tiled-project",
+    "assets/maps/pirate-battle.tiled-session",
     "assets/maps/terrain.tsj",
     "assets/sounds/extra/adventure-pirate-adventure-361663-license.txt",
     "assets/sounds/extra/ebunny-pirate-adventure-361663.mp3",

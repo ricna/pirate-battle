@@ -106,3 +106,8 @@ Audio uses independent cosmetic variation, persisted mute/volume and at most 16 
 | B11 | Independent simultaneous controls, authored pressed/hover states, weapon readiness, critical health/time, focus and orientation handling. |
 
 `tests/presentation.spec.ts` checks counts/variants, duplicate emission, water clearance, lifetime/disposal, read-only ports, cosmetic independence, pause, reduced motion and capacity validation. Browser tests capture crew/debris/foam through real cannon input and player terminal sinking before the result. The retained old v2 performance report is not evidence for this new build; use the current profiling report and TESTING/PERFORMANCE documents for final validation status.
+
+
+## Continuous OST integration - 13 October 2026
+
+The owner's `sounds/extra/ebunny-pirate-adventure-361663.mp3` is explicitly registered by AudioConfig.Music, streamed by MusicPlayer and coordinated by AudioManager. One React-authored element persists across all screens and match cycles, with gesture unlock, loop, master mute/volume and independent music volume. The audit report now lists MP3 files and candidate references under `music`; playback/lifecycle evidence comes from the browser music regressions. The required original effect catalog remains exactly 27 WAVs; an additional owner-supplied WAV in extra is inventoried but is not selected as a replacement for a missing cue.
