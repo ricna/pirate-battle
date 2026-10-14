@@ -5,7 +5,7 @@
  */
 
 .captains-log {
-  --board-px: min(var(--sample-px), 100vw / 1480);
+  --board-px: min(var(--sample-px), 100cqw / 1480);
   --panel-border-scale: 0.78;
   --records-row-height: 50;
   --records-cell-inset: 13;
@@ -287,10 +287,11 @@
   text-shadow: none;
 }
 
-@media (max-width: 1024px), (max-height: 600px) {
+/* Compact screens: a fixed-width board and fixed-size controls instead of filling the screen (MOBILE.md). */
+@container app (max-width: 1024px) or (max-height: 600px) {
   .captains-log {
     --board-px: 0.75px;
-    width: min(820px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+    width: min(560px, calc(100cqw - 16px - var(--safe-left) - var(--safe-right)));
     min-height: 0;
     border-width: 24px 20px;
     padding: 8px 0;
@@ -304,16 +305,18 @@
     min-width: 0;
   }
   .records-tabs {
-    width: 100%;
-    gap: 8px;
+    justify-content: center;
+    width: auto;
+    gap: 6px;
     margin-top: 12px;
   }
   .records-tabs .sprite-button {
-    flex: 1;
-    width: auto;
+    flex: 0 0 auto;
+    width: var(--compact-secondary-width);
     min-width: 0;
-    height: 44px;
-    font-size: 13px;
+    height: var(--compact-secondary-height);
+    padding: 0 var(--compact-button-inset);
+    font-size: 12px;
   }
   .records-body {
     overflow-x: auto;
@@ -357,33 +360,29 @@
     height: 44px;
   }
   .captains-log .captains-log-menu {
-    height: 44px;
-    margin-bottom: 0;
+    width: var(--compact-tight-primary-width);
+    height: var(--compact-tight-primary-height);
+    margin: 4px 0 0;
     font-size: 16px;
   }
 }
 
-@media (max-height: 600px) and (orientation: landscape) {
+@container app (max-height: 600px) and (orientation: landscape) {
   .captains-log {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
     align-items: center;
     border-width: 14px;
-    padding: 3px 6px;
+    padding: 2px 6px;
   }
   .captains-log h1 {
     grid-column: 1;
     font-size: 20px;
   }
   .records-tabs {
-    width: min(220px, 100%);
-    justify-self: start;
+    justify-self: end;
     grid-column: 2;
     margin: 0;
-  }
-  .records-tabs .sprite-button {
-    height: 44px;
-    font-size: 12px;
   }
   .captains-log .remote-panel {
     grid-column: 1 / -1;
@@ -408,7 +407,7 @@
   }
   .remote-panel td,
   .ranking tr.leader td {
-    height: 21px;
+    height: 20px;
     padding-left: 4px;
     font-size: 11px;
   }
@@ -423,17 +422,15 @@
     margin-right: 3px;
   }
   .records-pagination {
-    margin-top: 1px;
+    margin-top: 4px;
   }
   .captains-log .captains-log-menu {
     grid-column: 1 / -1;
     justify-self: center;
-    height: 44px;
-    margin-top: 0;
   }
 }
 
-@media (max-width: 540px) and (orientation: portrait) {
+@container app (max-width: 540px) and (orientation: portrait) {
   .captains-log {
     border-width: 16px 14px;
     padding: 4px;

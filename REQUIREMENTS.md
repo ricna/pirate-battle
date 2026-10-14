@@ -107,7 +107,7 @@ Each row maps a requirement of [CHALLENGE.md](CHALLENGE.md) to where it is imple
 | Requirement | Implementation | Verification |
 | --- | --- | --- |
 | Supplied assets as the visual base; licences for additions | `assets/`, [ASSETS.md](ASSETS.md), [ASSET_AUDIT.md](ASSET_AUDIT.md) | Baselines and captures in `reports/` |
-| Desktop and mobile, usable touch, no clipping, supported orientation | Responsive HUD (`GameHud.css`), landscape combat, portrait pause | Visual test layout assertions in both projects; touch test |
+| Desktop and mobile, usable touch, no clipping, supported orientation | Responsive HUD (`GameHud.css`), landscape combat, rotated portrait layout ([D21](DECISIONS.md#d21--required-full-screen-quit-and-the-rotated-landscape-layout)) | Visual test layout assertions in both projects; touch test |
 | Visible asset-loading progress | `AssetLoadingIndicator`, `GameSession` progress | `authored loading bar follows engine, map and texture completion` |
 | Keyboard navigation, visible focus, dialog focus, labels, contrast, accessible errors | Native `<dialog>`, focus management in `App`, ARIA tabs in `CaptainsLog`, labelled controls, `role="alert"` errors | `menus, records, gameplay HUD, pause dialog and results pass automated WCAG 2.1 AA checks` (summary in `reports/accessibility`); `ranking and history…` (arrow-key tabs) |
 | Semantic score, time and state without per-frame announcements | `MatchStatusHud` text values, one status region in `GameCanvas` | Accessibility audit; HUD assertions |

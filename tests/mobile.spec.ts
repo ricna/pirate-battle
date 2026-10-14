@@ -9,39 +9,84 @@ async function capture(page: Page, name: string) {
   await page.screenshot({ path: evidencePath(`mobile-layout/${name}.png`), fullPage: true });
 }
 
+/** Smallest space the owner accepts between two controls, or between a board and the demo panel. */
+const MinimumSpacing = 4;
+
+/** Element rectangles in the application's own axes; the rotated portrait layout turns them a quarter. */
+async function layoutBoxes(page: Page, selector: string) {
+  return page.locator(selector).evaluateAll((elements) => {
+    const root = document.getElementById('root');
+    if (!root) throw new Error('The application root is missing.');
+    const rotated = getComputedStyle(root).transform !== 'none';
+    return elements.map((element) => {
+      const box = element.getBoundingClientRect();
+      // A clockwise quarter turn: layout x runs down the screen and layout y from right to left.
+      return rotated
+        ? { x: box.top, y: innerWidth - box.right, width: box.height, height: box.width }
+        : { x: box.left, y: box.top, width: box.width, height: box.height };
+    });
+  });
+}
+
+const isRotated = (page: Page) =>
+  page.evaluate(() => getComputedStyle(document.getElementById('root')!).transform !== 'none');
+
 async function expectScreenFits(page: Page, selector: string) {
   await expect
     .poll(async () =>
-      page.evaluate((target) => {
-        const panel = document.querySelector(target)?.getBoundingClientRect();
-        const records = document.querySelector('.records-body');
-        const dialog = document.querySelector<HTMLDialogElement>('.pause-dialog[open]');
-        if (!panel) return false;
-        const visibleButtons = Array.from(
-          document.querySelectorAll<HTMLButtonElement>('.app button, .pause-dialog button'),
-        ).filter(
-          (button) =>
-            !button.closest('details:not([open])') &&
-            button.getClientRects().length > 0 &&
-            getComputedStyle(button).visibility !== 'hidden',
-        );
-        return (
-          document.documentElement.scrollWidth <= innerWidth + 1 &&
-          document.documentElement.scrollHeight <= innerHeight + 1 &&
-          panel.left >= -1 &&
-          panel.top >= -1 &&
-          panel.right <= innerWidth + 1 &&
-          panel.bottom <= innerHeight + 1 &&
-          (!records || records.scrollWidth <= records.clientWidth + 1) &&
-          (!dialog || dialog.scrollHeight <= dialog.clientHeight + 1) &&
-          visibleButtons.every((button) => {
-            const box = button.getBoundingClientRect();
-            return (
-              box.left >= -1 && box.top >= -1 && box.right <= innerWidth + 1 && box.bottom <= innerHeight + 1
-            );
-          })
-        );
-      }, selector),
+      page.evaluate(
+        ({ target, spacing }) => {
+          const panel = document.querySelector(target)?.getBoundingClientRect();
+          const records = document.querySelector('.records-body');
+          const dialog = document.querySelector<HTMLDialogElement>('.pause-dialog[open]');
+          const screen = document.querySelector('.app');
+          const demoPanel = document.querySelector('.network-tools summary');
+          if (!panel) return false;
+          const visibleButtons = Array.from(
+            document.querySelectorAll<HTMLButtonElement>('.app button, .pause-dialog button'),
+          ).filter(
+            (button) =>
+              !button.closest('details:not([open])') &&
+              button.getClientRects().length > 0 &&
+              getComputedStyle(button).visibility !== 'hidden',
+          );
+          // Rectangles closer than `spacing` on both axes, overlapping ones included.
+          const crowded = (a: DOMRect, b: DOMRect) =>
+            a.left < b.right + spacing &&
+            b.left < a.right + spacing &&
+            a.top < b.bottom + spacing &&
+            b.top < a.bottom + spacing;
+          const controls = visibleButtons.map((button) => button.getBoundingClientRect());
+          const spaced = controls.every((box, index) =>
+            controls.slice(index + 1).every((other) => !crowded(box, other)),
+          );
+          const demoBox =
+            demoPanel && demoPanel.getClientRects().length > 0 ? demoPanel.getBoundingClientRect() : null;
+          return (
+            spaced &&
+            (!demoBox || !crowded(demoBox, panel)) &&
+            document.documentElement.scrollWidth <= innerWidth + 1 &&
+            document.documentElement.scrollHeight <= innerHeight + 1 &&
+            (!screen || screen.scrollHeight <= screen.clientHeight + 1) &&
+            panel.left >= -1 &&
+            panel.top >= -1 &&
+            panel.right <= innerWidth + 1 &&
+            panel.bottom <= innerHeight + 1 &&
+            (!records || records.scrollWidth <= records.clientWidth + 1) &&
+            (!dialog || dialog.scrollHeight <= dialog.clientHeight + 1) &&
+            visibleButtons.every((button) => {
+              const box = button.getBoundingClientRect();
+              return (
+                box.left >= -1 &&
+                box.top >= -1 &&
+                box.right <= innerWidth + 1 &&
+                box.bottom <= innerHeight + 1
+              );
+            })
+          );
+        },
+        { target: selector, spacing: MinimumSpacing },
+      ),
     )
     .toBe(true);
 }
@@ -155,15 +200,19 @@ for (const viewport of [
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     const suffix = `${viewport.width}x${viewport.height}`;
+    const portrait = viewport.width < viewport.height;
+    // A touch device held in portrait shows the landscape layout turned a quarter.
+    const layout = portrait ? { width: viewport.height, height: viewport.width } : viewport;
     try {
       await open(page);
+      expect(await isRotated(page)).toBe(portrait);
       await capture(page, `menu-${suffix}`);
-      for (const button of await page.locator('.main-menu button').all()) {
-        const box = (await button.boundingBox())!;
+      for (const box of await layoutBoxes(page, '.main-menu button')) {
         expect(box.height).toBeGreaterThanOrEqual(44);
         expect(box.x).toBeGreaterThanOrEqual(0);
-        expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
-        expect(box.y + box.height).toBeLessThanOrEqual(viewport.height - 40);
+        expect(box.x + box.width).toBeLessThanOrEqual(layout.width);
+        // The bottom strip belongs to the demo network panel.
+        expect(box.y + box.height).toBeLessThanOrEqual(layout.height - 40);
       }
       await page.getByRole('button', { name: 'Options', exact: true }).click();
       await capture(page, `options-${suffix}`);
@@ -180,10 +229,15 @@ for (const viewport of [
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
       await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
       await play(page);
-      if (viewport.width < viewport.height) {
-        await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
-        await page.setViewportSize({ width: viewport.height, height: viewport.width });
-        await page.getByRole('button', { name: 'Resume', exact: true }).click();
+      if (portrait) {
+        // Turning the device removes the rotation without a pause or a rotate prompt, in both directions.
+        expect((await observe(page)).snapshot.status).toBe('playing');
+        await page.setViewportSize(layout);
+        await expect.poll(() => isRotated(page)).toBe(false);
+        expect((await observe(page)).snapshot.status).toBe('playing');
+        await page.setViewportSize(viewport);
+        await expect.poll(() => isRotated(page)).toBe(true);
+        expect((await observe(page)).snapshot.status).toBe('playing');
       }
       await advance(page, 0);
       const screen = page.viewportSize()!;
@@ -191,7 +245,7 @@ for (const viewport of [
       expect(before.camera.following).toBe(true);
       expect(before.config.player.visual.height * before.camera.scale).toBeGreaterThanOrEqual(84);
       const boxes = await page
-        .locator('.hud-health, .hud-counter, .hud-pause, .fullscreen-button, .command')
+        .locator('.hud-health, .hud-counter, .hud-pause, .command')
         .evaluateAll((elements) =>
           elements.map((element) => {
             const box = element.getBoundingClientRect();
@@ -236,56 +290,41 @@ for (const viewport of [
   });
 }
 
-test('fullscreen is explicit, survives Play and exits with synchronized controls', async ({ page }) => {
-  await open(page);
-  await page.getByRole('button', { name: 'Full screen', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Exit full screen' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  expect(await page.evaluate(() => document.fullscreenElement === document.documentElement)).toBe(true);
-  await play(page);
-  await page.getByRole('button', { name: 'Exit full screen' }).click();
-  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
-  expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
-  await page.getByRole('button', { name: 'Resume', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Full screen', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'false',
-  );
-});
+const isFullscreen = (page: Page) =>
+  page.evaluate(() => document.fullscreenElement === document.documentElement);
 
-test('unsupported fullscreen explains the home-screen route and leaves menus usable', async ({ page }) => {
-  await page.addInitScript(() => Object.defineProperty(document, 'fullscreenEnabled', { get: () => false }));
+/** Two frames: long enough for a full-screen request started by the last gesture to settle. */
+const settle = (page: Page) =>
+  page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+
+test('full screen is required: the first gesture enters it and a gesture after a browser exit returns', async ({
+  page,
+}) => {
   await open(page);
-  await page.getByRole('button', { name: 'Full screen', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Full screen', exact: true })).toContainText(
-    'Add to Home Screen',
-  );
-  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByRole('button', { name: /full screen/i })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await settle(page);
+  expect(await isFullscreen(page)).toBe(false);
+  await page.locator('.main-menu-tagline').click();
+  await expect.poll(() => isFullscreen(page)).toBe(true);
   await play(page);
+  // Holding Esc or Android's back gesture leaves full screen without pausing the battle.
+  await page.evaluate(() => document.exitFullscreen());
+  await expect.poll(() => isFullscreen(page)).toBe(false);
   expect((await observe(page)).snapshot.status).toBe('playing');
-  await page.getByRole('button', { name: 'Full screen', exact: true }).click();
-  const guidance = page.getByRole('dialog', { name: 'Full screen', exact: true });
-  await expect(guidance).toBeVisible();
-  await guidance.getByRole('button', { name: 'Close', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
-  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await page.locator('.arena canvas').click();
+  await expect.poll(() => isFullscreen(page)).toBe(true);
   expect((await observe(page)).snapshot.status).toBe('playing');
 });
 
-test('Alt+Enter switches fullscreen from menus and a paused battle without activating focused buttons', async ({
+test('Alt+Enter keeps a window until the player chooses full screen again, pausing a battle', async ({
   page,
 }) => {
   await open(page);
   await page.getByRole('button', { name: 'Play', exact: true }).focus();
   await page.keyboard.press('Alt+Enter');
-  await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+  await expect.poll(() => isFullscreen(page)).toBe(true);
   await expect(page.locator('.main-menu')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Exit full screen' })).toHaveAttribute(
-    'aria-keyshortcuts',
-    'Alt+Enter',
-  );
   await page.evaluate(() =>
     document.dispatchEvent(
       new KeyboardEvent('keydown', {
@@ -297,18 +336,136 @@ test('Alt+Enter switches fullscreen from menus and a paused battle without activ
       }),
     ),
   );
-  expect(await page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
-  await play(page);
+  await settle(page);
+  expect(await isFullscreen(page)).toBe(true);
   await page.keyboard.press('Alt+Enter');
-  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
-  expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+  await expect.poll(() => isFullscreen(page)).toBe(false);
+  await page.locator('.main-menu-tagline').click();
+  await play(page);
+  await settle(page);
+  expect(await isFullscreen(page)).toBe(false);
   await page.keyboard.press('Alt+NumpadEnter');
-  await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
   await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  await expect.poll(() => isFullscreen(page)).toBe(true);
   await page.getByRole('button', { name: 'Resume', exact: true }).click();
   await page.keyboard.press('Alt+Enter');
   await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
-  expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+  await expect.poll(() => isFullscreen(page)).toBe(false);
+});
+
+test('unsupported full screen never blocks play and Alt+Enter explains the home-screen route', async ({
+  page,
+}) => {
+  await page.addInitScript(() => Object.defineProperty(document, 'fullscreenEnabled', { get: () => false }));
+  await open(page);
+  await page.locator('.main-menu-tagline').click();
+  await settle(page);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await play(page);
+  expect((await observe(page)).snapshot.status).toBe('playing');
+  await page.keyboard.press('Alt+Enter');
+  const guidance = page.getByRole('dialog', { name: 'Full screen', exact: true });
+  await expect(guidance).toContainText('Add to Home Screen');
+  await guidance.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  expect((await observe(page)).snapshot.status).toBe('playing');
+});
+
+test('a refused full-screen request is explained once and offers another attempt', async ({ page }) => {
+  await page.addInitScript(() => {
+    Element.prototype.requestFullscreen = () => Promise.reject(new TypeError('Permissions check failed'));
+  });
+  await open(page);
+  await page.locator('.main-menu-tagline').click();
+  const guidance = page.getByRole('dialog', { name: 'Full screen', exact: true });
+  await expect(guidance).toContainText('could not change full screen');
+  await expect(guidance.getByRole('button', { name: 'Try again', exact: true })).toBeVisible();
+  await guidance.getByRole('button', { name: 'Close', exact: true }).click();
+  await page.locator('.main-menu-tagline').click();
+  await settle(page);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('Quit closes a tab that the page may close', async ({ browser }) => {
+  const context = await browser.newContext();
+  const launcher = await context.newPage();
+  try {
+    await launcher.goto('/?test=1');
+    // Browsers let a page close a tab that a script opened, as a launcher or portal does.
+    const [game] = await Promise.all([
+      context.waitForEvent('page'),
+      launcher.evaluate(() => window.open('/?test=1')),
+    ]);
+    await expect(game.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+    await Promise.all([
+      game.waitForEvent('close'),
+      game.getByRole('button', { name: 'Quit', exact: true }).click(),
+    ]);
+  } finally {
+    await context.close();
+  }
+});
+
+test('Quit leaves full screen before closing and explains a tab the browser keeps open', async ({ page }) => {
+  await open(page);
+  // A second document in this tab's history: browsers then refuse window.close() from a script.
+  await page.goto('/?test=1&visit=2');
+  await page.locator('.main-menu-tagline').click();
+  await expect.poll(() => isFullscreen(page)).toBe(true);
+  // Observe the display state at the moment the page asks the browser to close the tab.
+  await page.evaluate(() => {
+    const calls: boolean[] = [];
+    const close = window.close.bind(window);
+    Reflect.set(window, 'closeCalls', calls);
+    window.close = () => {
+      calls.push(Boolean(document.fullscreenElement));
+      close();
+    };
+  });
+  await page.getByRole('button', { name: 'Quit', exact: true }).click();
+  const guidance = page.getByRole('dialog', { name: 'Quit', exact: true });
+  await expect(guidance).toContainText('Close the tab');
+  expect(await page.evaluate(() => Reflect.get(window, 'closeCalls'))).toEqual([false]);
+  await guidance.getByRole('button', { name: 'Return to the game', exact: true }).click();
+  await expect.poll(() => isFullscreen(page)).toBe(true);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('.main-menu')).toBeVisible();
+});
+
+test('dragging Forward steers in the directions of the rotated layout', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  const page = await context.newPage();
+  try {
+    await open(page);
+    await play(page);
+    expect(await isRotated(page)).toBe(true);
+    const cdp = await context.newCDPSession(page);
+    const forward = (await page.getByRole('button', { name: 'Forward', exact: true }).boundingBox())!;
+    const x = forward.x + forward.width / 2;
+    const y = forward.y + forward.height / 2;
+    await page.evaluate(() => {
+      const button = document.querySelector<HTMLElement>('.command-forward')!;
+      button.addEventListener('pointermove', () => {
+        button.dataset.moves = String(Number(button.dataset.moves ?? 0) + 1);
+      });
+    });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] });
+    await advance(page, 0.2);
+    const straight = (await observe(page)).player;
+    // Up the physical screen is the rotated layout's left, so the ship turns anticlockwise.
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y - 40, id: 1 }] });
+    await expect(page.locator('.command-forward')).toHaveAttribute('data-moves', '1');
+    await advance(page, 0.2);
+    expect((await observe(page)).player.angle).toBeLessThan(straight.angle);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  } finally {
+    await context.close();
+  }
 });
 
 test('native Keyboard Lock keeps a short Escape press in fullscreen while pause and dialogs work', async ({
@@ -324,20 +481,20 @@ test('native Keyboard Lock keeps a short Escape press in fullscreen while pause 
   );
   test.skip(!supported, 'This browser does not expose native Keyboard Lock.');
   await page.keyboard.press('Alt+Enter');
-  await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+  await expect.poll(() => isFullscreen(page)).toBe(true);
   await play(page);
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
-  expect(await page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+  expect(await isFullscreen(page)).toBe(true);
   await page.getByRole('button', { name: 'Resume', exact: true }).click();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  expect(await page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+  expect(await isFullscreen(page)).toBe(true);
   await page.keyboard.press('Alt+Enter');
   await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
-  expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+  await expect.poll(() => isFullscreen(page)).toBe(false);
 });
 
 test('unavailable or denied Keyboard Lock never prevents fullscreen entry or exit', async ({ browser }) => {
@@ -364,12 +521,10 @@ test('unavailable or denied Keyboard Lock never prevents fullscreen entry or exi
       );
       await open(page);
       await page.keyboard.press('Alt+Enter');
-      await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
-      expect(await page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+      await expect.poll(() => isFullscreen(page)).toBe(true);
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await page.keyboard.press('Alt+Enter');
-      await expect(page.getByRole('button', { name: 'Full screen', exact: true })).toBeEnabled();
-      expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+      await expect.poll(() => isFullscreen(page)).toBe(false);
       expect(errors).toEqual([]);
     } finally {
       await context.close();
@@ -388,16 +543,17 @@ test('Alt+Enter still works while the lazy game engine prepares', async ({ page 
   });
   try {
     await open(page);
+    // The Play tap itself enters full screen; Alt+Enter during preparation chooses a window.
     await page.getByRole('button', { name: 'Play', exact: true }).click();
     await expect(page.getByRole('progressbar', { name: 'Loading game engine', exact: true })).toBeVisible();
+    await expect.poll(() => isFullscreen(page)).toBe(true);
     await page.keyboard.press('Alt+Enter');
-    await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+    await expect.poll(() => isFullscreen(page)).toBe(false);
     release();
     await page.waitForFunction(() => !!window.pirateTest);
-    await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
     await page.keyboard.press('Alt+Enter');
     await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
-    expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+    await expect.poll(() => isFullscreen(page)).toBe(true);
   } finally {
     release();
   }
@@ -428,17 +584,15 @@ test('a late keyboard capture never blocks Alt+Enter exit and is released after 
     await open(page);
     await page.keyboard.press('Alt+Enter');
     await expect(page.locator('html')).toHaveAttribute('data-keyboard-lock-pending', 'true');
-    await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+    await expect.poll(() => isFullscreen(page)).toBe(true);
     if (external) await page.evaluate(() => document.exitFullscreen());
     else await page.keyboard.press('Alt+Enter');
-    const button = page.getByRole('button', { name: 'Full screen', exact: true });
-    await expect(button).toHaveAttribute('aria-pressed', 'false');
+    await expect.poll(() => isFullscreen(page)).toBe(false);
     const released = await page.evaluate(() => Number(document.documentElement.dataset.keyboardUnlocks));
     await page.evaluate(() => document.dispatchEvent(new Event('grant-test-keyboard-lock')));
-    await expect(button).toBeEnabled();
     await expect
       .poll(() => page.evaluate(() => Number(document.documentElement.dataset.keyboardUnlocks)))
       .toBeGreaterThan(released);
-    expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+    expect(await isFullscreen(page)).toBe(false);
   }
 });

@@ -45,8 +45,8 @@ export function HowToPlay({ onMainMenu }: { onMainMenu: () => void }) {
           <>
             <ControlsHelp />
             <p>
-              The camera follows your ship. Full screen hides browser chrome when supported; changing it
-              during battle pauses until Resume.
+              Full screen starts at your first touch or key, and Quit closes the game. On a computer,
+              Alt+Enter switches to a window; on iPhone, use Add to Home Screen.
             </p>
           </>
         )}

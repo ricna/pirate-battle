@@ -14,7 +14,7 @@
 }
 
 .options-board {
-  --options-px: max(min(var(--sample-px), 100svh / 1190), min(0.75px, 100vw / 840));
+  --options-px: max(min(var(--sample-px), 100cqh / 1190), min(0.75px, 100cqw / 840));
   /* The authored panel border is drawn at 0.78 of its retina size, as on the main menu board. */
   --panel-border-scale: 0.78;
 
@@ -233,6 +233,11 @@
   right: calc(3 * var(--options-px));
 }
 
+/* Groups the closing actions; it adds no box of its own on the reference board. */
+.options-actions {
+  display: contents;
+}
+
 .options-board .options-main-menu {
   width: calc(344 * var(--options-px));
   min-width: 0;
@@ -255,126 +260,41 @@
   font-weight: normal;
 }
 
-@media (max-width: 1024px), (max-height: 600px) {
+/*
+ * Compact screens keep fixed control sizes and shrink the board to its content: sliders may narrow to fit
+ * a small phone but never widen, and every control keeps at least 4 px of space (MOBILE.md).
+ */
+@container app (max-width: 1024px) or (max-height: 600px) {
   .options-board {
     --options-px: 1px;
-    width: min(620px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)));
-    border-width: 24px 20px;
-    padding: 8px;
+    width: fit-content;
+    max-width: calc(100cqw - 16px - var(--safe-left) - var(--safe-right));
     margin: 0 auto;
+    padding: 4px 8px 6px;
+    border-width: 16px 14px;
   }
   .options-board h1 {
     margin: 0;
-    font-size: 26px;
-  }
-  .options-section {
-    width: 100%;
-    margin-top: 18px;
-  }
-  .options-section h2 {
-    padding-bottom: 8px;
-    font-size: 20px;
-  }
-  .options-setting {
-    width: 100%;
-    margin-top: 14px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    text-align: left;
-  }
-  .options-label {
-    font-size: 14px;
-  }
-  .options-value {
-    font-size: 18px;
-  }
-  .options-stepper {
-    grid-column: 1 / -1;
-    width: 100%;
-    max-width: 330px;
-    height: 44px;
-    gap: 6px;
-    margin: 6px auto 0;
-  }
-  .options-step {
-    flex: 0 0 44px;
-    width: 44px;
-    height: 44px;
-  }
-  .options-slider-bar {
-    flex: 1;
-    width: auto;
-    min-width: 0;
-    height: 38px;
-    --slider-thumb-size: 28px;
-  }
-  .options-slider-value {
-    margin: 0;
-  }
-  .options-toggle {
-    margin: 0;
-    width: 100px;
-    height: 46px;
-  }
-  .options-toggle-thumb {
-    width: 36px;
-    height: 36px;
-  }
-  .options-board .options-main-menu {
-    width: min(240px, 100%);
-    height: 48px;
-    margin-top: 16px;
-    font-size: 18px;
-  }
-  .options-board .options-restore {
-    min-height: 44px;
-    margin-top: 0;
-    font-size: 13px;
-  }
-}
-
-@media (max-height: 600px) and (min-width: 541px) and (orientation: landscape) {
-  .options-board {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 0 24px;
-  }
-  .options-board h1 {
-    grid-column: 1 / -1;
-  }
-  .options-section {
-    align-self: start;
-  }
-  .options-board .options-main-menu {
-    justify-self: center;
-  }
-  .options-board .options-restore {
-    margin-top: 16px;
-  }
-}
-
-@media (max-width: 1024px), (max-height: 600px) {
-  .options-board {
-    border-width: 14px;
-    padding: 4px 6px;
-  }
-  .options-board h1 {
     font-size: 22px;
   }
   .options-section {
-    margin-top: 5px;
+    /* Rows share the widest row's width, so labels and controls align in two columns. */
+    align-items: stretch;
+    width: auto;
+    margin-top: 4px;
   }
   .options-section h2 {
     padding-bottom: 2px;
     font-size: 16px;
   }
   .options-setting {
-    grid-template-columns: minmax(74px, 0.7fr) minmax(0, 1fr);
-    grid-template-rows: 1fr 1fr;
+    display: grid;
+    grid-template-columns: 84px auto;
+    grid-template-rows: auto auto;
+    column-gap: 8px;
     min-height: 44px;
-    margin-top: 3px;
-    column-gap: 4px;
+    margin-top: 4px;
+    text-align: left;
   }
   .options-label {
     grid-column: 1;
@@ -387,7 +307,7 @@
     grid-column: 1;
     grid-row: 2;
     align-self: start;
-    margin: 1px 0 0;
+    margin: 2px 0 0;
     font-size: 13px;
   }
   .options-stepper,
@@ -398,23 +318,95 @@
     margin: 0;
   }
   .options-stepper {
-    gap: 2px;
+    justify-content: flex-start;
+    width: auto;
+    height: 44px;
+    gap: 4px;
+  }
+  .options-step {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .options-slider-bar {
+    flex: none;
+    width: 96px;
+    height: 38px;
+    --slider-thumb-size: 28px;
+  }
+  .options-toggle {
+    justify-self: start;
+    width: 100px;
+    height: 44px;
+  }
+  .options-toggle-thumb {
+    width: 34px;
+    height: 34px;
+  }
+  .options-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
   }
   .options-board .options-main-menu {
-    height: 44px;
-    margin-top: 5px;
+    width: var(--compact-primary-width);
+    height: var(--compact-primary-height);
+    margin: 0;
+    font-size: 18px;
   }
   .options-board .options-restore {
     min-height: 44px;
-    margin: 5px 0 0;
+    margin: 0;
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+  .options-board .options-note {
+    max-width: 260px;
+    margin: 8px 0 0;
+    font-size: 12px;
   }
 }
 
-@media (max-height: 600px) and (min-width: 541px) and (orientation: landscape) {
+/* Short landscape: Game and Audio side by side, the closing actions under the shorter Game column. */
+@container app (max-height: 600px) and (orientation: landscape) {
   .options-board {
-    gap: 0 10px;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      'title title'
+      'note note'
+      'game audio'
+      'actions audio';
+    column-gap: 12px;
+    align-items: start;
   }
-  .options-board .options-restore {
-    margin-top: 5px;
+  .options-board h1 {
+    grid-area: title;
+  }
+  .options-game {
+    grid-area: game;
+  }
+  .options-audio {
+    grid-area: audio;
+  }
+  .options-board .options-note {
+    grid-area: note;
+    justify-self: center;
+    max-width: none;
+    margin: 0;
+    font-size: 11px;
+  }
+  .options-actions {
+    grid-area: actions;
+  }
+}
+
+/* The narrowest landscape phones fit both columns by narrowing the sliders, never by widening the board. */
+@container app (max-height: 600px) and (orientation: landscape) and (max-width: 640px) {
+  .options-slider-bar {
+    width: 56px;
   }
 }

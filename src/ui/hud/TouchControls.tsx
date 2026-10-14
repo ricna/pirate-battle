@@ -3,6 +3,7 @@ import type { Snapshot } from '../../game/runtime/GameManager';
 import { Action } from '../../game/contracts/GameDomain';
 import { InputConfig } from '../../game/configuration/InputConfig';
 import { retinaAsset } from '../assets/UiAssets';
+import { LayoutAxes } from './LayoutAxes';
 import './GameHud.css';
 
 export interface TouchInput {
@@ -14,7 +15,7 @@ export interface TouchInput {
 }
 
 type Control = (typeof InputConfig.Controls)[number];
-type ForwardGesture = { startX: number; startY: number };
+type ForwardGesture = { startX: number; startY: number; axes: LayoutAxes };
 
 function CommandButton({
   control,
@@ -40,8 +41,10 @@ function CommandButton({
     if (!gesture) return;
     const deltaX = clientX - gesture.startX;
     const deltaY = clientY - gesture.startY;
+    // Steer toward the drag as the player sees it, also when the portrait layout is rotated.
+    const drag = gesture.axes.fromScreen(deltaX, deltaY);
     const angle =
-      Math.hypot(deltaX, deltaY) > InputConfig.ForwardDragThresholdPx ? Math.atan2(deltaX, -deltaY) : null;
+      Math.hypot(deltaX, deltaY) > InputConfig.ForwardDragThresholdPx ? Math.atan2(drag.x, -drag.y) : null;
     input.steer(`touch-${pointerId}-turn`, angle);
   };
   // Remaining reload fraction darkens the button face clockwise; a ready weapon looks exactly like the reference.
@@ -62,6 +65,7 @@ function CommandButton({
           forwardGestures.current.set(event.pointerId, {
             startX: event.clientX,
             startY: event.clientY,
+            axes: LayoutAxes.of(event.currentTarget),
           });
         }
         event.currentTarget.dataset.held = 'true';

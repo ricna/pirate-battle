@@ -39,7 +39,7 @@ npm run test:docker        # the same suite inside the CI Linux image
 | --- | --- | --- |
 | `core` | Node, no browser | `core`, `collision`, `navigation`, `presentation`: configuration validation, pools, factories, collisions, island damage, navigation, crew rescue, ship trail, presentation rules |
 | `rendering` | Chromium, 1482×962 and others, DPR 1–2 | Seamless water at fractional viewport/DPI scales; runtime devicePixelRatio change |
-| `mobile-layout` | Chromium at phone and tablet sizes, portrait and landscape | `mobile`: player-following camera bounds, compact menus and HUD without overflow, explicit fullscreen and its unsupported fallback |
+| `mobile-layout` | Chromium at phone and tablet sizes, portrait and landscape | `mobile`: player-following camera bounds, the rotated portrait layout, compact menus and HUD without overflow and with 4 px spacing, required full screen, Alt+Enter, Quit, and unsupported or refused full screen |
 | `desktop` | Chromium 1280×800 at 1× | `game`, `music`, `network`, `accessibility`, `pause` |
 | `mobile-landscape` | Chromium 844×390 at 2×, touch, mobile | Same browser flows as desktop |
 | `production-smoke` | Optimized `vite preview` build (or `PIRATE_SMOKE_URL`) | Commit identity, service worker, mocked lists, registration and refresh |

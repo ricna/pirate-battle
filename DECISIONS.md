@@ -27,6 +27,8 @@ Accepted product, gameplay and presentation decisions, in the order they were ma
 | D17 | [Screen routes and result persistence](#d17--screen-routes-and-result-persistence) | 14 October 2026 |
 | D18 | [Fullscreen keyboard controls](#d18--fullscreen-keyboard-controls) | 14 October 2026 |
 | D19 | [Compact result and no-scroll screens](#d19--compact-result-and-no-scroll-screens) | 14 October 2026 |
+| D21 | [Required full screen, Quit and the rotated landscape layout](#d21--required-full-screen-quit-and-the-rotated-landscape-layout) | 14 October 2026 |
+| D22 | [Compact fixed-size controls](#d22--compact-fixed-size-controls) | 14 October 2026 |
 
 ## D01 — Gameplay presentation scope (B01–B11)
 
@@ -182,3 +184,21 @@ The owner requested Alt+Enter to toggle fullscreen and, where possible, to keep 
 _Accepted 14 October 2026._
 
 The owner requested a cleaner Battle result and required every menu screen to fit on phones without scrolling, including short landscape. The result groups the score, outcome, duration and end reason beside centered statistic cards, with registration feedback and 44-pixel actions below. Main Menu, Options, Captain's Log, How To Play, Pause and Battle result must keep their boards and actions inside the available viewport. How To Play divides its content into three selectable topics; records continue to use their existing pagination. Preserve the authored panel/button art, visible information and keyboard access. On compact screens, the full-screen command may use its symbol while retaining its accessible name and Alt+Enter shortcut. This supersedes the short-screen scrolling allowance in D07 and the earlier mobile notes.
+
+## D21 — Required full screen, Quit and the rotated landscape layout
+
+_Accepted 14 October 2026._
+
+The owner required the game to behave like an installed application on phones and computers:
+
+- **Landscape always.** A touch device whose browser reports portrait shows the landscape layout turned a quarter clockwise, so the player turns the device instead of reading a rotate prompt. When the browser then reports landscape the rotation disappears without changing the layout, and combat neither pauses nor asks for Resume. In full screen, browsers that support it (mainly Android) also lock the screen orientation to landscape. Only a genuinely portrait arena, such as a narrow desktop window, still pauses combat. The installed web app requests full-screen landscape display.
+- **Full screen required.** Browsers grant full screen only during a user gesture, so the first touch, click or key press enters it, and the next gesture after a browser exit (holding Esc, Android back) returns to it. No screen shows a full-screen button. On a computer, Alt+Enter is the player's explicit choice of a window until the next Alt+Enter, and it pauses a running battle. Browsers without page full screen (iPhone Safari) play in the tab; Alt+Enter and How To Play explain Add to Home Screen. A refused request is reported once, with Try again.
+- **Quit.** The Main Menu adds **Quit** to its bottom row on every platform: it leaves full screen first, then closes the tab. Browsers only let a page close a tab that a script opened or that has no other history; otherwise the player is told to close the tab, with Return to the game.
+
+This supersedes the exact-sample bottom row of D03 (now Ranking, Match History, How To Play and Quit), the synchronized entry/exit controls and the Resume-after-portrait rule of D13, the full-screen controls of D18 (Alt+Enter, Keyboard Lock for Escape and the browser's long-Esc escape hatch remain) and the full-screen symbol of D19. See [MOBILE.md](MOBILE.md#full-screen-and-quit).
+
+## D22 — Compact fixed-size controls
+
+_Accepted 14 October 2026._
+
+On compact screens the owner required controls to keep the sizes that read well in portrait in every orientation: compact boards and buttons, never stretched because a landscape screen is wider, with at least 4 px between controls and between a board and the demo panel, and labels clear of the rounded ends of the button art. Boards shrink to their content; Play/Options-style buttons are 220 × 48 px (202 × 44 px where the board is tallest), secondary buttons 150 × 44 px, and the four Main Menu links form a 2 × 2 grid. On the narrowest landscape phones Options sliders narrow instead of the board widening. Short landscape screens keep a bottom strip for the collapsed demo network panel; at 360 px tall or less that panel appears only on the Main Menu, where it fits. This refines D19, whose no-scroll requirement still applies.

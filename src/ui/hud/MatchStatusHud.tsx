@@ -1,11 +1,12 @@
+import { useEffect, useRef } from 'react';
 import type { GameConfig } from '../../game/contracts/GameConfig';
 import { EndReason } from '../../game/contracts/GameDomain';
 import metadata from '../../../assets/spritesheet/ui_sheet.json';
 
 import type { Snapshot } from '../../game/runtime/GameManager';
 import { retinaAsset } from '../assets/UiAssets';
+import { useApplicationServices } from '../hooks/UseApplicationServices';
 import './GameHud.css';
-import { FullscreenControl } from '../components/FullscreenControl';
 
 const SecondsPerMinute = 60;
 
@@ -51,6 +52,11 @@ export function MatchStatusHud({
   const remaining = snapshot?.reason === EndReason.Time ? 0 : (snapshot?.remaining ?? config.sessionSeconds);
   const lowHealth = ratio <= config.rules.lowHealthRatio;
   const lowTime = remaining <= config.rules.timeWarning;
+  const { display } = useApplicationServices();
+  const pause = useRef(onPause);
+  pause.current = onPause;
+  // Alt+Enter pauses the battle before the display changes; Resume stays an explicit command.
+  useEffect(() => display.bindBeforeToggle(() => pause.current()), [display]);
 
   return (
     <header className="match-hud" aria-label="Match status">
@@ -86,7 +92,6 @@ export function MatchStatusHud({
       >
         <img src={retinaAsset('ui/controls/icon_pause')} alt="" />
       </button>
-      <FullscreenControl className="hud-fullscreen" onBeforeChange={onPause} />
     </header>
   );
 }

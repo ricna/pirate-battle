@@ -4,11 +4,11 @@
  * independent touch sizes for phones and other small viewports.
  */
 .game {
-  --hud-px: max(min(100vw / 1800, 100svh / 1000), min(0.72px, 100vw / 920));
+  --hud-px: max(min(100cqw / 1800, 100cqh / 1000), min(0.72px, 100cqw / 920));
 
   position: relative;
   width: 100%;
-  height: 100dvh;
+  height: 100cqh;
   overflow: hidden;
   outline: none;
   background: #123744;
@@ -51,7 +51,7 @@
   color: #ffe8af;
   border: 1px solid #cba35c;
   border-radius: 4px;
-  font-size: clamp(16px, 3vw, 34px);
+  font-size: clamp(16px, 3cqw, 34px);
   font-weight: bold;
   pointer-events: none;
   animation: terminal-appear var(--terminal-fade-in) ease-out both;
@@ -71,7 +71,7 @@
   border: none;
   color: #ffdc91;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(24px, 4vw, 64px);
+  font-size: clamp(24px, 4cqw, 64px);
   line-height: 1.25;
   text-align: center;
   -webkit-text-stroke: 2px #000000;
@@ -106,7 +106,7 @@
   display: none;
 }
 
-@media (orientation: portrait) {
+@container app (orientation: portrait) {
   .portrait-hint {
     display: block;
   }

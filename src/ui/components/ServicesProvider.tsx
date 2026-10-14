@@ -2,8 +2,9 @@ import { useEffect, useRef, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import type { ApplicationServices } from '../../application/ApplicationServices';
 import { ServicesContext } from '../../application/ServicesContext';
+import { DisplayGuidance } from './DisplayGuidance';
 
-/** React authors the persistent audio element; the music player controls its playback. */
+/** React authors the persistent audio element and display guidance; the services control them. */
 export function ServicesProvider({
   services,
   children,
@@ -43,6 +44,7 @@ export function ServicesProvider({
           {error}
         </p>
       )}
+      <DisplayGuidance />
     </ServicesContext.Provider>
   );
 }

@@ -12,6 +12,71 @@
 body {
   margin: 0;
 }
+
+/*
+ * #root is the layout container of every screen. Screens measure themselves with container units and
+ * container queries instead of viewport units, so the rotated layout below keeps their landscape sizes.
+ * Each screen scrolls inside its own box; the document itself never scrolls.
+ */
+#root {
+  container: app / size;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100dvw;
+  height: 100dvh;
+  overflow: hidden;
+  /* Safe-area insets in the layout's own directions. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Compact layouts keep one button size in every orientation: spare width becomes space, never a stretched button. */
+:root {
+  --compact-primary-width: 220px;
+  --compact-primary-height: 48px;
+  --compact-secondary-width: 150px;
+  --compact-secondary-height: 44px;
+  /* The primary art at the 44 px touch minimum, keeping its proportions, for the tallest boards. */
+  --compact-tight-primary-width: 202px;
+  --compact-tight-primary-height: 44px;
+  /* Horizontal room that keeps a label clear of the rounded, bolted ends of the button art. */
+  --compact-button-inset: 22px;
+}
+
+/* Modal dialogs measure the layout container, as screens do, instead of the browser viewport. */
+:where(dialog:modal) {
+  max-width: calc(100cqw - 6px - 2em);
+  max-height: calc(100cqh - 6px - 2em);
+}
+
+/*
+ * The game is landscape. A touch device whose browser reports portrait shows the landscape layout turned
+ * a quarter clockwise: its top meets the device's right edge, so turning the device a quarter to the left
+ * shows it upright. When the browser then reports landscape the rotation disappears and the layout keeps
+ * its size, so no screen asks the player to rotate.
+ */
+@media (orientation: portrait) and (pointer: coarse) {
+  #root {
+    width: 100dvh;
+    height: 100dvw;
+    transform-origin: top left;
+    transform: translateX(100dvw) rotate(90deg);
+    --safe-top: env(safe-area-inset-right, 0px);
+    --safe-right: env(safe-area-inset-bottom, 0px);
+    --safe-bottom: env(safe-area-inset-left, 0px);
+    --safe-left: env(safe-area-inset-top, 0px);
+  }
+  /* Modal dialogs render in the browser's top layer, outside #root's transform: turn each about the centre. */
+  :where(dialog:modal) {
+    inset: 50% auto auto 50%;
+    margin: 0;
+    translate: -50% -50%;
+    rotate: 90deg;
+  }
+}
 button,
 input,
 select {
@@ -58,8 +123,8 @@ strong {
   color: #fff4d6;
 }
 .app {
-  /* Follow browser chrome as it expands or collapses. */
-  min-height: 100dvh;
+  height: 100%;
+  overflow-y: auto;
   background:
     linear-gradient(#0b143466, #0b143466),
     url('../../assets/ui_scene_background.png') center/cover fixed;
@@ -190,8 +255,8 @@ select {
   font-size: 12px;
 }
 .dialog {
-  width: min(470px, calc(100% - 24px));
-  max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  width: min(470px, calc(100cqw - 24px));
+  max-height: calc(100cqh - 24px - var(--safe-top) - var(--safe-bottom));
   text-align: center;
   background: transparent;
   overflow: auto;
@@ -262,7 +327,7 @@ select {
 .skip-link:focus {
   top: 12px;
 }
-@media (max-width: 800px) {
+@container app (max-width: 800px) {
   .app {
     padding: 18px 14px;
   }
@@ -275,7 +340,7 @@ select {
     flex-wrap: wrap;
   }
 }
-@media (max-height: 550px) and (orientation: landscape) {
+@container app (max-height: 550px) and (orientation: landscape) {
   .app {
     padding-top: 10px;
   }
@@ -340,13 +405,14 @@ select {
  * One pixel of the 1800×1000 reference compositions (assets/sample_*.png).
  * The 840-pixel width keeps the 796-pixel menu board inside narrow portrait screens;
  * short landscape screens let the board use more of their height.
+ * Container queries only style descendants of #root, so the screens it contains carry the value.
  */
-:root {
-  --sample-px: min(100vw / 840, 100svh / 1000);
+#root > * {
+  --sample-px: min(100cqw / 840, 100cqh / 1000);
 }
-@media (max-height: 600px) {
-  :root {
-    --sample-px: min(100vw / 840, 100svh / 800);
+@container app (max-height: 600px) {
+  #root > * {
+    --sample-px: min(100cqw / 840, 100cqh / 800);
   }
 }
 
@@ -367,7 +433,7 @@ select {
   bottom: 12px;
   z-index: 5;
   /* Narrow enough that, when open, it stays clear of the menu board's buttons on landscape phones. */
-  max-width: min(220px, calc(100vw - 24px));
+  max-width: min(220px, calc(100cqw - 24px));
   padding: 6px 12px;
   background: #092030e8;
   border: 1px solid #aa865766;
@@ -395,7 +461,7 @@ main h1[tabindex='-1']:focus {
   bottom: 1rem;
   transform: translateX(-50%);
   z-index: 100;
-  max-width: min(90vw, 40rem);
+  max-width: min(90cqw, 40rem);
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   background: #13212c;
@@ -404,26 +470,26 @@ main h1[tabindex='-1']:focus {
   pointer-events: none;
 }
 
-@media (max-width: 1024px), (max-height: 600px) {
+@container app (max-width: 1024px) or (max-height: 600px) {
   /* Compact menu boards fill the viewport; use the reserved band above them instead of covering actions. */
   .app ~ .audio-notice {
-    top: calc(0.5rem + env(safe-area-inset-top));
+    top: calc(0.5rem + var(--safe-top));
     bottom: auto;
-    max-width: min(70vw, 32rem);
+    max-width: min(70cqw, 32rem);
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
     line-height: 1.3;
   }
 }
 
-@media (max-width: 1024px), (max-height: 600px) {
+@container app (max-width: 1024px) or (max-height: 600px) {
   .app.app-menu,
   .app.app-options,
   .app.app-records,
   .app {
     position: relative;
-    padding: calc(60px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
-      calc(52px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    padding: calc(60px + var(--safe-top)) max(12px, var(--safe-right)) calc(52px + var(--safe-bottom))
+      max(12px, var(--safe-left));
   }
   .app.app-menu .shell,
   .app.app-options .shell,
@@ -432,8 +498,8 @@ main h1[tabindex='-1']:focus {
   }
   .network-tools {
     position: absolute;
-    left: max(8px, env(safe-area-inset-left));
-    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(8px, var(--safe-left));
+    bottom: max(8px, var(--safe-bottom));
   }
   .network-tools summary {
     min-height: 32px;
@@ -441,13 +507,13 @@ main h1[tabindex='-1']:focus {
     align-items: center;
   }
   .network-tools[open] {
-    max-height: calc(100dvh - 80px);
+    max-height: calc(100cqh - 80px);
     overflow: auto;
   }
   .studio-logo {
     position: absolute;
-    right: max(12px, env(safe-area-inset-right));
-    bottom: max(12px, env(safe-area-inset-bottom));
+    right: max(12px, var(--safe-right));
+    bottom: max(12px, var(--safe-bottom));
   }
   .dialog {
     padding-bottom: 0;
@@ -468,25 +534,45 @@ main h1[tabindex='-1']:focus {
   }
 }
 
-@media (max-height: 600px) and (orientation: landscape) {
+@container app (max-height: 600px) and (orientation: landscape) {
   .app.app-menu,
   .app.app-options,
   .app.app-records,
   .app.app-howToPlay,
   .app.app-result {
-    min-height: 100dvh;
-    padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
-      max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    /* The bottom strip belongs to the collapsed demo panel, so boards never cover it. */
+    padding: max(6px, var(--safe-top)) max(8px, var(--safe-right)) calc(48px + var(--safe-bottom))
+      max(8px, var(--safe-left));
+  }
+  .network-tools {
+    bottom: max(6px, var(--safe-bottom));
+    padding: 2px 8px;
   }
   .studio-logo {
     display: none;
   }
 }
 
-@media (max-width: 540px) and (orientation: portrait) {
+/*
+ * The smallest landscape phones have no room for that strip beside the tallest boards: the demo panel
+ * stays on the Main Menu, which fits above it, and the other screens use the full height.
+ */
+@container app (max-height: 360px) and (orientation: landscape) {
+  .app.app-options,
+  .app.app-records,
+  .app.app-howToPlay,
+  .app.app-result {
+    padding-bottom: max(6px, var(--safe-bottom));
+  }
+  .app:not(.app-menu) .network-tools {
+    display: none;
+  }
+}
+
+@container app (max-width: 540px) and (orientation: portrait) {
   .app.app-options,
   .app.app-records {
-    padding-top: calc(54px + env(safe-area-inset-top));
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    padding-top: calc(54px + var(--safe-top));
+    padding-bottom: max(8px, var(--safe-bottom));
   }
 }

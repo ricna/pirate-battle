@@ -1,7 +1,7 @@
 .asset-loading-screen {
   display: grid;
   place-items: center;
-  min-height: 100svh;
+  min-height: 100cqh;
 }
 
 .asset-loading-indicator {
@@ -12,7 +12,7 @@
 .asset-loading-title {
   margin: 0;
   font-family: 'Trebuchet MS', Arial, sans-serif;
-  font-size: clamp(28px, 4.4vw, 52px);
+  font-size: clamp(28px, 4.4cqw, 52px);
   font-weight: bold;
   line-height: 1.15;
   letter-spacing: 0.065em;
@@ -26,7 +26,7 @@
 .asset-loading-label {
   margin: 16px 0 20px;
   font-family: 'Trebuchet MS', Arial, sans-serif;
-  font-size: clamp(15px, 2.2vw, 20px);
+  font-size: clamp(15px, 2.2cqw, 20px);
   line-height: 1.4;
   letter-spacing: 0.035em;
   color: #d8c9a9;
@@ -52,7 +52,7 @@
 .asset-loading-value {
   position: relative;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(14px, 2.4vw, 24px);
+  font-size: clamp(14px, 2.4cqw, 24px);
   font-weight: bold;
   font-variant-numeric: tabular-nums;
   line-height: 1;

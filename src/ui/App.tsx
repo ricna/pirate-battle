@@ -9,7 +9,6 @@ import { useMutation } from '@tanstack/react-query';
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })));
 import { Button } from './components/Button';
 import { AssetLoadingIndicator } from './components/AssetLoadingIndicator';
-import { FullscreenControl } from './components/FullscreenControl';
 import { GameLoadBoundary } from './components/GameLoadBoundary';
 import { CaptainsLog } from './screens/CaptainsLog';
 import type { RecordsTab } from './screens/CaptainsLog';
@@ -39,6 +38,7 @@ export function App() {
     records: api,
     queryClient,
     storage,
+    display,
   } = useApplicationServices();
   const [options, setOptions] = useState(() => optionsRepository.load());
   const [playerId] = useState(() => player.load());
@@ -166,6 +166,7 @@ export function App() {
       setScreen('records');
     },
     openHowToPlay: () => setScreen('howToPlay'),
+    quit: () => void display.quit(),
   };
   const selectScenario = (value: Scenario) => {
     network.setScenario(value);
@@ -190,7 +191,6 @@ export function App() {
             fallback={
               <div className="app asset-loading-screen">
                 <AssetLoadingIndicator label="Loading game engine" progress={null} />
-                <FullscreenControl className="menu-fullscreen" />
               </div>
             }
           >
@@ -269,7 +269,6 @@ export function App() {
             )}
           </div>
           <DemoNetworkTools scenario={scenario} onSelect={selectScenario} onReset={resetDemoServer} />
-          <FullscreenControl className="menu-fullscreen" />
           <img className="studio-logo" src={MenuArt.StudioLogo} alt="Jungle Gaming" />
         </main>
       )}

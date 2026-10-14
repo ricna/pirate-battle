@@ -41,7 +41,7 @@ React receives a semantic snapshot approximately 4Hz. Loading, pause and end tra
 
 The player's finite orthogonal Tiled map is the source of truth: 32×18 tiles, 64 logical pixels, four visual layers and five rectangular collision objects. Required references are registered as bundler-visible URLs. Relative JSON references resolve against original logical asset paths, so hashed production URLs and inlined tilesets remain valid. Missing files, unsupported geometry, invalid GIDs, dimensions and out-of-arena rectangles fail visibly with a retry action.
 
-Desktop uniformly fits the complete 2048×1152 arena into the canvas. Compact screens use `WorldCamera` to show approximately a quarter of its area and follow the player with bounded edges; `CameraConfig` owns display-only tuning. `GameSession` applies the camera every draw and after resize, while HUD/input stay in screen space. See [MOBILE.md](MOBILE.md) for compact UI and injected browser fullscreen ownership. Resize changes display scale, never simulation coordinates or balance. Device resolution is capped at 2×; a later devicePixelRatio change (browser zoom or moving the window to another monitor) is detected through the resolution media query and the window resize event, and the renderer is resized at the new density. Tiles support horizontal, vertical and diagonal Tiled flips. Cropped tile textures are reused by GID while composing the authored static layers once into an owned RenderTexture at integer resolution. Fitting one map sprite prevents cracks between independently scaled tile quads at fractional viewport/DPI sizes. Temporary tile sprites are destroyed after composition; the cached surface and frame textures are destroyed with the match. Base image textures remain intentionally cached across matches. No generated island, UI or substitute asset is used after a loading error.
+Desktop uniformly fits the complete 2048×1152 arena into the canvas. Compact screens use `WorldCamera` to show approximately a quarter of its area and follow the player with bounded edges; `CameraConfig` owns display-only tuning. `GameSession` applies the camera every draw and after resize, while HUD/input stay in screen space. `#root` is the size container of every screen; a touch device in portrait turns it a quarter so the landscape layout, HUD and canvas keep their size, and `GameSession` pauses only for a portrait arena. `FullscreenDisplay`, injected by `ApplicationServices` and attached by `ServicesProvider`, makes full screen required from the first gesture and implements Alt+Enter and Quit; `DisplayGuidance` renders its notices. See [MOBILE.md](MOBILE.md) for the rotated layout, compact UI and display ownership. Resize and rotation change display scale, never simulation coordinates or balance. Device resolution is capped at 2×; a later devicePixelRatio change (browser zoom or moving the window to another monitor) is detected through the resolution media query and the window resize event, and the renderer is resized at the new density. Tiles support horizontal, vertical and diagonal Tiled flips. Cropped tile textures are reused by GID while composing the authored static layers once into an owned RenderTexture at integer resolution. Fitting one map sprite prevents cracks between independently scaled tile quads at fractional viewport/DPI sizes. Temporary tile sprites are destroyed after composition; the cached surface and frame textures are destroyed with the match. Base image textures remain intentionally cached across matches. No generated island, UI or substitute asset is used after a loading error.
 
 ## Object-oriented gameplay model
 
@@ -140,7 +140,7 @@ Values come from the authored profiles (balance `arena_00-v1/balance-v7`, seed 2
 - Hulls are circles and islands are rectangles, which favours predictable navigation over exact silhouettes; contact near bows and sterns is approximate. The 40-pixel ship-to-ship circle is narrower than the 113-pixel hull length, so bows may overlap slightly in head-on contact.
 - The Tiled loader supports this finite orthogonal map, external image tilesets and rectangular collision objects; other shapes fail visibly.
 - Enemies share no plan; a dense crowd at the 28-enemy cap can queue briefly around the player.
-- Portrait combat is not supported (it pauses); menus work in portrait.
+- Touch devices in portrait show the landscape layout rotated a quarter; native browser surfaces such as `<select>` pickers are not rotated, and physical-device rotation, scrolling and full screen remain unverified. A portrait desktop window pauses combat.
 - The mock leaderboard is local to each browser and origin; it is not a shared or trusted server.
 - localStorage availability and quota limit recovery across refresh; failures are reported, not hidden.
 
@@ -171,15 +171,15 @@ src/
     presentation/                bounded cosmetic particles, feedback, ship trail and their renderers
     audio/                       AudioManager, SoundEffectPlayer, MusicPlayer
   infrastructure/
-    browser/                     FullscreenDisplay and its DisplayInputConfig bindings
+    browser/                     FullscreenDisplay (required full screen, Alt+Enter, Quit) and DisplayConfig
     network/                     RecordsApi, NetworkConfig, NetworkScenarios, MockFixtures, NetworkSimulator
     storage/                     LocalStorageStore adapter with private warning state
   ui/
     App.tsx                      application screen/state coordinator
     screens/                     MainMenu, OptionsScreen, HowToPlay, CaptainsLog, ResultScreen
-    components/                  Button, Dialog, setting controls, FullscreenControl, ControlsHelp,
+    components/                  Button, Dialog, setting controls, DisplayGuidance, ControlsHelp,
                                  AssetLoadingIndicator, GameLoadBoundary, ServicesProvider
-    hud/                         MatchStatusHud and TouchControls
+    hud/                         MatchStatusHud, TouchControls and LayoutAxes
     game/                        GameCanvas and PauseMenu
     records/                     RemotePanel and ResultScore
     assets/                      authored MenuArt and UiAssets lookup

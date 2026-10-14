@@ -2,7 +2,8 @@
   "name": "Pirate Battle",
   "short_name": "Pirate Battle",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#123744",
-  "theme_color": "#123744"
+  "theme_color": "#123744",
+  "orientation": "landscape"
 }

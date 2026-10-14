@@ -8,6 +8,8 @@ export interface MainMenuActions {
   openOptions: () => void;
   openRecords: (tab: RecordsTab) => void;
   openHowToPlay: () => void;
+  /** Leaves full screen and closes the tab, as an application's Quit does. */
+  quit: () => void;
 }
 
 /** Main menu board composed from the authored panel, title, buttons and ship, as in `assets/sample_menu.png`. */
@@ -27,7 +29,7 @@ export function MainMenu({ actions }: { actions: MainMenuActions }) {
       <img className="main-menu-emblem" src={MenuArt.EmblemShip} alt="" />
       <p className="main-menu-motto">Navigate the islands. Survive the battle.</p>
 
-      <nav className="main-menu-links" aria-label="Records and help">
+      <nav className="main-menu-links" aria-label="Records, help and quit">
         <Button variant="secondary" onClick={() => actions.openRecords('ranking')}>
           Ranking
         </Button>
@@ -36,6 +38,9 @@ export function MainMenu({ actions }: { actions: MainMenuActions }) {
         </Button>
         <Button variant="secondary" onClick={actions.openHowToPlay}>
           How To Play
+        </Button>
+        <Button variant="secondary" onClick={actions.quit}>
+          Quit
         </Button>
       </nav>
     </section>

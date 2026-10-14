@@ -217,17 +217,17 @@
 }
 
 /* Compact layouts use independent, readable HUD sizes instead of shrinking the reference artwork. */
-@media (max-width: 1024px), (max-height: 600px) {
+@container app (max-width: 1024px) or (max-height: 600px) {
   .game.game {
     --hud-px: 0.8px;
-    --hud-left: max(12px, env(safe-area-inset-left));
-    --hud-right: max(12px, env(safe-area-inset-right));
+    --hud-left: max(12px, var(--safe-left));
+    --hud-right: max(12px, var(--safe-right));
   }
 
   .match-hud {
-    inset: max(8px, env(safe-area-inset-top)) var(--hud-right) auto var(--hud-left);
+    inset: max(8px, var(--safe-top)) var(--hud-right) auto var(--hud-left);
     display: grid;
-    grid-template-columns: 26px minmax(72px, 160px) 72px 84px 88px 44px;
+    grid-template-columns: 26px minmax(72px, 160px) 72px 84px 44px;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
@@ -264,24 +264,14 @@
   }
   .match-hud .hud-pause {
     position: relative;
-    grid-column: 6;
+    grid-column: 5;
     grid-row: 1;
     width: 44px;
     height: 44px;
   }
-  .match-hud .hud-fullscreen {
-    grid-column: 5;
-    grid-row: 1;
-    transform: none;
-  }
-  .hud-fullscreen .fullscreen-button {
-    width: 88px;
-    padding: 5px;
-    font-size: 12px;
-  }
 
   .touch-cluster {
-    bottom: max(12px, env(safe-area-inset-bottom));
+    bottom: max(12px, var(--safe-bottom));
   }
   .touch-cluster-movement {
     left: var(--hud-left);
@@ -294,18 +284,10 @@
   }
 }
 
-@media (max-width: 540px) {
+@container app (max-width: 540px) {
   .match-hud {
     grid-template-columns: 26px minmax(60px, 1fr) 64px 76px 44px;
     gap: 4px;
-  }
-  .match-hud .hud-pause {
-    grid-column: 5;
-  }
-  .match-hud .hud-fullscreen {
-    grid-column: 4 / 6;
-    grid-row: 2;
-    justify-self: end;
   }
   .touch-cluster {
     transform: scale(0.8);

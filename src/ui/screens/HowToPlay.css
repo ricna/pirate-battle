@@ -46,12 +46,13 @@
   margin: 2px 0 0;
 }
 
-@media (max-width: 1024px), (max-height: 600px) {
+@container app (max-width: 1024px) or (max-height: 600px) {
   .app-howToPlay {
-    padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
-      max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    padding: max(6px, var(--safe-top)) max(8px, var(--safe-right)) max(6px, var(--safe-bottom))
+      max(8px, var(--safe-left));
   }
   .how-to-play {
+    width: min(560px, 100%);
     border-width: 16px 14px;
     padding: 4px 8px;
   }
@@ -67,11 +68,12 @@
   }
   .help-topics {
     margin-top: 6px;
-    gap: 4px;
+    gap: 6px;
   }
   .help-topics .sprite-button {
-    height: 44px;
-    padding: 6px;
+    width: 120px;
+    height: var(--compact-secondary-height);
+    padding: 0 var(--compact-button-inset);
     font-size: 13px;
   }
   .how-to-play .enemy-guide img {
@@ -79,13 +81,14 @@
     height: 46px;
   }
   .how-to-play .button-row .sprite-button {
-    height: 44px;
+    height: var(--compact-secondary-height);
     min-width: 0;
+    padding: 0 var(--compact-button-inset);
     font-size: 14px;
   }
 }
 
-@media (max-height: 600px) and (orientation: landscape) {
+@container app (max-height: 600px) and (orientation: landscape) {
   .help-content p {
     margin: 2px 0;
   }

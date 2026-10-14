@@ -126,12 +126,14 @@
   min-height: 44px;
 }
 
-@media (max-width: 1024px), (max-height: 600px) {
+@container app (max-width: 1024px) or (max-height: 600px) {
   .app-result {
-    padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
-      max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    padding: max(6px, var(--safe-top)) max(8px, var(--safe-right)) max(6px, var(--safe-bottom))
+      max(8px, var(--safe-left));
   }
   .result-panel {
+    width: min(600px, 100%);
+    margin: 0 auto;
     padding: 6px 8px;
     border-width: 16px 14px;
   }
@@ -181,9 +183,9 @@
     gap: 6px;
   }
   .result-panel .sprite-button {
-    height: 44px;
+    height: var(--compact-secondary-height);
     min-width: 0;
-    padding: 5px 12px;
+    padding: 0 var(--compact-button-inset);
     font-size: 14px;
   }
   .result-panel .button-icon {
@@ -192,7 +194,7 @@
   }
 }
 
-@media (max-width: 540px) and (orientation: portrait) {
+@container app (max-width: 540px) and (orientation: portrait) {
   .result-content {
     grid-template-columns: 1fr;
   }

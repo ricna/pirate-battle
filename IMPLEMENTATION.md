@@ -146,7 +146,7 @@ For a new weapon/projectile, author a profile and mount, then use the existing e
 - Run gameplay on the configured fixed step, independently of render FPS. Use the capped accumulator for real-time frames. HUD updates remain low-frequency snapshots, not one React state update per entity per simulation step.
 - Use active simulation time for match duration, cooldowns, navigation, projectile TTL and effects. Pause freezes these and momentum. Clear input and accumulated wall time on pause/resume; resume requires a user action.
 - Preserve simultaneous movement and firing, independent weapon cooldowns, multiple keyboard/pointer input sources and pointer capture/cancellation. Release inputs on blur, hidden tab and teardown.
-- Mobile combat is landscape. Portrait pauses combat; menu navigation remains usable. Resize changes display scale, not world coordinates, speed or collision geometry.
+- Combat is landscape. Touch devices in portrait show the rotated landscape layout and keep playing; only a portrait arena, such as a narrow desktop window, pauses combat. Resize and rotation change display scale, not world coordinates, speed or collision geometry.
 - Ship motion applies acceleration/braking and maximum-speed limits from its own profile. Use bounded movement substeps/collision handling for fast configured ships; do not rely on frame rate to prevent tunneling.
 - Use authored island colliders and arena bounds. Projectile collision is swept and resolves the earliest contact against the applicable obstacles/ships.
 - Mark death immediately; exclude dead entities from subsequent damage/actions. Score each credited kill once. Chaser ram self-destruction does not grant a player kill point. Player death ends active scoring/combat.
@@ -179,6 +179,7 @@ For a new weapon/projectile, author a profile and mount, then use the existing e
 - Destroy owned texture frames/render surfaces without destroying shared base image sources. Release retiring GPU-context resources through supported Pixi APIs while preserving intentional decoded-image caches.
 - Never remove React's owned canvas behind its lifecycle. A retry gets a fresh React-authored canvas; abandonment does not submit a completed result.
 - Preserve stable render layers for ships/projectiles/effects as pools grow. Do not let creation order change intended draw order.
+- `#root` is the size container of every screen. Size layout with container units and `@container app` queries, never viewport units or media queries, so the rotated portrait layout and its top-layer dialogs keep their landscape sizes. Read safe-area insets through the `--safe-*` properties. Convert pointer movements into layout axes (`LayoutAxes`) before deriving a direction from them.
 - Use semantic buttons/forms, labels, visible loading/error/retry states, accessible HUD values, dialog focus containment and focus restoration. Verify touch cancellation, orientation and keyboard use.
 
 ## 10. Audio

@@ -53,7 +53,7 @@ export function OptionsScreen({
     <section className="options-board" aria-labelledby="options-title">
       <h1 id="options-title">Options</h1>
 
-      <section className="options-section" aria-labelledby="options-game-title">
+      <section className="options-section options-game" aria-labelledby="options-game-title">
         <h2 id="options-game-title">Game</h2>
         <SettingStepper
           label="Game session time"
@@ -101,7 +101,7 @@ export function OptionsScreen({
         />
       </section>
 
-      <section className="options-section" aria-labelledby="options-audio-title">
+      <section className="options-section options-audio" aria-labelledby="options-audio-title">
         <h2 id="options-audio-title">Audio</h2>
         <SettingToggle label="Sound" checked={options.sound} onChange={(sound) => update({ sound })} />
 
@@ -145,16 +145,18 @@ export function OptionsScreen({
       </section>
 
       {note && <p className="options-note">{note}</p>}
-      <Button className="options-main-menu" onClick={onBack}>
-        {backLabel}
-      </Button>
-      <button
-        type="button"
-        className="text-button options-restore"
-        onClick={() => onChange(OptionsConfig.Default)}
-      >
-        Restore default options
-      </button>
+      <div className="options-actions">
+        <Button className="options-main-menu" onClick={onBack}>
+          {backLabel}
+        </Button>
+        <button
+          type="button"
+          className="text-button options-restore"
+          onClick={() => onChange(OptionsConfig.Default)}
+        >
+          Restore default options
+        </button>
+      </div>
     </section>
   );
 }

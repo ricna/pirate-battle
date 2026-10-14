@@ -113,7 +113,7 @@ export class GameSession {
       );
       application.stage.addChild(this.#mapView.world);
       this.#arena = new ArenaRenderer(this.#mapView.world, this.#game.readView, loaded);
-      this.#resize = new ResizeObserver(this.#resizeCanvas);
+      this.#resize = new ResizeObserver(this.#viewportResized);
       this.#resize.observe(viewport);
       this.#watchResolution();
       this.#resizeCanvas();
@@ -133,7 +133,7 @@ export class GameSession {
       this.#publishSnapshot();
       root.focus();
       audio.play(AudioConfig.Cues.Start);
-      if (document.hidden || matchMedia('(orientation: portrait)').matches) this.pause();
+      if (document.hidden || this.#portraitLayout()) this.pause();
       this.#frame = requestAnimationFrame(this.#tick);
     } catch (cause) {
       this.#destroyResources();
@@ -162,13 +162,7 @@ export class GameSession {
 
   resume(): void {
     const game = this.#game;
-    if (
-      !game ||
-      game.status !== MatchStatus.Paused ||
-      document.hidden ||
-      matchMedia('(orientation: portrait)').matches
-    )
-      return;
+    if (!game || game.status !== MatchStatus.Paused || document.hidden || this.#portraitLayout()) return;
     game.resume();
     this.#input?.setActive(true);
     this.#accumulator = 0;
@@ -213,11 +207,22 @@ export class GameSession {
   readonly #visibilityChanged = (): void => {
     if (document.hidden) this.pause();
   };
-  /** Portrait pauses combat; a zoom or monitor change can alter density without a layout resize. */
+  /** A zoom or monitor change can alter density without resizing the arena. */
   readonly #windowResized = (): void => {
-    if (matchMedia('(orientation: portrait)').matches) this.pause();
     if (this.#application?.renderer && this.#application.renderer.resolution !== this.#resolution())
       this.#resolutionChanged();
+  };
+  /**
+   * Combat needs a landscape arena. Touch devices held in portrait show the rotated landscape layout, so
+   * only a genuinely portrait arena, such as a narrow desktop window, pauses combat.
+   */
+  #portraitLayout(): boolean {
+    const { clientWidth, clientHeight } = this.#dependencies.viewport;
+    return clientHeight >= clientWidth;
+  }
+  readonly #viewportResized = (): void => {
+    this.#resizeCanvas();
+    if (this.#portraitLayout()) this.pause();
   };
   /** A window moved to another monitor or a browser zoom changes devicePixelRatio without resizing. */
   readonly #resolutionChanged = (): void => {
