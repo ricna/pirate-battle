@@ -1,16 +1,14 @@
 # Asset attribution
 
-The ships, ship parts, water/terrain tiles, effects, menu/HUD/control PNGs, spritesheets, UI reference images, Jungle Gaming logo and WAV sound files were supplied in the original [Jungle Gaming challenge repository](https://github.com/junglegaming/game-developer-challenge).
+The ships, ship parts, water/terrain tiles, effects, menu/HUD/control PNGs, spritesheets, UI reference images, Jungle Gaming logo and WAV sound files were supplied by Jungle Gaming in its [asset repository](https://github.com/junglegaming/game-developer-challenge).
 
-`assets/maps/arena_00.tmj`, `terrain.tsj` and the Tiled project were authored manually by the candidate using those supplied terrain tiles. The game preserves that layout and the five authored collision rectangles. No AI-generated game art, replacement icons, procedural fallback map or synthetic audio was added.
+`assets/maps/arena_00.tmj`, `terrain.tsj` and the Tiled project were authored for this project from those supplied terrain tiles. The game preserves that layout and the five authored collision rectangles. No AI-generated game art, replacement icons, procedural fallback map or synthetic audio was added.
 
 The supplied asset directories are retained. Pixi gameplay uses shared ship/UI atlases with their supplied XML/JSON frames. React/CSS use individual UI PNGs; repeated water uses its standalone tile. Vite creates hashed production URLs. Cropping health textures and map tiles happens in Pixi without modifying source images.
 
 The accepted gameplay brief authorized complementary authored foam/wake/trail art. The registered additions under `assets/authored/` are `foam_ring.svg`, `projectile_trail.svg`, the owner's Krita-authored `Splash.png` and the owner's `shipt-trail.png`. The logical `authored/water_splash` reference loads `Splash.png`; the previous `water_splash.svg` is retained as unused source art. `Splash.kra` is the editable source, not a runtime texture. `authored/ship_trail` loads `shipt-trail.png` (256×32), stretched along each moving ship's stern path by the ship-trail system; it replaced the earlier stamped wake, which the owner removed on 13 October 2026. These are authored drawings, not runtime-generated fallbacks or screenshot crops. No synthesized sounds were added. See [ASSET_AUDIT.md](ASSET_AUDIT.md) for all visual categories, metadata checks, legitimate omissions and the 27-WAV event catalog.
 
-The upstream challenge contains no separate asset licence file. This submission uses its materials for that challenge; it does not assert a new licence or broader redistribution rights for the supplied assets. Third-party packages retain their respective licences in their distributions.
-
-The personal Portuguese tutorial and its earlier educational diagram remain outside this repository in the candidate's Docs directory; they are not game assets or part of the published build.
+The supplied asset repository contains no separate licence file. This project uses those assets as supplied for this product; it does not assert a new licence or broader redistribution rights for them. Third-party packages retain their respective licences in their distributions.
 
 
 ## Third-party sources and licences

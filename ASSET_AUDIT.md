@@ -53,7 +53,7 @@ On 13 October 2026 the owner requested complete removal of the existing stamped 
 | `wood_1`…`wood_4` | Randomized bounded floating debris on damage and sinking, not only on the final explosion. |
 | `fire_1`, `fire_2` | Configured low-health fire animation. Its presentation clock freezes on pause. |
 | `explosion_1`…`explosion_3` | Configured muzzle/hit responses and multi-frame sinking explosion with different size/duration. Splash has its own authored vector. |
-| 96 terrain tiles | The candidate's authored water, coast, islands and props. Unselected terrain/decoration variants remain available for level design; no automated repaint or “use all tiles” filler. |
+| 96 terrain tiles | Authored water, coast, islands and props. Unselected terrain/decoration variants remain available for level design; no automated repaint or “use all tiles” filler. |
 | Panel/title/primary button states | Menus, dialogs, forms and result; normal, hover, pressed and disabled appearance. |
 | Secondary button states | Back/home/stay actions use the supplied secondary appearance; the pack has normal/pressed secondary frames, so there is no invented secondary hover image. |
 | Round button states and movement/weapon/pause icons | Keyboard/touch controls, held state and contextual pause. Native semantic progress indicators show actual cooldown readiness. |

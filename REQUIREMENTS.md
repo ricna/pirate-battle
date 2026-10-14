@@ -28,7 +28,7 @@ Each row maps a requirement of [CHALLENGE.md](CHALLENGE.md) to where it is imple
 | Shooter approaches and fires in range | `entities/EnemyShooter.ts`, `EnemyShooterConfig.ai.range` | `both enemy behaviours appear on schedule…`; `a hidden shooter reaches…` |
 | Enemies move, rotate, take damage, respect islands; both appear | `EnemyShip.follow`, `math/Navigation.ts`, `GameDefaults.Spawning.initialSequence` | `both enemy behaviours appear on schedule, approach and navigate around obstacles`; `a crowded seeded battle keeps enemies sailing…` |
 | Spawns every configured interval at safe, distant points | `systems/SpawnSystem.ts`, `GameDefaults.SpawnPoints` and `Spawning` | `spawns follow the Enemy spawn time option`; spawn-distance assertion in `both enemy behaviours…` |
-| Water and blocking islands | `arena_00.tmj` (five collision rectangles), `assets/TiledMapLoader.ts` | `static water stays continuous…`; projectile/coast tests |
+| Water and blocking islands | `arena_00.tmj` (five collision rectangles), `src/game/assets/TiledMapLoader.ts` | `static water stays continuous…`; projectile/coast tests |
 | Projectiles: direction, speed, damage, lifetime | `entities/Projectile.ts`, `ProjectileConfig.ts` | `front and parallel broadsides…`; `projectile acceleration and deceleration remain configured…` |
 | One damage per projectile; removal on hit, obstacle, expiry, leaving the arena | `systems/ProjectileSystem.ts` (swept earliest contact) | `one cannonball applies its configured damage once…`; `reused projectiles reset ownership…` |
 | Weapon cooldowns | `WeaponController` | `front and parallel broadsides obey independent cooldowns…`; `pause freezes simulation and cooldowns…` |
@@ -64,7 +64,7 @@ Each row maps a requirement of [CHALLENGE.md](CHALLENGE.md) to where it is imple
 | Rules, rendering, input and UI state separated | `game/{entities,systems,core,math}` (domain), `game/rendering`, `game/input`, `ui/*`; `scripts/check-architecture.mjs` forbids browser/network imports in the domain | `npm run lint`; `read ports cannot mutate private state…` |
 | Time-based, frame-rate-independent simulation | Fixed 1/60 s step with capped accumulator in `GameSession` | Test clock; `PERFORMANCE.md` |
 | UI sync without per-frame React renders | `GameSession` publishes snapshots every `runtime.hudIntervalMs` | `ARCHITECTURE.md` |
-| Texture loading, reuse and failure handling before combat | `assets/GameTextureLibrary.ts` (cached), `TiledMapLoader`, `AssetLoadingIndicator` | Asset failure/retry tests; `authored loading bar…` |
+| Texture loading, reuse and failure handling before combat | `src/game/assets/GameTextureLibrary.ts` (cached), `TiledMapLoader`, `AssetLoadingIndicator` | Asset failure/retry tests; `authored loading bar…` |
 | Canvas fits screen and density; input and bounds preserved | `GameSession` resize and resolution, `MapRenderer.resize` | `static water stays continuous at fractional viewport and DPI scales`; `a runtime devicePixelRatio change…`; layout assertions in the visual test |
 | Listeners, ticker, timers, entities and resources released | `GameSession.#destroyResources`, `GameManager.dispose`, renderer `destroy` | `abandonment, repeated mounts…`; memory runs in `PERFORMANCE.md` |
 | Correct with React Strict Mode | `main.tsx` (`StrictMode`), serialized init in `GameCanvas` | All browser specs run on the dev server with Strict Mode |

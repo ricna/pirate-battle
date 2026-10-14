@@ -2,7 +2,7 @@
 
 ## Where to edit
 
-Game defaults are authored TypeScript data in static configuration classes. The classes and their data are frozen at runtime; changes are made in source. They are the equivalent of source-controlled ScriptableObject profiles; they are not Unity assets or .NET assemblies. No Inspector, external server or environment variable is required. Edit the files, run the checks, and rebuild the static application.
+Game defaults are authored TypeScript data in static configuration classes. The classes and their data are frozen at runtime; changes are made in source. No editor, external server or environment variable is required. Edit the files, run the checks, and rebuild the static application.
 
 | File under `src/game/configuration/` | Editable defaults |
 | --- | --- |

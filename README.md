@@ -2,10 +2,10 @@
 
 [![CI](https://github.com/ricna/pirate-battle/actions/workflows/ci.yml/badge.svg)](https://github.com/ricna/pirate-battle/actions/workflows/ci.yml)
 
-A single-player, top-down naval shooter built with React, strict TypeScript and PixiJS for the Jungle Gaming game developer challenge ([CHALLENGE.md](CHALLENGE.md)). Ranking and Match History use REST APIs mocked by MSW and consumed through Axios and TanStack Query; Playwright covers the flows end to end.
+A single-player, top-down naval shooter built with React, strict TypeScript and PixiJS for Jungle Gaming. The product brief is [CHALLENGE.md](CHALLENGE.md). Ranking and Match History use REST APIs mocked by MSW and consumed through Axios and TanStack Query; Playwright covers the flows end to end.
 
 - **Live build:** _pending deployment; see [Deployment](#deployment)._ Every build reports its commit in `/version.json`, in `<meta name="build-commit">` and at the bottom of How To Play.
-- **Where each requirement lives:** [REQUIREMENTS.md](REQUIREMENTS.md) maps every item of the challenge to its implementation, tests and evidence.
+- **Where each requirement lives:** [REQUIREMENTS.md](REQUIREMENTS.md) maps every item of the product brief to its implementation, tests and evidence.
 - **Latest verification:** [reports/TEST-SUMMARY.md](reports/TEST-SUMMARY.md), with the HTML report in `reports/playwright` (`npm run test:report`). Only `npm run test:deliver` changes these files; everyday test runs write Git-ignored output. See [TESTING.md](TESTING.md#reports-and-traces) and [PERFORMANCE.md](PERFORMANCE.md).
 
 ## Setup
@@ -28,7 +28,8 @@ Open the printed localhost URL. MSW starts before the first API request. Service
 | `npm run build` | Type check, then optimized production build in `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `npm run typecheck` | `tsc --noEmit` in strict mode |
-| `npm run lint` | Architecture convention check and ESLint |
+| `npm run lint` | Architecture convention check, documentation check and ESLint |
+| `npm run docs:check` | Validate documentation links, anchors, repository paths and `npm run` commands |
 | `npm run format` / `npm run format:check` | Prettier for source, tests, scripts and configuration |
 | `npm run test:e2e` | Complete Playwright suite (domain, rendering, desktop, landscape mobile, production smoke); report, traces and captures go to Git-ignored `playwright-report/` and `test-results/` |
 | `npm run test:deliver` | The complete suite in delivery mode: rewrites the versioned `reports/playwright`, `reports/playwright.json`, evidence captures and `reports/TEST-SUMMARY.md` (no arguments accepted) |
@@ -128,4 +129,6 @@ The build is a static site: build command `npm run build`, output directory `dis
 
 [ARCHITECTURE.md](ARCHITECTURE.md) covers the React/PixiJS integration, fixed-step simulation, collisions, resource lifetime, persistence, the records integration, balancing decisions and known limitations. [ASSETS.md](ASSETS.md) lists asset sources and licences; [ASSET_AUDIT.md](ASSET_AUDIT.md) audits every supplied file. Physical iOS/Android devices and non-Chromium browsers have not been verified.
 
-Contributors and coding agents start with [AGENTS.md](AGENTS.md) and the [implementation contract](IMPLEMENTATION.md).
+## Contributing
+
+Developers and coding agents start with [AGENTS.md](AGENTS.md): repository map, workflow and verification policy. The engineering rules are in [IMPLEMENTATION.md](IMPLEMENTATION.md) and the accepted product decisions in [DECISIONS.md](DECISIONS.md).

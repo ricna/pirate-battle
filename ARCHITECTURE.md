@@ -159,26 +159,28 @@ src/
   game/
     contracts/                   readonly configuration, domain symbols, events, render/audio ports
     configuration/               authored gameplay/audio/visual profiles and GameConfigFactory
-    core/                        Entity, EntityIdSequence, collision worlds, ObjectPool
-    entities/                    Ship hierarchy, Projectile, Effect
+    core/                        Entity, EntityIdSequence, CollisionWorld, ShipCollisionWorld, ObjectPool, Immutable
+    entities/                    Ship hierarchy, Projectile, Effect, Crew
     factories/                   registered ShipFactory and ProjectileFactory
-    systems/                     weapons, spawning, damage, projectiles, effects, match state/statistics
+    systems/                     weapons, spawning, damage, projectiles, effects, crew, match state/statistics
     runtime/                     GameManager, GameSession, TerminalSequence, SessionInstrumentation
     input/                       InputController
     math/                        pure Geometry functions and Navigation
     assets/                      TiledMapLoader and application-owned GameTextureLibrary
-    rendering/                   MapRenderer, ArenaRenderer, SpritePool
+    rendering/                   MapRenderer, ArenaRenderer, SpritePool, WorldCamera
     presentation/                bounded cosmetic particles, feedback, ship trail and their renderers
     audio/                       AudioManager, SoundEffectPlayer, MusicPlayer
   infrastructure/
+    browser/                     FullscreenDisplay and its DisplayInputConfig bindings
     network/                     RecordsApi, NetworkConfig, NetworkScenarios, MockFixtures, NetworkSimulator
     storage/                     LocalStorageStore adapter with private warning state
   ui/
     App.tsx                      application screen/state coordinator
     screens/                     MainMenu, OptionsScreen, HowToPlay, CaptainsLog, ResultScreen
-    components/                  shared Button, Dialog, SettingStepper, boundary and provider
+    components/                  Button, Dialog, setting controls, FullscreenControl, ControlsHelp,
+                                 AssetLoadingIndicator, GameLoadBoundary, ServicesProvider
     hud/                         MatchStatusHud and TouchControls
-    game/                        GameCanvas and its stylesheet
+    game/                        GameCanvas and PauseMenu
     records/                     RemotePanel and ResultScore
     assets/                      authored MenuArt and UiAssets lookup
     hooks/                       UseApplicationServices and UseTransientNotice

@@ -46,7 +46,7 @@ npm run test:docker        # the same suite inside the CI Linux image
 
 ## Coverage
 
-[REQUIREMENTS.md](REQUIREMENTS.md) maps each challenge requirement, and each of the twelve required test areas, to named tests. In summary:
+[REQUIREMENTS.md](REQUIREMENTS.md) maps each brief requirement, and each of the twelve required test areas, to named tests. In summary:
 
 | Area | What the tests prove |
 | --- | --- |
@@ -85,7 +85,7 @@ npm run test:docker -- -g "visual baselines" --update-snapshots          # Linux
 
 ## Reports and traces
 
-The challenge requires the HTML report and test evidence in the delivered repository, so the delivered report is versioned under `reports/`. Everyday runs must not touch it: Playwright's HTML reporter replaces its whole folder on every run, so a focused `-g` or single-spec run would replace the complete report with a partial one and recreate every attachment in `reports/playwright/data/`. [tests/TestReports.ts](tests/TestReports.ts) is the single owner of these paths for the configuration and the specs, which save evidence through `evidencePath()`:
+The product brief requires the HTML report and test evidence in the delivered repository, so the delivered report is versioned under `reports/`. Everyday runs must not touch it: Playwright's HTML reporter replaces its whole folder on every run, so a focused `-g` or single-spec run would replace the complete report with a partial one and recreate every attachment in `reports/playwright/data/`. [tests/TestReports.ts](tests/TestReports.ts) is the single owner of these paths for the configuration and the specs, which save evidence through `evidencePath()`:
 
 | Run | HTML and JSON report | Evidence captures and axe summaries |
 | --- | --- | --- |
