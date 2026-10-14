@@ -22,10 +22,19 @@ async function inspect(directory) {
       errors.push(`${filename}: source modules must use PascalCase names.`);
     }
     if (entry.name.endsWith('.css')) continue;
-    const source = ts.createSourceFile(filename, await readFile(filename, 'utf8'), ts.ScriptTarget.Latest, true);
-    const exported = (node) => node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
-    const primary = source.statements.filter((node) => exported(node) &&
-      (ts.isClassDeclaration(node) || entry.name.endsWith('.tsx') && ts.isFunctionDeclaration(node)));
+    const source = ts.createSourceFile(
+      filename,
+      await readFile(filename, 'utf8'),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const exported = (node) =>
+      node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword);
+    const primary = source.statements.filter(
+      (node) =>
+        exported(node) &&
+        (ts.isClassDeclaration(node) || (entry.name.endsWith('.tsx') && ts.isFunctionDeclaration(node))),
+    );
     if (primary.length > 1) errors.push(`${filename}: public classes/components require individual modules.`);
     if (primary[0]?.name && `${primary[0].name.text}${path.extname(filename)}` !== entry.name) {
       errors.push(`${filename}: filename must match its exported class/component ${primary[0].name.text}.`);

@@ -4,7 +4,6 @@ import { GameConfigFactory } from '../src/game/configuration/GameConfigFactory';
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
-
 import { CollisionWorld } from '../src/game/core/CollisionWorld';
 import { ShipKind } from '../src/game/contracts/GameDomain';
 import { distance } from '../src/game/math/Geometry';
@@ -15,11 +14,21 @@ import type { LoadedMap } from '../src/game/assets/TiledMapLoader';
 // Domain-only fixture: real authored map geometry; no rendering or substitute runtime assets.
 function map(): LoadedMap {
   const json = JSON.parse(readFileSync('assets/maps/arena_00.tmj', 'utf8')) as {
-    width: number; height: number; tilewidth: number; tileheight: number;
+    width: number;
+    height: number;
+    tilewidth: number;
+    tileheight: number;
     layers: { name: string; objects?: LoadedMap['colliders'] }[];
   };
-  return { width: json.width, height: json.height, tileWidth: json.tilewidth, tileHeight: json.tileheight,
-    layers: [], tilesets: [], colliders: json.layers.find((layer) => layer.name === 'collisions')!.objects! };
+  return {
+    width: json.width,
+    height: json.height,
+    tileWidth: json.tilewidth,
+    tileHeight: json.tileheight,
+    layers: [],
+    tilesets: [],
+    colliders: json.layers.find((layer) => layer.name === 'collisions')!.objects!,
+  };
 }
 
 // Just above the bottom-left island: the player fits, but this grid cell is blocked for an inflated enemy radius.
@@ -45,11 +54,19 @@ test('a route to a target inside a blocked navigation cell ends at the nearest r
 for (const kind of [ShipKind.Chaser, ShipKind.Shooter]) {
   test(`a hidden ${kind} reaches a player hugging a coast instead of sailing away`, () => {
     const base = GameConfigFactory.create(OptionsConfig.Default);
-    const config = freezeConfiguration({ ...base, playerSpawn: coastHuggingPlayer, spawnPoints: [hiddenSpawn],
-      spawning: { ...base.spawning, maxCount: 1, initialSequence: [kind] } });
+    const config = freezeConfiguration({
+      ...base,
+      playerSpawn: coastHuggingPlayer,
+      spawnPoints: [hiddenSpawn],
+      spawning: { ...base.spawning, maxCount: 1, initialSequence: [kind] },
+    });
     const simulation = new GameManager(config, map());
     const seconds = 25;
-    for (let step = 0; step < seconds / config.fixedStep && simulation.player.health === config.player.health; step++) {
+    for (
+      let step = 0;
+      step < seconds / config.fixedStep && simulation.player.health === config.player.health;
+      step++
+    ) {
       simulation.step(config.fixedStep, new Set());
     }
     expect(simulation.player.health).toBeLessThan(config.player.health);
@@ -76,7 +93,8 @@ test('a crowded seeded battle keeps enemies sailing instead of pinned to coasts 
       samples.set(enemy.id, history);
       if (simulation.elapsed - history[0]!.elapsed < windowSeconds - config.fixedStep) continue;
       // A Shooter holding position inside its firing range is intentionally stationary.
-      const holding = enemy.profile.ai!.range > 0 && distance(enemy, simulation.player) <= enemy.profile.ai!.range;
+      const holding =
+        enemy.profile.ai!.range > 0 && distance(enemy, simulation.player) <= enemy.profile.ai!.range;
       if (holding) continue;
       observed++;
       if (distance(enemy, history[0]!.point) < minimumProgress) pinned++;

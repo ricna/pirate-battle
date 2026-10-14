@@ -1,0 +1,13 @@
+# Source, tests and documentation use LF in every checkout, matching .editorconfig and Prettier,
+# so `npm run format:check` passes on Windows clones with core.autocrlf enabled.
+* text=auto eol=lf
+
+# Supplied and authored assets are preserved byte-for-byte.
+/assets/** -text
+
+*.png binary
+*.jpg binary
+*.wav binary
+*.mp3 binary
+*.kra binary
+*.zip binary

@@ -17,8 +17,15 @@ import type { LoadedMap } from '../src/game/assets/TiledMapLoader';
 
 function map(): LoadedMap {
   const json = JSON.parse(readFileSync('assets/maps/arena_00.tmj', 'utf8'));
-  return { width: json.width, height: json.height, tileWidth: json.tilewidth, tileHeight: json.tileheight,
-    layers: [], tilesets: [], colliders: json.layers.find((layer: { name: string }) => layer.name === 'collisions').objects };
+  return {
+    width: json.width,
+    height: json.height,
+    tileWidth: json.tilewidth,
+    tileHeight: json.tileheight,
+    layers: [],
+    tilesets: [],
+    colliders: json.layers.find((layer: { name: string }) => layer.name === 'collisions').objects,
+  };
 }
 
 test('swept hull contact prevents high-speed crossing and permits departure', () => {
@@ -40,7 +47,9 @@ test('swept hull contact prevents high-speed crossing and permits departure', ()
 
 test('opposing enemy hulls remain separated throughout motion', () => {
   class SailingEnemy extends EnemyShip {
-    override update(context: EnemyContext): void { this.sail(true, context.dt, context.world); }
+    override update(context: EnemyContext): void {
+      this.sail(true, context.dt, context.world);
+    }
   }
   const config = GameConfigFactory.create(OptionsConfig.Default);
   const world = new ShipCollisionWorld(map(), config);
@@ -49,9 +58,18 @@ test('opposing enemy hulls remain separated throughout motion', () => {
   const target = new PlayerShip(0, config.playerSpawn, config.player);
   world.setBodies([first, second]);
   for (let step = 0; step < 180; step++) {
-    const context = { target, world, dt: config.fixedStep, elapsed: step * config.fixedStep, fleet: [first.view, second.view],
-      fire() {}, damage() {}, event() {} };
-    first.update(context); second.update(context);
+    const context = {
+      target,
+      world,
+      dt: config.fixedStep,
+      elapsed: step * config.fixedStep,
+      fleet: [first.view, second.view],
+      fire() {},
+      damage() {},
+      event() {},
+    };
+    first.update(context);
+    second.update(context);
     expect(distance(first, second)).toBeGreaterThanOrEqual(first.hullRadius + second.hullRadius);
   }
   expect(first.y).toBeGreaterThan(second.y);
@@ -67,9 +85,20 @@ test('Chaser ram triggers on hull contact once without a credited kill', () => {
   let damage = 0;
   const events: GameEvent[] = [];
   for (let step = 0; step < 180; step++) {
-    chaser.update({ target: player, world, elapsed: step * config.fixedStep, dt: config.fixedStep, fleet: [chaser.view],
-      fire() {}, damage: (ship, amount, credited) => { expect(credited).toBe(false); ship.applyDamage(amount); damage++; },
-      event: (event) => events.push(event) });
+    chaser.update({
+      target: player,
+      world,
+      elapsed: step * config.fixedStep,
+      dt: config.fixedStep,
+      fleet: [chaser.view],
+      fire() {},
+      damage: (ship, amount, credited) => {
+        expect(credited).toBe(false);
+        ship.applyDamage(amount);
+        damage++;
+      },
+      event: (event) => events.push(event),
+    });
   }
   expect(chaser.alive).toBe(false);
   expect(player.health).toBe(config.player.health - EnemyChaserConfig.Default.ai!.ramDamage);
