@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
+import type { Options } from '../../application/configuration/Options';
 import type { GameConfig } from '../../game/contracts/GameConfig';
 import { EndReason } from '../../game/contracts/GameDomain';
 import type { Snapshot } from '../../game/runtime/GameManager';
@@ -7,7 +8,7 @@ import { GameSession } from '../../game/runtime/GameSession';
 import { useApplicationServices } from '../hooks/UseApplicationServices';
 import { Button } from '../components/Button';
 import { AssetLoadingIndicator } from '../components/AssetLoadingIndicator';
-import { Dialog } from '../components/Dialog';
+import { PauseMenu } from './PauseMenu';
 import { MatchStatusHud } from '../hud/MatchStatusHud';
 import { TouchControls } from '../hud/TouchControls';
 import type { TouchInput } from '../hud/TouchControls';
@@ -17,6 +18,8 @@ import './GameCanvas.css';
 /** React view: authors markup and translates user actions into session commands. */
 export function GameCanvas({
   config,
+  options,
+  onOptionsChange,
   onComplete,
   onAbandon,
   onResultReady,
@@ -24,6 +27,9 @@ export function GameCanvas({
   resultRevealing,
 }: {
   config: GameConfig;
+  /** Live preferences for the pause board's Options; the running battle keeps its frozen config. */
+  options: Options;
+  onOptionsChange: (options: Options) => void;
   onComplete: (snapshot: Snapshot) => void;
   onAbandon: () => void;
   onResultReady: () => void;
@@ -45,7 +51,6 @@ export function GameCanvas({
   const [attempt, setAttempt] = useState(0);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [terminalElapsed, setTerminalElapsed] = useState(0);
-  const [abandon, setAbandon] = useState(false);
   const pause = () => sessionRef.current?.pause();
   const resume = () => sessionRef.current?.resume();
 
@@ -170,39 +175,12 @@ export function GameCanvas({
               : 'Game active'}
       </p>
       {paused && (
-        <Dialog
-          title={abandon ? 'Leave this battle?' : 'Battle paused'}
-          onClose={() => {
-            if (abandon) setAbandon(false);
-            else resume();
-          }}
-        >
-          <p>
-            {abandon
-              ? 'This unfinished battle will not be saved.'
-              : 'Time, movement and weapons are suspended. Resume when you are ready.'}
-          </p>
-          <p className="portrait-hint">Rotate your device to landscape before resuming.</p>
-          {abandon ? (
-            <>
-              <Button variant="secondary" onClick={() => setAbandon(false)}>
-                Stay here
-              </Button>
-              <Button icon="icon_close" onClick={onAbandon}>
-                Leave battle
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button icon="icon_play" onClick={resume}>
-                Resume
-              </Button>
-              <Button variant="secondary" icon="icon_home" onClick={() => setAbandon(true)}>
-                Main Menu
-              </Button>
-            </>
-          )}
-        </Dialog>
+        <PauseMenu
+          options={options}
+          onOptionsChange={onOptionsChange}
+          onResume={resume}
+          onLeave={onAbandon}
+        />
       )}
     </section>
   );

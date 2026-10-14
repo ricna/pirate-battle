@@ -31,15 +31,20 @@ function stepped(
 /**
  * Game and Audio preferences using the authored Options board and controls.
  * Every change is saved at once; there is no separate Save action.
+ * The main menu opens it with "Main Menu"; the pause board opens it with "Back" and an explanatory note.
  */
 export function OptionsScreen({
   options,
   onChange,
-  onMainMenu,
+  onBack,
+  backLabel = 'Main Menu',
+  note,
 }: {
   options: Options;
   onChange: (options: Options) => void;
-  onMainMenu: () => void;
+  onBack: () => void;
+  backLabel?: string;
+  note?: string;
 }) {
   const steps = OptionsConfig.Steps;
   const update = (change: Partial<Options>) => onChange({ ...options, ...change });
@@ -139,8 +144,9 @@ export function OptionsScreen({
         />
       </section>
 
-      <Button className="options-main-menu" onClick={onMainMenu}>
-        Main Menu
+      {note && <p className="options-note">{note}</p>}
+      <Button className="options-main-menu" onClick={onBack}>
+        {backLabel}
       </Button>
       <button
         type="button"

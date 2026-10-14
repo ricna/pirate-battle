@@ -14,6 +14,7 @@ const browserFlows = [
   '**/music.spec.ts',
   '**/network.spec.ts',
   '**/accessibility.spec.ts',
+  '**/pause.spec.ts',
 ];
 
 export default defineConfig({

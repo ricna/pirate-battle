@@ -67,7 +67,7 @@ All variables are optional.
 
 How To Play, one click from the main menu, presents these controls and the enemies. Movement and attacks work at the same time, and several keys and fingers can be held at once. Game keys are captured only while the arena has focus.
 
-**Rules.** Sink enemies with your cannonballs: each one sunk by your shots earns 1 point; a Chaser that explodes against you does not. Islands block ships and cannonballs, and each collision with an island costs 1 health. Sail over survivors from sunk ships to recover 1 health each. The match ends when the timer reaches zero (VICTORY) or your health does (Defeated). Losing focus or hiding the tab pauses the battle; resuming always needs an explicit action. Mobile combat is landscape; portrait pauses it, menus still work.
+**Rules.** Sink enemies with your cannonballs: each one sunk by your shots earns 1 point; a Chaser that explodes against you does not. Islands block ships and cannonballs, and each collision with an island costs 1 health. Sail over survivors from sunk ships to recover 1 health each. The match ends when the timer reaches zero (VICTORY) or your health does (Defeated). Losing focus or hiding the tab pauses the battle; resuming always needs an explicit action. The pause menu offers Resume, Options and Main Menu: sound and volume changes apply immediately, session and spawn time from the next battle. Mobile combat is landscape; portrait pauses it, menus still work.
 
 ## Gameplay configuration
 

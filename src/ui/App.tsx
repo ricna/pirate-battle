@@ -1,3 +1,4 @@
+import type { Options } from '../application/configuration/Options';
 import type { GameConfig } from '../game/contracts/GameConfig';
 import { GameConfigFactory } from '../game/configuration/GameConfigFactory';
 // The shared stylesheet loads first so screen stylesheets imported by components can refine it.
@@ -145,6 +146,10 @@ export function App() {
     const record = pendingRef.current[0];
     if (record) save.mutate(record);
   };
+  const saveOptions = (value: Options) => {
+    optionsRepository.save(value);
+    setOptions(value);
+  };
   const mainMenu = () => {
     setScreen('menu');
     audio.stopMatchSounds();
@@ -191,6 +196,8 @@ export function App() {
             <GameCanvas
               key={gameId}
               config={config}
+              options={options}
+              onOptionsChange={saveOptions}
               onComplete={complete}
               onAbandon={mainMenu}
               resultRevealing={screen === 'result'}
@@ -216,14 +223,7 @@ export function App() {
           </a>
           <div id="main-content" className="shell" tabIndex={-1}>
             {screen === 'options' ? (
-              <OptionsScreen
-                options={options}
-                onChange={(value) => {
-                  optionsRepository.save(value);
-                  setOptions(value);
-                }}
-                onMainMenu={mainMenu}
-              />
+              <OptionsScreen options={options} onChange={saveOptions} onBack={mainMenu} />
             ) : screen === 'howToPlay' ? (
               <HowToPlay onMainMenu={mainMenu} />
             ) : screen === 'records' ? (

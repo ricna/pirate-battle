@@ -25,6 +25,7 @@ React authors the canvas, menus, dialogs, HUD, touch controls and one persistent
 | ui/navigation/ScreenRoute | URL fragments for menu screens, so refresh keeps the visible screen |
 | game/audio | AudioManager coordinates SoundEffectPlayer and streamed MusicPlayer with different lifetimes |
 | ui/game/GameCanvas | Authored React canvas view, UI state, retry and translation to session commands |
+| ui/game/PauseMenu | Pause board from `sample_pause.png` in a native modal dialog: Resume, in-battle Options (preferences persist at once; game settings apply to the next battle) and confirmed Main Menu |
 | ui/hud | MatchStatusHud and TouchControls reproduce the authored gameplay HUD |
 | application/records/MatchRecord, api, network, storage | Typed REST records, Axios/Query, MSW and persistence |
 

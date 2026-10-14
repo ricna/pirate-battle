@@ -31,7 +31,7 @@ npm run test:docker     # the same suite inside the CI Linux image
 | `core` | Node, no browser | `core`, `collision`, `navigation`, `presentation`: configuration validation, pools, factories, collisions, island damage, navigation, crew rescue, ship trail, presentation rules |
 | `rendering` | Chromium, 1482×962 and others, DPR 1–2 | Seamless water at fractional viewport/DPI scales; runtime devicePixelRatio change |
 | `mobile-layout` | Chromium at phone and tablet sizes, portrait and landscape | `mobile`: player-following camera bounds, compact menus and HUD without overflow, explicit fullscreen and its unsupported fallback |
-| `desktop` | Chromium 1280×800 at 1× | `game`, `music`, `network`, `accessibility` |
+| `desktop` | Chromium 1280×800 at 1× | `game`, `music`, `network`, `accessibility`, `pause` |
 | `mobile-landscape` | Chromium 844×390 at 2×, touch, mobile | Same browser flows as desktop |
 | `production-smoke` | Optimized `vite preview` build (or `PIRATE_SMOKE_URL`) | Commit identity, service worker, mocked lists, registration and refresh |
 
@@ -47,7 +47,7 @@ npm run test:docker     # the same suite inside the CI Linux image
 | Weapons and scoring | One front ball, three parallel broadside balls, independent cooldowns, lifetime expiry, one damage application per ball, exactly one point per credited kill |
 | Enemies and spawning | Chaser first and Shooter second at the configured interval (default and Options value), safe spawn distance, obstacle-aware routes, Chaser ram damage without score, Shooter fire damage |
 | Match end | Real keyboard pilot survives a 60 s session (VICTORY message, fade, result), death result, combat frozen during terminal presentation, record saved once, clean restart |
-| Pause | Manual pause, window blur and hidden tab pause; timer, cooldowns and momentum frozen; resume requires an action and clears held input |
+| Pause | Manual pause, window blur and hidden tab pause; timer, cooldowns and momentum frozen; resume requires an action and clears held input. The pause board offers Resume, Options and Main Menu; Options from pause persists at once without changing the running battle's configuration; Escape steps back from Options and from the leave confirmation |
 | Results | Score, time played, end reason, record status; the result stays visible after refresh |
 | Lifecycle and touch | Repeated mount/abandon cycles, refresh abandons combat, two simultaneous touch points with pointer cancellation, reduced motion |
 | Ranking and Match History | Paging, score order, empty lists, loading, visible background refresh, ARIA tab keyboard navigation, every MSW scenario (timeout, connection, HTTP 400/503, list-specific failures, slow, variable latency, out-of-order cancellation) |

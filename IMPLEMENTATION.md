@@ -370,6 +370,14 @@ The owner required the Options screen to match `assets/sample_options.png`, keep
 
 The owner subsequently refined this composition on 13 October 2026: group the settings under **Game** and **Audio** headers. Sound uses an accessible On/Off toggle. Game session time, Enemy spawn time, master Volume and Music volume each show the value above a slider, with the existing minus/plus buttons on its sides. Sliders reuse the authored HUD health frame, amber fill and round control art, following the atlas fill rectangle. Keyboard, pointer and touch changes retain the existing limits and steps (10 seconds, 0.2 seconds and 10%) with immediate persistence.
 
+## Accepted pause composition — 14 October 2026
+
+The owner required the pause menu to match `assets/sample_pause.png`, stating that Options during a battle is essential:
+
+- `PauseMenu` (`src/ui/game/PauseMenu.tsx`, `PauseMenu.css`) reproduces the reference board in `--sample-px` reference pixels: **PAUSED**, "Ready when you are." and the RESUME, OPTIONS and MAIN MENU buttons at the main menu's Play/Options size. Compact screens use the same responsive board sizes as the main menu.
+- OPTIONS opens the regular `OptionsScreen` inside the paused battle with a **Back** action and a note. Every change is persisted immediately; Sound, Volume and Music volume apply at once, while session and spawn time apply to the next battle because the running match keeps its frozen configuration snapshot (section 6).
+- MAIN MENU asks for confirmation before abandoning (Stay here / Leave battle). Escape steps back one level: Options or the confirmation return to the pause board, and the pause board resumes. The native modal dialog contains and restores focus. Its accessible name stays **Battle paused** while the visible title reads PAUSED.
+
 ## 25. Accepted player-death presentation — 13 October 2026
 
 On player death, play the owner's `assets/sounds/extra/576054__istudeny__pirat-battle.wav` once, replacing the original `game_over.wav` cue. Drastically lower the persistent OST (8% of the configured music mix), without rewriting saved volumes or restarting the track. Preserve the approximately 14-second cue through result reveal; restore the mix when it finishes or the player starts another battle/returns to the menu.
