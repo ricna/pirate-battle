@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Typecheck, lint, build and Playwright
+    runs-on: ubuntu-latest
+    # The same image generated the Linux screenshot baselines, so fonts and software WebGL match exactly.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.0-noble
+      options: --ipc=host
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trust the checkout inside the container
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+      - name: Playwright (desktop, mobile landscape, domain, rendering, production smoke)
+        run: npx playwright test
+      - name: Text summary
+        if: always()
+        run: npm run test:summary
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            reports/playwright
+            reports/playwright.json
+            reports/TEST-SUMMARY.md
+            reports/accessibility
+            test-results
+          retention-days: 30
