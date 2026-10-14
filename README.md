@@ -4,7 +4,7 @@
 
 A single-player, top-down naval shooter built with React, strict TypeScript and PixiJS for Jungle Gaming. The product brief is [CHALLENGE.md](CHALLENGE.md). Ranking and Match History use REST APIs mocked by MSW and consumed through Axios and TanStack Query; Playwright covers the flows end to end.
 
-- **Live build:** _pending deployment; see [Deployment](#deployment)._ Every build reports its commit in `/version.json`, in `<meta name="build-commit">` and at the bottom of How To Play.
+- **Play it now:** [pirate-battle-ebon.vercel.app](https://pirate-battle-ebon.vercel.app/), in any current desktop or mobile browser, with nothing to install. Every build reports its commit in `/version.json`, in `<meta name="build-commit">` and at the bottom of How To Play.
 - **Where each requirement lives:** [REQUIREMENTS.md](REQUIREMENTS.md) maps every item of the product brief to its implementation, tests and evidence.
 - **Latest verification:** [reports/TEST-SUMMARY.md](reports/TEST-SUMMARY.md), with the HTML report in `reports/playwright` (`npm run test:report`). Only `npm run test:deliver` changes these files; everyday test runs write Git-ignored output. See [TESTING.md](TESTING.md#reports-and-traces) and [PERFORMANCE.md](PERFORMANCE.md).
 
@@ -123,7 +123,7 @@ Open **Demo network scenarios** at the bottom left of any menu screen, choose a 
 
 ## Deployment
 
-The build is a static site: build command `npm run build`, output directory `dist`, no server and no environment variables. `mockServiceWorker.js` must stay at the site root (Vite copies it from `public/`). On Vercel: import the repository, keep the detected Vite preset, set the output directory to `dist`, and deploy; Netlify and Cloudflare Pages work with the same settings. After deploying, confirm that `/version.json` names the delivered commit and run `PIRATE_SMOKE_URL=https://<deployment> npm run test:smoke`.
+The build is a static site: build command `npm run build`, output directory `dist`, no server and no environment variables. `mockServiceWorker.js` must stay at the site root (Vite copies it from `public/`). On Vercel: import the repository, keep the detected Vite preset, set the output directory to `dist`, and deploy; Netlify and Cloudflare Pages work with the same settings. After deploying, confirm that `/version.json` names the delivered commit and run `PIRATE_SMOKE_URL=https://<deployment> npm run test:smoke`. The public build is https://pirate-battle-ebon.vercel.app/.
 
 ## Architecture, assets and limitations
 
