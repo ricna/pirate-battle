@@ -86,7 +86,8 @@ export async function options(page: Page, duration: number, spawn: number) {
 // and the bow must point this close to a survivor before sailing to it.
 const rescueClearance = 350;
 const rescueHeadingTolerance = 0.6;
-const headingTolerance = 0.02;
+// A broadside lands within this heading error, and coarser aim needs fewer slow browser round trips.
+const headingTolerance = 0.08;
 const wrapAngle = (angle: number) => Math.atan2(Math.sin(angle), Math.cos(angle));
 const bearing = (from: { x: number; y: number }, to: { x: number; y: number }) =>
   Math.atan2(to.x - from.x, from.y - to.y);
@@ -97,6 +98,9 @@ const bearing = (from: { x: number; y: number }, to: { x: number; y: number }) =
 export async function defendUntilFinished(page: Page, waitForResult = true) {
   await page.locator('.game').focus();
   for (const key of ['w', 'Space', 'q', 'e']) await page.keyboard.down(key);
+  // Only key changes are sent: each browser round trip is slow under the CI image's software WebGL.
+  let heldTurn = '';
+  let sailing = true;
   for (let i = 0; i < 1500; i++) {
     const state = await page.evaluate(() => window.pirateTest?.observe());
     if (!state) break;
@@ -117,12 +121,18 @@ export async function defendUntilFinished(page: Page, waitForResult = true) {
       const starboard = wrapAngle(bearing(player, enemy) - Math.PI / 2 - player.angle);
       turn = Math.abs(port) < Math.abs(starboard) ? port : starboard;
     }
-    await page.keyboard.up('a');
-    await page.keyboard.up('d');
-    if (sail) await page.keyboard.down('w');
-    else await page.keyboard.up('w');
-    if (Math.abs(turn) > headingTolerance) await page.keyboard.down(turn > 0 ? 'd' : 'a');
     const turning = Math.abs(turn) > headingTolerance;
+    const turnKey = turning ? (turn > 0 ? 'd' : 'a') : '';
+    if (turnKey !== heldTurn) {
+      if (heldTurn) await page.keyboard.up(heldTurn);
+      if (turnKey) await page.keyboard.down(turnKey);
+      heldTurn = turnKey;
+    }
+    if (sail !== sailing) {
+      if (sail) await page.keyboard.down('w');
+      else await page.keyboard.up('w');
+      sailing = sail;
+    }
     const turnSeconds = Math.abs(turn) / state.config.player.movement.turnSpeed;
     await page.evaluate(
       (s) => window.pirateTest?.advance?.(s),
