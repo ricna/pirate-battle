@@ -59,8 +59,8 @@ All variables are optional.
 
 | Action | Keyboard | Touch |
 | --- | --- | --- |
-| Forward | W / Up | Hold Forward |
-| Turn | A / D or Left / Right | Hold a turn button |
+| Forward | W / Up | Hold Forward, including while dragging to steer |
+| Turn | A / D or Left / Right | Hold a turn button, or drag Forward toward the desired direction |
 | Front cannon (1 ball) | Space | Hold Front cannon |
 | Left / right broadside (3 parallel balls) | Q / E | Hold Left / Right broadside |
 | Pause | P / Escape | Pause button |

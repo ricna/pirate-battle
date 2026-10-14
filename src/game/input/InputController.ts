@@ -1,9 +1,11 @@
-import type { Action } from '../runtime/GameManager';
+import { Action } from '../contracts/GameDomain';
 
 import { InputConfig } from '../configuration/InputConfig';
+import { angleDifference } from '../math/Geometry';
 
 export class InputController {
   #sources = new Map<string, Action>();
+  #steering = new Map<string, number>();
   #active = true;
   #target: HTMLElement;
   #onPause: () => void;
@@ -40,18 +42,34 @@ export class InputController {
     if (this.#active) this.#sources.set(source, action);
   }
 
+  steer(source: string, angle: number | null) {
+    if (!this.#active) return;
+    if (angle === null) this.#steering.delete(source);
+    else this.#steering.set(source, angle);
+  }
+
   release(source: string) {
     this.#sources.delete(source);
+    this.#steering.delete(source);
   }
   readonly clear = () => {
     this.#sources.clear();
+    this.#steering.clear();
   };
   setActive(active: boolean) {
     this.#active = active;
     this.clear();
   }
-  read(): ReadonlySet<Action> {
-    return new Set(this.#sources.values());
+  read(playerAngle: number): ReadonlySet<Action> {
+    const actions = new Set(this.#sources.values());
+    let desiredAngle: number | undefined;
+    for (const angle of this.#steering.values()) desiredAngle = angle;
+    if (desiredAngle !== undefined) {
+      const difference = angleDifference(desiredAngle, playerAngle);
+      if (difference < -InputConfig.SteeringToleranceRadians) actions.add(Action.Left);
+      if (difference > InputConfig.SteeringToleranceRadians) actions.add(Action.Right);
+    }
+    return actions;
   }
 
   destroy() {

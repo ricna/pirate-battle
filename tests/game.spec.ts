@@ -601,6 +601,80 @@ test('abandonment, repeated mounts, refresh and simultaneous touch controls', as
   await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBeNull();
 });
+test('dragging Forward steers toward the touch delta while sailing', async ({ page }) => {
+  await play(page);
+  const cdp = await page.context().newCDPSession(page);
+  const forward = (await page.getByRole('button', { name: 'Forward', exact: true }).boundingBox())!;
+  const startX = forward.x + forward.width / 2;
+  const y = forward.y + forward.height / 2;
+  await page.evaluate(() => {
+    const button = document.querySelector<HTMLElement>('.command-forward')!;
+    button.addEventListener('pointermove', () => {
+      button.dataset.moves = String(Number(button.getAttribute('data-moves') ?? 0) + 1);
+    });
+  });
+  const move = async (x: number, moveY = y) => {
+    const previous = Number((await page.locator('.command-forward').getAttribute('data-moves')) ?? 0);
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x, y: moveY, id: 1 }],
+    });
+    await expect(page.locator('.command-forward')).toHaveAttribute('data-moves', String(previous + 1));
+  };
+  const touch = (x: number) => [{ x, y, id: 1 }];
+  const initial = (await observe(page)).player;
+
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: touch(startX) });
+  await advance(page, 0.2);
+  const straight = (await observe(page)).player;
+  expect(straight.y).toBeLessThan(initial.y);
+  expect(straight.angle).toBeCloseTo(initial.angle, 5);
+
+  await move(startX - 40);
+  await advance(page, 0.2);
+  const left = (await observe(page)).player;
+  expect(left.angle).toBeLessThan(straight.angle);
+
+  await move(startX + 40);
+  await advance(page, 0.2);
+  const right = (await observe(page)).player;
+  expect(right.angle).toBeGreaterThan(left.angle);
+
+  await move(startX);
+  await advance(page, 0.2);
+  const centered = (await observe(page)).player;
+  expect(centered.angle).toBeCloseTo(right.angle, 5);
+  expect(centered.y).toBeLessThan(straight.y);
+
+  await move(startX, y + 60);
+  await advance(page, 0.5);
+  const downward = (await observe(page)).player;
+  expect(downward.angle).toBeGreaterThan(centered.angle + 1);
+
+  await move(startX, y - 60);
+  await advance(page, 0.2);
+  const upward = (await observe(page)).player;
+  expect(upward.angle).toBeLessThan(downward.angle);
+
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+  await advance(page, 0.2);
+  expect((await observe(page)).player.angle).toBeCloseTo(upward.angle, 5);
+
+  const turnButton = page.getByRole('button', { name: 'Turn right', exact: true });
+  const turnBounds = (await turnButton.boundingBox())!;
+  const speedBeforeTurn = (await observe(page)).player.speed;
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: turnBounds.x + turnBounds.width / 2, y: turnBounds.y + turnBounds.height / 2, id: 2 }],
+  });
+  await expect(turnButton).toHaveAttribute('data-held', 'true');
+  await advance(page, 0.2);
+  const directTurn = (await observe(page)).player;
+  expect(directTurn.angle).toBeGreaterThan(upward.angle);
+  expect(directTurn.speed).toBeLessThanOrEqual(speedBeforeTurn);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await cdp.detach();
+});
 test('how to play explains the controls and only returns to the main menu', async ({ page }) => {
   await page.getByRole('button', { name: 'How To Play', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'How To Play' })).toBeVisible();

@@ -10,7 +10,8 @@ export function ControlsHelp() {
       <br />
       <kbd>Alt</kbd> + <kbd>Enter</kbd> full screen
       <br />
-      On touch screens, hold movement and attack buttons together. Play in landscape.
+      On touch screens, hold Forward to sail and drag it toward any direction to steer. The turn buttons work
+      independently. Hold movement and attack buttons together. Play in landscape.
     </p>
   );
 }

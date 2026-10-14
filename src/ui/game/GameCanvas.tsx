@@ -112,6 +112,7 @@ export function GameCanvas({
   const commandsDisabled = status !== 'ready' || paused || ended;
   const touchInput: TouchInput = {
     press: (source, action) => sessionRef.current?.press(source, action),
+    steer: (source, angle) => sessionRef.current?.steer(source, angle),
     release: (source) => sessionRef.current?.release(source),
     focusArena: () => rootRef.current?.focus(),
   };

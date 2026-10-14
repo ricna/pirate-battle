@@ -13,7 +13,7 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | `ShipVisualConfig.ts` | Each ship's explicit intact/damaged/heavily damaged sprites, hull dimensions, fire and health indicator assets |
 | `GameDefaults.ts` | Simulation clock, seed, spawn points/weights/cap, pool capacities, effects, warnings and runtime budgets |
 | `FactoryConfig.ts` | Enemy profile → concrete subclass registrations |
-| `InputConfig.ts` | Keyboard bindings, pause keys and touch command labels/icons |
+| `InputConfig.ts` | Keyboard bindings, pause keys, touch command labels/icons and Forward drag threshold/heading tolerance |
 | `CameraConfig.ts` | Display-only compact viewport thresholds, visible map area fraction and minimum ship scale; see [MOBILE.md](MOBILE.md) |
 | `AudioConfig.ts` | UI cues, gameplay-event sound variants, pitch ranges, repeat cooldowns, voice priorities/budget and mix gains |
 | `CrewConfig.ts` | Rescue trigger radius, health per survivor and independent seed salt |
@@ -24,6 +24,8 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 Network and mock-server settings are infrastructure data, not gameplay balance: `src/infrastructure/network/NetworkConfig.ts` (API base URL, Axios timeout, query retries, page size) and `NetworkScenarios.ts` (each MSW scenario's deterministic latency, failing endpoints, fixture counts and post-commit delay). Startup fails if the slow scenario stops finishing before the timeout or the timeout scenarios stop exceeding it.
 
 `GameConfigFactory.create()` gathers the registered profiles, validates them, clones their data and recursively freezes the match snapshot. `GameManager` also isolates an externally supplied configuration. Objects passed to ships cannot remain mutable aliases to their original profiles.
+
+`InputConfig.ForwardDragThresholdPx` is the finger movement (CSS pixels) required before a Forward drag starts steering. The drag vector points to a world heading, including downward; `SteeringToleranceRadians` stops rotation near that heading. A stationary Forward press only sails. The separate turn buttons keep their direct left/right commands.
 
 ## Example: change player movement
 

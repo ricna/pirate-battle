@@ -1,18 +1,20 @@
-import type { CSSProperties } from 'react';
+import { useRef, type CSSProperties } from 'react';
 import type { Snapshot } from '../../game/runtime/GameManager';
-import type { Action } from '../../game/contracts/GameDomain';
+import { Action } from '../../game/contracts/GameDomain';
 import { InputConfig } from '../../game/configuration/InputConfig';
 import { retinaAsset } from '../assets/UiAssets';
 import './GameHud.css';
 
 export interface TouchInput {
   press: (source: string, action: Action) => void;
+  steer: (source: string, angle: number | null) => void;
   release: (source: string) => void;
   /** Keeps keyboard focus on the arena while a touch button is held. */
   focusArena: () => void;
 }
 
 type Control = (typeof InputConfig.Controls)[number];
+type ForwardGesture = { startX: number; startY: number };
 
 function CommandButton({
   control,
@@ -26,9 +28,21 @@ function CommandButton({
   input: TouchInput;
 }) {
   const { action, label, icon } = control;
+  const forwardGestures = useRef(new Map<number, ForwardGesture>());
   const releasePointer = (pointerId: number, button: HTMLElement) => {
     input.release(`touch-${pointerId}`);
+    input.release(`touch-${pointerId}-turn`);
+    forwardGestures.current.delete(pointerId);
     delete button.dataset.held;
+  };
+  const updateForwardTurn = (pointerId: number, clientX: number, clientY: number) => {
+    const gesture = forwardGestures.current.get(pointerId);
+    if (!gesture) return;
+    const deltaX = clientX - gesture.startX;
+    const deltaY = clientY - gesture.startY;
+    const angle =
+      Math.hypot(deltaX, deltaY) > InputConfig.ForwardDragThresholdPx ? Math.atan2(deltaX, -deltaY) : null;
+    input.steer(`touch-${pointerId}-turn`, angle);
   };
   // Remaining reload fraction darkens the button face clockwise; a ready weapon looks exactly like the reference.
   const cooldownStyle = readiness ? ({ '--cooldown': 1 - readiness.progress } as CSSProperties) : undefined;
@@ -44,8 +58,15 @@ function CommandButton({
         event.currentTarget.setPointerCapture(event.pointerId);
         input.focusArena();
         input.press(`touch-${event.pointerId}`, action);
+        if (action === Action.Forward) {
+          forwardGestures.current.set(event.pointerId, {
+            startX: event.clientX,
+            startY: event.clientY,
+          });
+        }
         event.currentTarget.dataset.held = 'true';
       }}
+      onPointerMove={(event) => updateForwardTurn(event.pointerId, event.clientX, event.clientY)}
       onPointerUp={(event) => releasePointer(event.pointerId, event.currentTarget)}
       onPointerCancel={(event) => releasePointer(event.pointerId, event.currentTarget)}
       onLostPointerCapture={(event) => releasePointer(event.pointerId, event.currentTarget)}

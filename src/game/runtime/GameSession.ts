@@ -184,6 +184,9 @@ export class GameSession {
   press(source: string, action: Action): void {
     this.#input?.press(source, action);
   }
+  steer(source: string, angle: number | null): void {
+    this.#input?.steer(source, angle);
+  }
   release(source: string): void {
     this.#input?.release(source);
   }
@@ -283,7 +286,7 @@ export class GameSession {
       this.#accumulator + config.rules.geometryTolerance >= config.fixedStep &&
       game.status === MatchStatus.Playing
     ) {
-      game.step(config.fixedStep, input.read());
+      game.step(config.fixedStep, input.read(game.player.angle));
       this.#accumulator -= config.fixedStep;
     }
     audio.events(game.drainEvents());

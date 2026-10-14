@@ -16,6 +16,10 @@ export class InputConfig {
   });
   static readonly PauseKeys: readonly string[] = ['Escape', 'KeyP'];
   static readonly IgnoreSelector = 'input,select,textarea,button';
+  /** Distance from the Forward touch origin before steering begins, in CSS pixels. */
+  static readonly ForwardDragThresholdPx = 18;
+  /** Stop turning once the ship points close enough to the drag direction. */
+  static readonly SteeringToleranceRadians = 0.04;
   /** Touch buttons in on-screen order. `cluster` selects the bottom-left (movement) or bottom-right (weapons) group of sample.png. */
   static readonly Controls = [
     { action: Action.Left, label: 'Turn left', icon: 'turn_left', cluster: 'movement' },
