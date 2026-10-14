@@ -94,6 +94,9 @@ test('movement, rotation, island collision and arena limits', async ({ page }) =
   const island = (await observe(page)).player;
   expect(island.y).toBeLessThan(initial.y);
   expect(island.y).toBeGreaterThanOrEqual(630 + island.radius);
+  // The island collision costs exactly 1 health; arena borders below cost nothing.
+  expect(island.health).toBe(initial.health - 1);
+  await expect(page.locator('.hud-health strong')).toHaveText(`${initial.health - 1} / ${initial.maxHealth}`);
   await page.keyboard.down('d');
   await advance(page, Math.PI / 2.6);
   await page.keyboard.up('d');
@@ -111,6 +114,32 @@ test('movement, rotation, island collision and arena limits', async ({ page }) =
   const final = (await observe(page)).player;
   expect(final.x).toBeGreaterThan(1950);
   expect(final.x).toBeLessThanOrEqual(2048 - final.radius);
+  expect(final.health).toBe(initial.health - 1);
+});
+test('the authored ship trail follows the sailing player and fades after it stops', async ({
+  page,
+}, testInfo) => {
+  await play(page);
+  expect((await observe(page)).presentation.trails).toHaveLength(0);
+  await page.keyboard.down('d');
+  await advance(page, 0.6);
+  await page.keyboard.down('w');
+  await advance(page, 1.6);
+  const sailing = await observe(page);
+  const trail = sailing.presentation.trails.find((candidate) => candidate.shipId === sailing.player.id)!;
+  expect(trail.points.length).toBeGreaterThan(2);
+  expect(trail.alpha).toBeGreaterThan(0.5);
+  expect(sailing.renderPools.shipTrails).toMatchObject({ active: 1, exhausted: 0 });
+  const capture = await page.screenshot({ path: `reports/ship-trail-${testInfo.project.name}.png` });
+  await testInfo.attach('authored-ship-trail', { body: capture, contentType: 'image/png' });
+  await page.keyboard.up('w');
+  await page.keyboard.up('d');
+  await advance(page, 4);
+  // The player has stopped; enemies that spawned meanwhile keep their own trails.
+  const stopped = await observe(page);
+  expect(stopped.player.speed).toBe(0);
+  expect(stopped.presentation.trails.some((candidate) => candidate.shipId === stopped.player.id)).toBe(false);
+  expect(stopped.renderPools.shipTrails.active).toBe(stopped.presentation.trails.length);
 });
 test('player acceleration and braking are gradual and stop without held input', async ({ page }) => {
   await play(page);

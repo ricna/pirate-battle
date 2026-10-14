@@ -41,7 +41,8 @@ export function HowToPlay({ onMainMenu }: { onMainMenu: () => void }) {
         </p>
       </div>
       <p className="muted">
-        Islands stop ships and cannonballs. Each enemy you sink earns 1 point. Losing focus pauses the battle.
+        Islands stop ships and cannonballs, and every collision with an island costs 1 health. Each enemy you
+        sink earns 1 point. Losing focus pauses the battle.
       </p>
 
       <div className="button-row">

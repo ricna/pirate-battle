@@ -116,6 +116,52 @@ test('island contact dissipates speed and does not spam impacts while held', () 
   }
   expect(game.player.speed).toBeLessThan(config.collision.minimumImpactSpeed);
   expect(events.filter((event) => event === GameEvent.ShipCollision)).toHaveLength(1);
-  expect(game.player.health).toBe(config.player.health);
+  // One collision costs exactly the authored island damage, even while the hull stays pressed on the coast.
+  expect(game.player.health).toBe(config.player.health - config.collision.islandImpactDamage.player);
   game.dispose();
+});
+
+test('each separate island collision costs the player 1 health, never scores and can sink the ship', () => {
+  // The longest spawn interval keeps enemies out of this short, enemy-free manoeuvre.
+  const config = GameConfigFactory.create({ ...OptionsConfig.Default, spawnSeconds: 10 });
+  const damage = config.collision.islandImpactDamage.player;
+  expect(damage).toBe(1);
+  expect(config.collision.islandImpactDamage.enemy).toBe(0);
+  const game = new GameManager(config, map());
+  const sail = (actions: readonly Action[], seconds: number) => {
+    for (let step = 0; step < Math.round(seconds / config.fixedStep); step++)
+      game.step(config.fixedStep, new Set(actions));
+  };
+  const halfTurn = Math.PI / config.player.movement.turnSpeed;
+  sail([Action.Forward], 2.5);
+  expect(game.player.health).toBe(config.player.health - damage);
+  sail([Action.Right], halfTurn);
+  sail([Action.Forward], 1);
+  sail([Action.Left], halfTurn);
+  sail([Action.Forward], 2.5);
+  expect(game.player.health).toBe(config.player.health - 2 * damage);
+  expect(game.snapshot().statistics.damageReceived).toBe(2 * damage);
+  expect(game.score).toBe(0);
+  game.dispose();
+
+  const fragile = new GameManager({ ...config, player: { ...config.player, health: damage } }, map());
+  for (let step = 0; step < 180 && fragile.status === 'playing'; step++)
+    fragile.step(config.fixedStep, new Set([Action.Forward]));
+  expect(fragile.reason).toBe('death');
+  expect(fragile.score).toBe(0);
+  fragile.dispose();
+});
+
+test('island impact damage must be a non-negative integer per allegiance', () => {
+  const config = GameConfigFactory.create(OptionsConfig.Default);
+  for (const value of [-1, 0.5, Number.NaN])
+    expect(() =>
+      GameConfigFactory.validate({
+        ...config,
+        collision: {
+          ...config.collision,
+          islandImpactDamage: { ...config.collision.islandImpactDamage, player: value },
+        },
+      }),
+    ).toThrow(/Island impact damage/);
 });

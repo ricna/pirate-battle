@@ -15,6 +15,7 @@ export class AssetConfig {
     'authored/projectile_trail': new URL('../../../assets/authored/projectile_trail.svg', import.meta.url)
       .href,
     'authored/water_splash': new URL('../../../assets/authored/Splash.png', import.meta.url).href,
+    'authored/ship_trail': new URL('../../../assets/authored/shipt-trail.png', import.meta.url).href,
   } as const;
 }
 

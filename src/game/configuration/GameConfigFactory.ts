@@ -205,7 +205,24 @@ export class GameConfigFactory {
       )
         throw new Error(`Invalid ${kind} presentation profile.`);
     }
-    for (const pool of [presentation.particles, presentation.crewPool]) {
+    const shipTrail = presentation.shipTrail;
+    for (const value of [shipTrail.sampleSeconds, shipTrail.lifetime, shipTrail.width, shipTrail.alpha])
+      positive(value, 'ship trail settings');
+    finite(shipTrail.sternRatio, 'ship trail stern ratio');
+    finite(shipTrail.minimumSpeedRatio, 'ship trail minimum speed ratio');
+    if (
+      !shipTrail.sprite ||
+      shipTrail.alpha > 1 ||
+      shipTrail.minimumSpeedRatio >= 1 ||
+      shipTrail.lifetime <= shipTrail.sampleSeconds ||
+      !Number.isInteger(shipTrail.ropePoints) ||
+      shipTrail.ropePoints < 2
+    )
+      throw new Error('Invalid ship trail settings.');
+    // Every live ship (enemy cap plus the player) must be able to show its trail.
+    if (shipTrail.pool.maxCapacity < config.spawning.maxCount + 1)
+      throw new Error('Ship trail capacity must cover every live ship.');
+    for (const pool of [presentation.particles, presentation.crewPool, shipTrail.pool]) {
       if (
         ![pool.initialCapacity, pool.growthSize, pool.maxCapacity].every(Number.isInteger) ||
         pool.initialCapacity < 0 ||
@@ -288,6 +305,11 @@ export class GameConfigFactory {
     positive(config.collision.impactCooldown, 'impact cooldown');
     if (!Number.isInteger(config.collision.slideIterations) || config.collision.slideIterations <= 0) {
       throw new Error('Collision slide iterations must be a positive integer.');
+    }
+    for (const allegiance of Object.values(Allegiance)) {
+      const damage = config.collision.islandImpactDamage[allegiance];
+      if (!Number.isInteger(damage) || damage < 0)
+        throw new Error(`Island impact damage for ${allegiance} must be a non-negative integer.`);
     }
     validateShip(config.player);
     if (!config.player.weapons.length) throw new Error('The player requires at least one authored weapon.');

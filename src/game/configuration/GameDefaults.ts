@@ -4,7 +4,7 @@ import { EffectKind, ShipKind } from '../contracts/GameDomain';
 // Edit source defaults here. Options are deliberately limited to the challenge's public settings.
 export class GameDefaults {
   private constructor() {}
-  static readonly Version = 'arena_00-v1/balance-v5';
+  static readonly Version = 'arena_00-v1/balance-v6';
   static readonly Seed = 20261012;
   static readonly FixedStep = 1 / 60;
   static readonly PlayerSpawn = { x: 1024, y: 960 };

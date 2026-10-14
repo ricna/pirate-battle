@@ -360,6 +360,7 @@ export class GameSession {
       presentation: {
         labels: game.presentation.labels,
         particles: game.presentation.particles,
+        trails: game.presentation.shipTrails,
         crew: game.presentation.crewEmissions,
         pools: game.presentation.statistics(),
         time: game.presentation.time,

@@ -6,6 +6,7 @@ import type { GameReadView } from '../contracts/GameReadView';
 import { SpritePool } from './SpritePool';
 import metadata from '../../../assets/spritesheet/ui_sheet.json';
 import { PresentationRenderer } from '../presentation/PresentationRenderer';
+import { ShipTrailRenderer } from '../presentation/ShipTrailRenderer';
 
 interface ShipView {
   root: Container;
@@ -29,6 +30,8 @@ export class ArenaRenderer {
   readonly #bulletPool: SpritePool;
   readonly #effectPool: SpritePool;
   readonly #presentation: PresentationRenderer;
+  readonly #shipTrails: ShipTrailRenderer;
+  readonly #shipTrailLayer = new Container();
   readonly #waterFeedbackLayer = new Container();
   readonly #scoreLayer = new Container();
   #disposed = false;
@@ -38,11 +41,18 @@ export class ArenaRenderer {
     this.#layer.label = 'combat-entities';
     world.addChild(this.#layer);
     this.#layer.addChild(
+      this.#shipTrailLayer,
       this.#waterFeedbackLayer,
       this.#shipLayer,
       this.#projectileLayer,
       this.#effectLayer,
       this.#scoreLayer,
+    );
+    this.#shipTrails = new ShipTrailRenderer(
+      this.#shipTrailLayer,
+      simulation.presentation,
+      textures,
+      simulation.config.presentation.shipTrail,
     );
     this.#presentation = new PresentationRenderer(
       this.#waterFeedbackLayer,
@@ -204,6 +214,7 @@ export class ArenaRenderer {
       sprite.alpha = 1 - (effect.age / effect.duration) * profile.fade;
       sprite.rotation = effect.angle;
     }
+    this.#shipTrails.draw();
     this.#presentation.draw();
   }
   poolStatistics() {
@@ -211,6 +222,7 @@ export class ArenaRenderer {
       projectiles: this.#bulletPool.statistics(),
       effects: this.#effectPool.statistics(),
       presentation: this.#presentation.statistics(),
+      shipTrails: this.#shipTrails.statistics(),
     };
   }
   destroy(): void {
@@ -218,6 +230,7 @@ export class ArenaRenderer {
     this.#disposed = true;
     this.#bulletPool.dispose();
     this.#effectPool.dispose();
+    this.#shipTrails.destroy();
     this.#presentation.destroy();
     this.#layer.destroy({ children: true });
     for (const view of this.#ships.values()) view.ownedFill?.destroy(false);

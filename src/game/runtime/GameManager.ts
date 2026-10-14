@@ -5,7 +5,7 @@ import type { LoadedMap } from '../assets/TiledMapLoader';
 import { EffectKind, EndReason, GameEvent, MatchStatus } from '../contracts/GameDomain';
 import type { Action } from '../contracts/GameDomain';
 import { EntityIdSequence } from '../core/EntityIdSequence';
-import { ShipCollisionWorld } from '../core/ShipCollisionWorld';
+import { ContactKind, ShipCollisionWorld } from '../core/ShipCollisionWorld';
 import { ShipFactory } from '../factories/ShipFactory';
 import type { IShipFactory } from '../factories/ShipFactory';
 import { FactoryConfig } from '../configuration/FactoryConfig';
@@ -66,6 +66,8 @@ export class GameManager {
   readonly #weapons = new Map<number, WeaponController>();
   readonly #enemies: EnemyShip[] = [];
   #enemyView: readonly Ship[] = Object.freeze([]);
+  /** Player and enemy read views, refreshed with the fleet, for presentation that follows every ship. */
+  #shipViews: readonly Ship[] = Object.freeze([]);
   #events: GameEvent[] = [];
   #warnedTime = false;
   #disposed = false;
@@ -107,6 +109,7 @@ export class GameManager {
         if (!this.#world.isFree(point, profile.radius))
           throw new Error(`Authored spawn is obstructed for ${profile.id}.`);
     this.#weapons.set(this.#player.id, this.#createWeapons(this.#player));
+    this.#publishFleet();
   }
   get config(): GameConfig {
     return this.#config;
@@ -159,6 +162,18 @@ export class GameManager {
   get reason(): EndReason | null {
     return this.#match.reason;
   }
+  #publishFleet(): void {
+    this.#enemyView = Object.freeze(this.#enemies.map((enemy) => enemy.view));
+    this.#shipViews = Object.freeze([this.#player.view, ...this.#enemyView]);
+  }
+  /** Each significant island collision costs authored hull health; it is never a credited kill. */
+  #damageOnIsland(shipId: number): void {
+    const ship =
+      shipId === this.#player.id ? this.#player : this.#enemies.find((enemy) => enemy.id === shipId);
+    if (!ship?.alive) return;
+    const damage = this.#config.collision.islandImpactDamage[ship.allegiance];
+    if (damage > 0) this.#damage.apply(ship, damage, false);
+  }
   #createWeapons(ship: ShipEntity): WeaponController {
     return new WeaponController(ship, this.#projectiles, this.#config.rules.clockTolerance);
   }
@@ -203,7 +218,7 @@ export class GameManager {
       const ship = this.#factory.createEnemy(profileId, this.#ids.next(), point, heading);
       this.#enemies.push(ship);
       this.#weapons.set(ship.id, this.#createWeapons(ship));
-      this.#enemyView = Object.freeze(this.#enemies.map((e) => e.view));
+      this.#publishFleet();
     });
     this.#world.setBodies([this.#player, ...this.#enemies]);
     for (const enemy of this.#enemies)
@@ -235,6 +250,7 @@ export class GameManager {
       if (!this.#events.includes(GameEvent.ShipCollision)) this.#events.push(GameEvent.ShipCollision);
       this.#effects.emit(contact.point, EffectKind.Impact);
       this.#presentation.accept({ kind: FeedbackKind.Contact, contact, playerId: this.#player.id });
+      if (contact.kind === ContactKind.Island) this.#damageOnIsland(contact.sourceId);
     }
     if (!this.#player.alive) {
       this.#match.finish(EndReason.Death);
@@ -258,9 +274,9 @@ export class GameManager {
         this.#enemies.splice(i, 1);
         removed = true;
       }
-    if (removed) this.#enemyView = Object.freeze(this.#enemies.map((e) => e.view));
+    if (removed) this.#publishFleet();
     this.#effects.update(dt);
-    this.#presentation.update(dt, this.#projectiles.readView);
+    this.#presentation.update(dt, this.#projectiles.readView, this.#shipViews);
     if (this.#match.remaining <= this.#config.rules.timeWarning && !this.#warnedTime) {
       this.#warnedTime = true;
       this.#events.push(GameEvent.TimeWarning);
@@ -306,6 +322,7 @@ export class GameManager {
     this.#weapons.clear();
     this.#enemies.length = 0;
     this.#enemyView = Object.freeze([]);
+    this.#shipViews = Object.freeze([]);
     this.#events.length = 0;
     this.#contactAt.clear();
     this.#world.setBodies([]);

@@ -24,6 +24,7 @@ export interface GameObservation {
     labels: GameManager['presentation']['labels'];
     particles: GameManager['presentation']['particles'];
     crew: GameManager['presentation']['crewEmissions'];
+    trails: GameManager['presentation']['shipTrails'];
     pools: ReturnType<GameManager['presentation']['statistics']>;
     time: number;
     reducedMotion: boolean;

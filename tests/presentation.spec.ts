@@ -317,3 +317,59 @@ test('rapid rescue feedback updates the same label, restarts its lifetime and sp
   crew.dispose();
   presentation.dispose();
 });
+
+test('the authored ship trail follows the stern, stays bounded, freezes on pause and fades after stopping', () => {
+  const config = GameConfigFactory.create({ ...OptionsConfig.Default, spawnSeconds: 10 });
+  const settings = config.presentation.shipTrail;
+  const game = new GameManager(config, map());
+  const sail = (actions: readonly Action[], seconds: number) => {
+    for (let step = 0; step < Math.round(seconds / config.fixedStep); step++)
+      game.step(config.fixedStep, new Set(actions));
+  };
+  sail([], 0.5);
+  expect(game.presentation.shipTrails, 'A stationary ship leaves no trail').toHaveLength(0);
+  sail([Action.Forward], 1);
+  const trail = game.presentation.shipTrails.find((candidate) => candidate.shipId === game.player.id)!;
+  const sternDistance = config.player.visual.height * settings.sternRatio;
+  const head = trail.points[0]!;
+  expect(head.x).toBeCloseTo(game.player.x - Math.sin(game.player.angle) * sternDistance, 6);
+  expect(head.y).toBeCloseTo(game.player.y + Math.cos(game.player.angle) * sternDistance, 6);
+  // Sailing north from the spawn, older samples lie further south (behind the stern).
+  expect(trail.points.at(-1)!.y).toBeGreaterThan(head.y);
+  expect(trail.points.length).toBeLessThanOrEqual(Math.ceil(settings.lifetime / settings.sampleSeconds) + 2);
+  expect(trail.alpha).toBeGreaterThan(0);
+  expect(trail.alpha).toBeLessThanOrEqual(settings.alpha);
+  expect(Object.isFrozen(trail) && Object.isFrozen(trail.points)).toBe(true);
+
+  game.pause();
+  sail([Action.Forward], 1);
+  expect(game.presentation.shipTrails).toEqual([trail]);
+  game.resume();
+
+  // Braking to rest, then one trail lifetime, removes every sample.
+  sail([], 3 + settings.lifetime);
+  expect(game.presentation.shipTrails).toHaveLength(0);
+  expect(game.presentation.statistics().trails).toMatchObject({ active: 0, omitted: 0 });
+  // The hull now rests on the central island's coast; turn away before sailing again.
+  sail([Action.Right], Math.PI / config.player.movement.turnSpeed);
+  sail([Action.Forward], 0.5);
+  expect(game.presentation.shipTrails).toHaveLength(1);
+  game.dispose();
+  expect(game.presentation.shipTrails).toHaveLength(0);
+});
+
+test('ship trail settings are validated and cover every live ship', () => {
+  const config = GameConfigFactory.create(OptionsConfig.Default);
+  const withTrail = (shipTrail: Partial<typeof config.presentation.shipTrail>) => ({
+    ...config,
+    presentation: { ...config.presentation, shipTrail: { ...config.presentation.shipTrail, ...shipTrail } },
+  });
+  expect(() => GameConfigFactory.validate(withTrail({ ropePoints: 1 }))).toThrow(/ship trail/i);
+  expect(() => GameConfigFactory.validate(withTrail({ sprite: '' }))).toThrow(/ship trail/i);
+  expect(() => GameConfigFactory.validate(withTrail({ lifetime: 0.01 }))).toThrow(/ship trail/i);
+  expect(() =>
+    GameConfigFactory.validate(
+      withTrail({ pool: { initialCapacity: 1, growthSize: 1, maxCapacity: config.spawning.maxCount } }),
+    ),
+  ).toThrow(/every live ship/);
+});

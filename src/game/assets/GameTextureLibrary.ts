@@ -79,5 +79,6 @@ export function configuredTextureNames(config: GameConfig): readonly string[] {
     for (const sprite of profile.sprites) names.add(sprite);
   names.add(config.presentation.crew.foamSprite);
   names.add(config.presentation.water.sprite);
+  names.add(config.presentation.shipTrail.sprite);
   return Object.freeze([...names]);
 }

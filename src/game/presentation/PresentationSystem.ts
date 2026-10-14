@@ -13,6 +13,9 @@ import { CosmeticRandom } from './CosmeticRandom';
 import { VisualParticle } from './VisualParticle';
 import type { ParticleReadView } from './VisualParticle';
 import type { CrewEmission, CrewSystemReadView } from '../systems/CrewSystem';
+import type { ShipReadView } from '../entities/Ship';
+import { ShipTrailSystem } from './ShipTrailSystem';
+import type { ShipTrailView } from './ShipTrailSystem';
 
 export interface ShipFeedback {
   readonly damageAt: number;
@@ -31,6 +34,7 @@ export interface PresentationReadView {
   readonly particles: readonly ParticleReadView[];
   readonly labels: readonly FloatingScore[];
   readonly crewEmissions: readonly CrewEmission[];
+  readonly shipTrails: readonly ShipTrailView[];
   readonly scorePulse: boolean;
   readonly reducedMotion: boolean;
   shipFeedback(id: number): ShipFeedback | null;
@@ -53,6 +57,7 @@ export class PresentationSystem {
   readonly #ids: EntityIdSequence;
   readonly #pool: ObjectPool<VisualParticle>;
   readonly #crew: CrewSystemReadView;
+  readonly #shipTrails: ShipTrailSystem;
   readonly #feedback = new Map<number, ShipFeedback>();
   readonly #trailAt = new Map<number, number>();
   readonly #sunkIds = new Set<number>();
@@ -82,6 +87,7 @@ export class PresentationSystem {
     this.#config = config;
     this.#world = world;
     this.#random = new CosmeticRandom(config.seed ^ config.presentation.seedSalt, config.random);
+    this.#shipTrails = new ShipTrailSystem(config.presentation.shipTrail);
     this.#pool = new ObjectPool(
       config.presentation.particles,
       () => new VisualParticle(),
@@ -100,6 +106,9 @@ export class PresentationSystem {
         },
         get crewEmissions() {
           return system.crewEmissions;
+        },
+        get shipTrails() {
+          return system.shipTrails;
         },
         get scorePulse() {
           return system.scorePulse;
@@ -124,6 +133,9 @@ export class PresentationSystem {
   }
   get crewEmissions(): readonly CrewEmission[] {
     return this.#crew.emissions;
+  }
+  get shipTrails(): readonly ShipTrailView[] {
+    return this.#shipTrails.trails;
   }
   get reducedMotion(): boolean {
     return this.#reducedMotion;
@@ -322,9 +334,14 @@ export class PresentationSystem {
     this.#publish();
   }
 
-  update(dt: number, projectiles: readonly ProjectileReadView[] = []): void {
+  update(
+    dt: number,
+    projectiles: readonly ProjectileReadView[] = [],
+    ships: readonly ShipReadView[] = [],
+  ): void {
     if (this.#disposed) return;
     this.#time += dt;
+    this.#shipTrails.update(this.#time, ships);
     for (const particle of this.#active) particle.update(dt, this.#world, !this.#reducedMotion);
     this.#active = this.#active.filter((particle) => {
       if (!particle.expired) return true;
@@ -365,13 +382,18 @@ export class PresentationSystem {
     this.#view = Object.freeze(this.#active.map((particle) => particle.view));
   }
   statistics() {
-    return { particles: this.#pool.statistics(), crew: this.#crew.statistics() };
+    return {
+      particles: this.#pool.statistics(),
+      crew: this.#crew.statistics(),
+      trails: this.#shipTrails.statistics(),
+    };
   }
   dispose(): void {
     if (this.#disposed) return;
     this.#disposed = true;
     this.#active.length = 0;
     this.#pool.dispose((particle) => particle.reset());
+    this.#shipTrails.dispose();
     this.#feedback.clear();
     this.#trailAt.clear();
     this.#sunkIds.clear();

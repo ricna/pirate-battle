@@ -43,6 +43,25 @@ export interface PresentationProfile {
   };
   readonly debris: { readonly hitCount: number; readonly sunkCount: number; readonly speed: number };
   readonly trail: { readonly interval: number; readonly offset: number };
+  /** Owner-authored ship trail stretched along each moving ship's recent stern path. */
+  readonly shipTrail: {
+    readonly sprite: string;
+    /** Seconds between stern samples while the ship moves. */
+    readonly sampleSeconds: number;
+    /** Seconds a stern sample stays in the trail; the trail fades and shortens as samples expire. */
+    readonly lifetime: number;
+    /** Fraction of the ship's maximum speed below which no new samples are taken. */
+    readonly minimumSpeedRatio: number;
+    /** Stern distance from the hull centre, as a fraction of the ship's visual length. */
+    readonly sternRatio: number;
+    /** Trail thickness in logical world pixels. */
+    readonly width: number;
+    readonly alpha: number;
+    /** Fixed vertex count of each rendered rope; the stern path is resampled evenly along its length. */
+    readonly ropePoints: number;
+    /** Bounded trails; the visual rope pool uses the same capacity. */
+    readonly pool: PoolProfile;
+  };
   readonly recoil: { readonly distance: number; readonly duration: number };
   readonly damage: {
     readonly flashSeconds: number;
@@ -175,6 +194,17 @@ export class PresentationConfig {
     },
     debris: { hitCount: 4, sunkCount: 10, speed: 160 },
     trail: { interval: 0.05, offset: 29 },
+    shipTrail: {
+      sprite: 'authored/ship_trail',
+      sampleSeconds: 0.05,
+      lifetime: 0.9,
+      minimumSpeedRatio: 0.15,
+      sternRatio: 0.4,
+      width: 26,
+      alpha: 0.9,
+      ropePoints: 16,
+      pool: { initialCapacity: 8, growthSize: 8, maxCapacity: 64 },
+    },
     recoil: { distance: 5, duration: 0.14 },
     damage: {
       flashSeconds: 0.16,
