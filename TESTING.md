@@ -11,15 +11,17 @@ Typecheck, lint/architecture, format check and production build passed. Reports 
 | Check | Environment | Result |
 | --- | --- | --- |
 | `npm run typecheck`, `npm run lint` (architecture check + ESLint), `npm run format:check`, `npm run build` | Windows 10, Node 24.14.1 | All pass; no chunk-size warning |
-| `npm run test:e2e` (then the delivery command; now `npm run test:deliver`) | Windows 10, Chromium 1248 (Playwright 1.64.0), RTX 3060 | **125/125 passed** in 8.6 minutes on commit `06dce18` from a clean checkout, 14 October 2026 ([summary](reports/TEST-SUMMARY.md), `reports/playwright/index.html`) |
-| `npm run test:docker` | `mcr.microsoft.com/playwright:v1.64.0-noble` (the CI image), Node 24.21.0, software WebGL | **125/125 passed** in 19.9 minutes on the same commit ([summary](reports/linux/TEST-SUMMARY.md), `reports/linux/playwright.json`) |
-| GitHub Actions ([ci.yml](.github/workflows/ci.yml)) | Same container on GitHub-hosted Ubuntu | **125/125 passed** in 13.0 minutes on `4122cf5` (run 38571565099), after typecheck, lint, format check and build |
+| `npm run test:deliver` | Windows 10, Chromium 1248 (Playwright 1.64.0), RTX 3060 | **151/151 passed** in 13.0 minutes on commit `7c4f055` from a clean checkout, 14 October 2026 ([summary](reports/TEST-SUMMARY.md), `reports/playwright/index.html`) |
+| `npm run test:docker` | `mcr.microsoft.com/playwright:v1.64.0-noble` (the CI image), Node 24.21.0, software WebGL | **151/151 passed** in 27.7 minutes on the same commit ([summary](reports/linux/TEST-SUMMARY.md), `reports/linux/playwright.json`) |
+| GitHub Actions ([ci.yml](.github/workflows/ci.yml)) | Same container on GitHub-hosted Ubuntu | **151/151 passed** in 18.3 minutes on `d5a7edd` (run 38625810007), after typecheck, lint, format check and build |
 
-The 125 cases are: 29 domain (`core`), 2 rendering, 9 mobile layout, 42 desktop, 42 landscape mobile and 1 production smoke. No retries are configured and no test was skipped. axe found zero WCAG 2.1 AA violations on all eight audited screens in both browser projects, on both platforms.
+The 151 cases are: 34 domain (`core`), 2 rendering, 22 mobile layout, 46 desktop, 46 landscape mobile and 1 production smoke. No retries are configured and no test was skipped. axe found zero WCAG 2.1 AA violations on all eight audited screens in both browser projects, on both platforms.
 
 An earlier Linux run exposed a real defect: during a slow, minutes-long match the browser restarted the MSW service worker, which forgot the page, and the battle POST reached the static host (HTTP 404). Commit `06dce18` adds the recovery described in ARCHITECTURE.md and a test that restarts the worker on purpose.
 
-The delivered `reports/playwright` still belongs to this complete `06dce18` run. Later commits, and the tests added since, are not covered by it; regenerate it with `npm run test:deliver` before delivery (see [Reports and traces](#reports-and-traces)).
+The GitHub Actions run on `896afad` timed out once in the 60 s keyboard-piloted victory test on landscape mobile, where software WebGL renders every pilot decision. The pilot in `tests/helpers.ts` now sends only key changes and accepts a broadside heading within 0.08 rad, which cut that test from 4.0 to 2.9 minutes in the CI image. This helper change came after `7c4f055`; it was verified with that test on both projects, on Windows and in the CI image, not with a new complete run.
+
+The delivered `reports/playwright` and `reports/linux` belong to the complete `7c4f055` runs above. Regenerate them with `npm run test:deliver` and `npm run test:docker` after later changes (see [Reports and traces](#reports-and-traces)).
 
 ## Running the suite
 

@@ -18,7 +18,7 @@
     },
     {
       "screen": "Options",
-      "passes": 25,
+      "passes": 26,
       "violations": [],
       "incomplete": [
         "color-contrast"
@@ -58,7 +58,7 @@
     },
     {
       "screen": "Pause dialog",
-      "passes": 12,
+      "passes": 10,
       "violations": [],
       "incomplete": [
         "color-contrast"
@@ -66,7 +66,7 @@
     },
     {
       "screen": "Result",
-      "passes": 24,
+      "passes": 19,
       "violations": [],
       "incomplete": [
         "color-contrast"
