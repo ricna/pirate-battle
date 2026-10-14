@@ -30,6 +30,7 @@ Accepted product, gameplay and presentation decisions, in the order they were ma
 | D20 | [Opening fleet, reinforcements and spawn-point variety](#d20--opening-fleet-reinforcements-and-spawn-point-variety) | 14 October 2026 |
 | D21 | [Required full screen, Quit and the rotated landscape layout](#d21--required-full-screen-quit-and-the-rotated-landscape-layout) | 14 October 2026 |
 | D22 | [Compact fixed-size controls](#d22--compact-fixed-size-controls) | 14 October 2026 |
+| D23 | [Two-ship opening fleet and one reinforcement per two sinkings](#d23--two-ship-opening-fleet-and-one-reinforcement-per-two-sinkings) | 14 October 2026 |
 
 ## D01 — Gameplay presentation scope (B01–B11)
 
@@ -209,3 +210,9 @@ This supersedes the exact-sample bottom row of D03 (now Ranking, Match History, 
 _Accepted 14 October 2026._
 
 On compact screens the owner required controls to keep the sizes that read well in portrait in every orientation: compact boards and buttons, never stretched because a landscape screen is wider, with at least 4 px between controls and between a board and the demo panel, and labels clear of the rounded ends of the button art. Boards shrink to their content; Play/Options-style buttons are 220 × 48 px (202 × 44 px where the board is tallest), secondary buttons 150 × 44 px, and the four Main Menu links form a 2 × 2 grid. On the narrowest landscape phones Options sliders narrow instead of the board widening. Short landscape screens keep a bottom strip for the collapsed demo network panel; at 360 px tall or less that panel appears only on the Main Menu, where it fits. This refines D19, whose no-scroll requirement still applies.
+
+## D23 — Two-ship opening fleet and one reinforcement per two sinkings
+
+_Accepted 14 October 2026._
+
+The owner found the D20 balance too hard and changed two defaults in `GameDefaults.Spawning`: `initialCount` from three to two, and `sunkEnemiesPerReinforcement` from one to two, so every second sinking calls in one extra enemy at once. The Enemy spawn time keeps adding enemies on top. The fleet no longer has a guaranteed minimum: a player who sinks enemies faster than they arrive thins it. This supersedes the opening-fleet size and the replace-every-sinking default of D20; the mechanism, its settings and the spawn-point rules are unchanged. This is a rule change: balance version `balance-v9`.

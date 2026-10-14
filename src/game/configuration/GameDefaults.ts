@@ -4,7 +4,7 @@ import { EffectKind, ShipKind } from '../contracts/GameDomain';
 // Edit source defaults here. Options are deliberately limited to the challenge's public settings.
 export class GameDefaults {
   private constructor() {}
-  static readonly Version = 'arena_00-v1/balance-v8';
+  static readonly Version = 'arena_00-v1/balance-v9';
   static readonly Seed = 20261012;
   static readonly FixedStep = 1 / 60;
   static readonly PlayerSpawn = { x: 1024, y: 960 };
@@ -34,9 +34,9 @@ export class GameDefaults {
   ];
   static readonly Spawning = {
     /** Enemies already sailing when the battle starts. */
-    initialCount: 3,
+    initialCount: 2,
     /** Enemies sunk, by any cause, that call in one immediate extra enemy on top of the interval spawns. */
-    sunkEnemiesPerReinforcement: 1,
+    sunkEnemiesPerReinforcement: 2,
     maxCount: 28,
     safeDistance: 440,
     hullSeparation: 1.25,

@@ -308,9 +308,14 @@ test('both enemy behaviours appear on schedule, approach and navigate around obs
   const enemies = (await observe(page)).enemies;
   expect(enemies).toHaveLength(initialCount + 1);
   expect(enemies[0]!.x).not.toBe(first.x);
-  await advance(page, 12);
+  // A Shooter ball lives shorter than its cooldown, so the whole 12 s approach is sampled for its fire.
+  let enemyFired = false;
+  for (let step = 0; step < 120; step++) {
+    await advance(page, 0.1);
+    enemyFired ||= (await observe(page)).projectiles.some((p) => p.owner === 'enemy');
+  }
   const later = await observe(page);
-  expect(later.projectiles.some((p) => p.owner === 'enemy')).toBe(true);
+  expect(enemyFired).toBe(true);
   expect(later.snapshot.score).toBe(0);
   for (const enemy of later.enemies)
     for (const r of later.colliders) {

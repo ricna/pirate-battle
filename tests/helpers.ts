@@ -92,7 +92,7 @@ const bearing = (from: { x: number; y: number }, to: { x: number; y: number }) =
   Math.atan2(to.x - from.x, from.y - to.y);
 // Steering uses actual keyboard controls and advances the actual fixed-step rules.
 // It never writes positions, health, scores, entities or cooldowns.
-// Every enemy is replaced when sunk, so the pilot keeps sailing with the nearest enemy abeam for its
+// Sinkings call in reinforcements, so the pilot keeps sailing with the nearest enemy abeam for its
 // broadsides, and heals from survivors whenever no enemy is close.
 export async function defendUntilFinished(page: Page, waitForResult = true) {
   await page.locator('.game').focus();

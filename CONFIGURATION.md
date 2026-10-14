@@ -75,12 +75,12 @@ Spawn balance lives in `GameDefaults.Spawning` and `GameDefaults.SpawnPoints` (`
 2. **Interval.** One enemy every `spawnSeconds` (Options, default 5 s), as before.
 3. **Reinforcements.** Every `sunkEnemiesPerReinforcement` enemies sunk, by any cause (cannon fire or a Chaser's own ram), one extra enemy arrives on the next fixed step, even if an interval spawn has just happened.
 
-With `initialCount: 3` and `sunkEnemiesPerReinforcement: 1`, every sinking is replaced at once, so at least three enemies are always hunting the player. The interval keeps adding enemies on top, and since sinkings are replaced, the fleet never shrinks below the size it has reached.
+With `initialCount: 2` and `sunkEnemiesPerReinforcement: 2`, two enemies hunt the player from the start, every second sinking calls in one extra enemy at once, and the interval keeps adding enemies on top. A player who sinks enemies faster than they arrive thins the fleet. With `sunkEnemiesPerReinforcement: 1` every sinking is replaced instead, so the fleet never shrinks below the size it has reached.
 
 | Setting | Default | Unit and rule | Effect |
 | --- | --- | --- | --- |
-| `initialCount` | 3 | Enemies; integer from 0 to `maxCount` | Opening fleet. 0 restores an empty start. |
-| `sunkEnemiesPerReinforcement` | 1 | Sunk enemies; positive integer | 1 replaces every sinking; 2 brings one enemy for every two sunk, so the fleet slowly thins as the player wins. |
+| `initialCount` | 2 | Enemies; integer from 0 to `maxCount` | Opening fleet. 0 restores an empty start. |
+| `sunkEnemiesPerReinforcement` | 2 | Sunk enemies; positive integer | 1 replaces every sinking; 2 brings one enemy for every two sunk, so the fleet slowly thins as the player wins. |
 | `maxCount` | 28 | Live enemies; positive integer | Cap for every source. |
 | `safeDistance` | 440 | Logical pixels from the player | Closer points are never used. |
 | `hullSeparation` | 1.25 | Multiple of hull radii, at least 1 | Keeps a new hull clear of enemies near a point. |
@@ -95,7 +95,7 @@ With `initialCount: 3` and `sunkEnemiesPerReinforcement: 1`, every sinking is re
 
 Every authored point must be free water for every registered enemy radius; the match fails to start otherwise. A new point should also have a sailing route to the rest of the arena. More sinkings also mean more survivors in the water: `PresentationConfig.crewPool` must hold five survivors for every sinking that can happen within a crew lifetime, which validation estimates from the cap, the interval and one generation of reinforcements. Lowering `sunkEnemiesPerReinforcement` or `spawnSeconds` can require a larger crew pool, and validation reports the required size.
 
-Balance version `arena_00-v1/balance-v8` introduced the opening fleet, reinforcements and the 21-point farthest-choice selection, and separates its ranking snapshots from earlier ones.
+Balance version `arena_00-v1/balance-v8` introduced the opening fleet, reinforcements and the 21-point farthest-choice selection, and separates its ranking snapshots from earlier ones. Balance version `arena_00-v1/balance-v9` reduced the opening fleet from three enemies to two and calls in one reinforcement for every two sinkings instead of every sinking.
 
 ## Enemy navigation
 

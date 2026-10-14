@@ -121,7 +121,7 @@ Playwright runs isolated desktop and landscape mobile Chromium contexts, real ke
 
 ## Balancing decisions
 
-Values come from the authored profiles (balance `arena_00-v1/balance-v8`, seed 20261012). The intent is a readable three-minute arcade fight in which positioning matters more than reflexes.
+Values come from the authored profiles (balance `arena_00-v1/balance-v9`, seed 20261012). The intent is a readable three-minute arcade fight in which positioning matters more than reflexes.
 
 | Decision | Values | Reasoning |
 | --- | --- | --- |
@@ -130,7 +130,7 @@ Values come from the authored profiles (balance `arena_00-v1/balance-v8`, seed 2
 | Enemies need different answers | Chaser 40 HP at 125 px/s; Shooter 65 HP at 100 px/s, range 580, cooldown 2.2 s | The Chaser is fragile but closes in and must be sunk before contact; the slower, tougher Shooter holds at range, so the player must approach or outmanoeuvre it. |
 | Readable enemy fire | Player balls 780 px/s; enemy balls 340 px/s; lifetime 1.6 s | Enemy balls are slow enough to dodge, yet reach about 600 px from the hull (58 px muzzle offset plus 544 px of flight), covering the 580 px holding range. |
 | Gradual sailing | Player 230 px/s, acceleration 230 px/s², braking 115 px/s², turn 2.6 rad/s | About 1 s to full speed and 2 s to stop gives momentum without sluggish controls; enemies turn more slowly (2.1 rad/s), so out-turning them is a skill. |
-| Spawn pressure | Opening fleet of 3; every sinking replaced at once; plus one enemy every 5 s (Options 2–10 s); first Chaser then Shooter, then seeded 50/50; cap 28; at least 440 px from the player, at random among the 4 farthest points and never one of the last 2 used | At least three enemies hunt the player from the first frame, and both behaviours appear at once. Replacing every sinking keeps pressure constant while the interval raises it over time. Choosing among several far points, without reuse, spreads arrivals instead of a queue from one place. Spawns never start within ramming reach. |
+| Spawn pressure | Opening fleet of 2; one immediate reinforcement for every two sinkings; plus one enemy every 5 s (Options 2–10 s); first Chaser then Shooter, then seeded 50/50; cap 28; at least 440 px from the player, at random among the 4 farthest points and never one of the last 2 used | Two enemies hunt the player from the first frame, and both behaviours appear at once. A reinforcement for every two sinkings keeps up the pressure while still rewarding a player who sinks quickly; the interval raises it over time. Choosing among several far points, without reuse, spreads arrivals instead of a queue from one place. Spawns never start within ramming reach. |
 | Recovery | Each rescued survivor restores 1 HP (2–5 per sinking) | Sinking enemies sustains an aggressive player; healing never exceeds the maximum and never scores. |
 | Close ship contact | Hull radius 40 for every ship (sprite 67 × 113) | Side-by-side hulls stop 13 px apart instead of a full ship width; head-on bows overlap at most 33 px, a smaller visual error than the previous empty gap. Rams and rescues require a correspondingly closer approach. |
 
