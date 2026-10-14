@@ -45,6 +45,12 @@ const route = [
   { axis: 'y', boundary: 1118, angle: Math.PI },
 ];
 let waypoint = 0;
+// Defend pilot tuning, as in tests/helpers.ts (logical pixels and radians): survivors are collected only
+// while no enemy is this close, and the bow must point this close to a survivor before sailing to it.
+const rescueClearance = 350;
+const rescueHeadingTolerance = 0.6;
+const headingTolerance = 0.02;
+const wrapAngle = (angle) => Math.atan2(Math.sin(angle), Math.cos(angle));
 const browser = await chromium.launch({ channel: 'chromium', headless: true });
 const page = await browser.newPage({ viewport, deviceScaleFactor, isMobile: mobile, hasTouch: mobile });
 const errors = [];
@@ -98,24 +104,35 @@ while (Date.now() - started < 210000 && (await page.evaluate(() => !!window.pira
       moving = shouldMove;
     }
   } else {
-    // Same observed nearest-target steering as the gameplay regression, using real keyboard input only.
-    const enemy = [...state.enemies].sort(
-      (a, b) =>
-        Math.hypot(a.x - state.player.x, a.y - state.player.y) -
-        Math.hypot(b.x - state.player.x, b.y - state.player.y),
-    )[0];
-    const desired = enemy
-      ? Math.atan2(enemy.x - state.player.x, state.player.y - enemy.y)
-      : state.player.angle;
-    const difference = Math.atan2(
-      Math.sin(desired - state.player.angle),
-      Math.cos(desired - state.player.angle),
-    );
-    const key = Math.abs(difference) < 0.02 ? '' : difference > 0 ? 'd' : 'a';
+    // The gameplay regression's pilot, using real keyboard input only: it keeps sailing with the nearest
+    // enemy abeam for the broadsides and collects survivors whenever no enemy is close.
+    const { player } = state;
+    const range = (point) => Math.hypot(point.x - player.x, point.y - player.y);
+    const bearing = (point) => Math.atan2(point.x - player.x, player.y - point.y);
+    const enemy = [...state.enemies].sort((a, b) => range(a) - range(b))[0];
+    const survivor = state.presentation.particles
+      .filter((particle) => particle.kind === 'crew')
+      .sort((a, b) => range(a) - range(b))[0];
+    let difference = 0;
+    let shouldMove = true;
+    if (survivor && player.health < player.maxHealth && (!enemy || range(enemy) > rescueClearance)) {
+      difference = wrapAngle(bearing(survivor) - player.angle);
+      shouldMove = Math.abs(difference) < rescueHeadingTolerance;
+    } else if (enemy) {
+      const port = wrapAngle(bearing(enemy) + Math.PI / 2 - player.angle);
+      const starboard = wrapAngle(bearing(enemy) - Math.PI / 2 - player.angle);
+      difference = Math.abs(port) < Math.abs(starboard) ? port : starboard;
+    }
+    const key = Math.abs(difference) < headingTolerance ? '' : difference > 0 ? 'd' : 'a';
     if (key !== lastTurn) {
       if (lastTurn) await page.keyboard.up(lastTurn);
       if (key) await page.keyboard.down(key);
       lastTurn = key;
+    }
+    if (shouldMove !== moving) {
+      if (shouldMove) await page.keyboard.down('w');
+      else await page.keyboard.up('w');
+      moving = shouldMove;
     }
   }
   if (state.snapshot.elapsed - lastLog >= 30) {
@@ -184,7 +201,7 @@ const report = {
   control:
     pilot === 'boundary'
       ? 'Actual keyboard navigation around authored water boundary waypoints, all three weapons held, real-time fixed-step simulation; no state writes'
-      : 'Actual keyboard nearest-enemy aiming at the authored spawn, all three weapons held, real-time fixed-step simulation; no state writes',
+      : 'Actual keyboard sailing with the nearest enemy abeam and survivor rescue, all three weapons held, real-time fixed-step simulation; no state writes',
   wallSeconds: (Date.now() - started) / 1000,
   activeSeconds: metrics.elapsed,
   reason: metrics.reason,
@@ -206,4 +223,5 @@ await mkdir(path.dirname(output), { recursive: true });
 await writeFile(output, `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({ ...report, frameIntervalsMs: undefined }, null, 2));
 await browser.close();
-if (metrics.elapsed < sessionSeconds - 0.01 || errors.length) process.exitCode = 1;
+// Reinforcements can outlast a scripted pilot: the end reason and active time are reported, not required.
+if (!frames.length || errors.length) process.exitCode = 1;

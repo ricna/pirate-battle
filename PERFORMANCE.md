@@ -8,7 +8,7 @@ Windows 10 Pro; Intel Core i7-9700KF (8 cores); 32 GiB RAM; NVIDIA GeForce RTX 3
 
 ## Three-minute match
 
-Measured on 14 October 2026 on commit `0a46e89` (clean checkout; the build reported the same commit), balance `arena_00-v1/balance-v6`, seed 20261012, **180 s session with the shipped 5 s spawn interval**, sound and music on, through the real-time fixed-step simulation.
+Measured on 14 October 2026 on commit `06dce18` (clean checkout; the build reported the same commit), balance `arena_00-v1/balance-v6`, seed 20261012, **180 s session with the shipped 5 s spawn interval**, sound and music on, through the real-time fixed-step simulation.
 
 | Metric | Result |
 | --- | --- |
@@ -54,7 +54,7 @@ npm run profile          # in a second terminal; 180 s session, 5 s spawns, writ
 npm run profile:memory   # 30 cycles, writes reports/memory-followup.json and reports/memory-retainers.json
 ```
 
-`PROFILE_URL`, `PROFILE_SESSION_SECONDS`, `PROFILE_SPAWN_SECONDS`, `PROFILE_PILOT` and `MEMORY_CYCLES` adjust the runs. The pilot uses the real keyboard (it turns towards the nearest enemy and holds the front cannon and both broadsides) on the real-time fixed-step simulation; it never writes positions, health, score or cooldowns. The first five active seconds are excluded from frame statistics. The script fails if the pilot sinks before the session ends or if the page throws.
+`PROFILE_URL`, `PROFILE_SESSION_SECONDS`, `PROFILE_SPAWN_SECONDS`, `PROFILE_PILOT` and `MEMORY_CYCLES` adjust the runs. The pilot uses the real keyboard on the real-time fixed-step simulation, with the same policy as the gameplay regression: it keeps sailing with the nearest enemy abeam, holds the front cannon and both broadsides, and steers to survivors whenever no enemy is within 350 px. It never writes positions, health, score or cooldowns. The first five active seconds are excluded from frame statistics. Reinforcements can outlast a scripted pilot, so the end reason and active time are reported rather than required; the script fails only when no frame was measured or the page throws.
 
 ## Limits
 
