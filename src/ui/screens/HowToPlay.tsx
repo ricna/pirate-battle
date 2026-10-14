@@ -49,6 +49,7 @@ export function HowToPlay({ onMainMenu }: { onMainMenu: () => void }) {
           Main Menu
         </Button>
       </div>
+      <p className="muted build-label">Build {__BUILD_COMMIT__}</p>
     </section>
   );
 }

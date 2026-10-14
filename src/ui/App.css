@@ -130,6 +130,11 @@ kbd {
   font-size: 13px;
   color: #f0d9b8;
 }
+.build-label {
+  margin-top: 12px;
+  font-size: 12px;
+  text-align: center;
+}
 .enemy-guide {
   display: flex;
   gap: 18px;
