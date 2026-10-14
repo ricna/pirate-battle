@@ -1,7 +1,7 @@
 {
   "date": "2026-10-14T10:31:38.722Z",
   "browser": "156.0.8078.4",
-  "revision": "0a46e89b32e74b5e8035cc0cda32838dc1ce194f",
+  "revision": "06dce183ab175ea1151e529e551d3270c941cb62",
   "viewport": "1280x800",
   "build": "optimized Vite preview",
   "workload": "Each cycle: Play, 10 s of real fixed-step rules through the test clock, pause, leave the battle",

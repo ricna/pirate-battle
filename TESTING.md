@@ -2,7 +2,7 @@
 
 ## Island damage recheck — 14 October 2026
 
-The island-damage implementation was already present in commit `fd64d34`. A focused recheck of the visible checkout based on `96ae791`, using `arena_00-v1/balance-v6` with concurrent uncommitted pause-menu changes, passed **29 domain tests and 9 browser tests**. The browser selection covers island damage and HUD health, harmless arena borders, acceleration/braking, Chaser/Shooter damage and pause on desktop and landscape mobile, plus registration and refresh in the optimized production build. The domain cases verify separate impacts, no repeated damage while held against a coast, lethal island damage, no kill credit and validation of configured damage.
+The island-damage implementation was already present in commit `47e3e63`. A focused recheck of the visible checkout based on `4122cf5`, using `arena_00-v1/balance-v6` with concurrent uncommitted pause-menu changes, passed **29 domain tests and 9 browser tests**. The browser selection covers island damage and HUD health, harmless arena borders, acceleration/braking, Chaser/Shooter damage and pause on desktop and landscape mobile, plus registration and refresh in the optimized production build. The domain cases verify separate impacts, no repeated damage while held against a coast, lethal island damage, no kill credit and validation of configured damage.
 
 Typecheck, lint/architecture, format check and production build passed. Reports are isolated in [collision verification](reports/collision-verification/README.md) so they do not replace the delivered full-suite report below. This is historical focused evidence for that checkout, not a new complete-suite, Linux, physical-device, profiling or deployment result for subsequent commits.
 
@@ -11,15 +11,15 @@ Typecheck, lint/architecture, format check and production build passed. Reports 
 | Check | Environment | Result |
 | --- | --- | --- |
 | `npm run typecheck`, `npm run lint` (architecture check + ESLint), `npm run format:check`, `npm run build` | Windows 10, Node 24.14.1 | All pass; no chunk-size warning |
-| `npm run test:e2e` (then the delivery command; now `npm run test:deliver`) | Windows 10, Chromium 1248 (Playwright 1.64.0), RTX 3060 | **125/125 passed** in 8.6 minutes on commit `0a46e89` from a clean checkout, 14 October 2026 ([summary](reports/TEST-SUMMARY.md), `reports/playwright/index.html`) |
+| `npm run test:e2e` (then the delivery command; now `npm run test:deliver`) | Windows 10, Chromium 1248 (Playwright 1.64.0), RTX 3060 | **125/125 passed** in 8.6 minutes on commit `06dce18` from a clean checkout, 14 October 2026 ([summary](reports/TEST-SUMMARY.md), `reports/playwright/index.html`) |
 | `npm run test:docker` | `mcr.microsoft.com/playwright:v1.64.0-noble` (the CI image), Node 24.21.0, software WebGL | **125/125 passed** in 19.9 minutes on the same commit ([summary](reports/linux/TEST-SUMMARY.md), `reports/linux/playwright.json`) |
-| GitHub Actions ([ci.yml](.github/workflows/ci.yml)) | Same container on GitHub-hosted Ubuntu | **125/125 passed** in 13.0 minutes on `96ae791` (run 38571565099), after typecheck, lint, format check and build |
+| GitHub Actions ([ci.yml](.github/workflows/ci.yml)) | Same container on GitHub-hosted Ubuntu | **125/125 passed** in 13.0 minutes on `4122cf5` (run 38571565099), after typecheck, lint, format check and build |
 
 The 125 cases are: 29 domain (`core`), 2 rendering, 9 mobile layout, 42 desktop, 42 landscape mobile and 1 production smoke. No retries are configured and no test was skipped. axe found zero WCAG 2.1 AA violations on all eight audited screens in both browser projects, on both platforms.
 
-An earlier Linux run exposed a real defect: during a slow, minutes-long match the browser restarted the MSW service worker, which forgot the page, and the battle POST reached the static host (HTTP 404). Commit `0a46e89` adds the recovery described in ARCHITECTURE.md and a test that restarts the worker on purpose.
+An earlier Linux run exposed a real defect: during a slow, minutes-long match the browser restarted the MSW service worker, which forgot the page, and the battle POST reached the static host (HTTP 404). Commit `06dce18` adds the recovery described in ARCHITECTURE.md and a test that restarts the worker on purpose.
 
-The delivered `reports/playwright` still belongs to this complete `0a46e89` run. Later commits, and the tests added since, are not covered by it; regenerate it with `npm run test:deliver` before delivery (see [Reports and traces](#reports-and-traces)).
+The delivered `reports/playwright` still belongs to this complete `06dce18` run. Later commits, and the tests added since, are not covered by it; regenerate it with `npm run test:deliver` before delivery (see [Reports and traces](#reports-and-traces)).
 
 ## Running the suite
 

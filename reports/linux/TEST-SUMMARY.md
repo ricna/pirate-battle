@@ -7,7 +7,7 @@ Generated from `reports/playwright.json` by `npm run test:summary`. The HTML rep
 | Result | **125/125 passed** |
 | Started | 2026-10-14T10:43:06.955Z |
 | Duration | 19.9 minutes |
-| Source commit | `0a46e89b32e7` |
+| Source commit | `06dce183ab17` |
 | Playwright | 1.64.0 |
 | Runner | Linux 6.18.40.1-microsoft-standard-WSL2 (linux), Node v24.21.0 |
 

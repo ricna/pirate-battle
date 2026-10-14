@@ -7,7 +7,7 @@ Generated from `reports/mobile-layout/full-playwright.json` by `npm run test:sum
 | Result | **120/123 passed**, 3 failed |
 | Started | 2026-10-14T09:44:57.079Z |
 | Duration | 22.8 minutes |
-| Source commit | `c9f32a531c85` (with uncommitted source/test changes) |
+| Source commit | `c7615c3787ef` (with uncommitted source/test changes) |
 | Playwright | 1.64.0 |
 | Runner | Windows_NT 10.0.19045 (win32), Node v24.14.1 |
 

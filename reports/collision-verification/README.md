@@ -1,6 +1,6 @@
 # Island damage verification — 14 October 2026
 
-Source baseline: `96ae791`, with uncommitted pause-menu changes and documentation/help refinements. Gameplay rule: `arena_00-v1/balance-v6`. The existing implementation originated in `fd64d34`; no collision algorithm or balance value was changed in this recheck.
+Source baseline: `4122cf5`, with uncommitted pause-menu changes and documentation/help refinements. Gameplay rule: `arena_00-v1/balance-v6`. The existing implementation originated in `47e3e63`; no collision algorithm or balance value was changed in this recheck.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ Source baseline: `96ae791`, with uncommitted pause-menu changes and documentatio
 | Desktop/mobile regressions and production smoke | 9/9 passed | [HTML](browser/index.html), [JSON](browser.json) |
 | Production smoke after rebuilding the final help text | 1/1 passed (repeat of the smoke scenario above) | [HTML](production-final/index.html), [JSON](production-final.json) |
 
-The final optimized build reports `96ae791692c3-dirty`. Its smoke check was repeated after formatting and rebuilding the updated How To Play text. The 38 distinct selected scenarios all passed; the repeated smoke is additional confirmation of that final local build.
+The final optimized build reports `4122cf57a0e2-dirty`. Its smoke check was repeated after formatting and rebuilding the updated How To Play text. The 38 distinct selected scenarios all passed; the repeated smoke is additional confirmation of that final local build.
 
 Island impacts cost the player 1 health. Sustained coast contact does not drain health every simulation step; departing and returning can cause another impact. Arena borders do not cause island damage. Chaser ram retains its configured damage. Island damage passes through the normal damage system, updates statistics and feedback, can end the match by death, and never awards kill credit. Defaults live in `CollisionConfig.Default.islandImpactDamage` and are validated and frozen into the match snapshot.
 
@@ -40,4 +40,4 @@ $env:PIRATE_TEST_OUTPUT_DIR = 'test-results/collision-verification-browser'
 npm run test:e2e -- --project=desktop --project=mobile-landscape --project=production-smoke --grep 'movement, rotation|player acceleration|Chaser ram deals|pause freezes|the published build'
 ```
 
-This focused verification does not supersede the full Windows/Linux results on `0a46e89`. No screenshot baselines were changed. Physical devices, new profiling and public deployment were not checked in this task.
+This focused verification does not supersede the full Windows/Linux results on `06dce18`. No screenshot baselines were changed. Physical devices, new profiling and public deployment were not checked in this task.
