@@ -173,3 +173,172 @@ test('unsupported fullscreen explains the home-screen route and leaves menus usa
   await page.getByRole('button', { name: 'Resume', exact: true }).click();
   expect((await observe(page)).snapshot.status).toBe('playing');
 });
+
+test('Alt+Enter switches fullscreen from menus and a paused battle without activating focused buttons', async ({
+  page,
+}) => {
+  await open(page);
+  await page.getByRole('button', { name: 'Play', exact: true }).focus();
+  await page.keyboard.press('Alt+Enter');
+  await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+  await expect(page.locator('.main-menu')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Exit full screen' })).toHaveAttribute(
+    'aria-keyshortcuts',
+    'Alt+Enter',
+  );
+  await page.evaluate(() =>
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        code: 'Enter',
+        key: 'Enter',
+        altKey: true,
+        repeat: true,
+        bubbles: true,
+      }),
+    ),
+  );
+  expect(await page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+  await play(page);
+  await page.keyboard.press('Alt+Enter');
+  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+  await page.keyboard.press('Alt+NumpadEnter');
+  await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await page.keyboard.press('Alt+Enter');
+  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+});
+
+test('native Keyboard Lock keeps a short Escape press in fullscreen while pause and dialogs work', async ({
+  page,
+}) => {
+  await open(page);
+  const supported = await page.evaluate(
+    () =>
+      'keyboard' in navigator &&
+      typeof navigator.keyboard === 'object' &&
+      navigator.keyboard !== null &&
+      'lock' in navigator.keyboard,
+  );
+  test.skip(!supported, 'This browser does not expose native Keyboard Lock.');
+  await page.keyboard.press('Alt+Enter');
+  await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+  await play(page);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  expect(await page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(await page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+  await page.keyboard.press('Alt+Enter');
+  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+});
+
+test('unavailable or denied Keyboard Lock never prevents fullscreen entry or exit', async ({ browser }) => {
+  for (const denied of [false, true]) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    try {
+      await page.addInitScript(
+        (denied) =>
+          Object.defineProperty(navigator, 'keyboard', {
+            configurable: true,
+            value: denied
+              ? {
+                  lock: async () => {
+                    throw new DOMException('Keyboard capture denied.', 'NotAllowedError');
+                  },
+                  unlock: () => {},
+                }
+              : undefined,
+          }),
+        denied,
+      );
+      await open(page);
+      await page.keyboard.press('Alt+Enter');
+      await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+      expect(await page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      await page.keyboard.press('Alt+Enter');
+      await expect(page.getByRole('button', { name: 'Full screen', exact: true })).toBeEnabled();
+      expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+      expect(errors).toEqual([]);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('Alt+Enter still works while the lazy game engine prepares', async ({ page }) => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/src/ui/game/GameCanvas.tsx*', async (route) => {
+    await gate;
+    await route.continue();
+  });
+  try {
+    await open(page);
+    await page.getByRole('button', { name: 'Play', exact: true }).click();
+    await expect(page.getByRole('progressbar', { name: 'Loading game engine', exact: true })).toBeVisible();
+    await page.keyboard.press('Alt+Enter');
+    await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+    release();
+    await page.waitForFunction(() => !!window.pirateTest);
+    await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+    await page.keyboard.press('Alt+Enter');
+    await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+    expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+  } finally {
+    release();
+  }
+});
+
+test('a late keyboard capture never blocks Alt+Enter exit and is released after any fullscreen exit', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    let grant: (() => void) | undefined;
+    Object.defineProperty(navigator, 'keyboard', {
+      configurable: true,
+      value: {
+        lock: () =>
+          new Promise<void>((resolve) => {
+            grant = resolve;
+            document.documentElement.dataset.keyboardLockPending = 'true';
+          }),
+        unlock: () => {
+          const root = document.documentElement;
+          root.dataset.keyboardUnlocks = String(Number(root.dataset.keyboardUnlocks ?? 0) + 1);
+        },
+      },
+    });
+    document.addEventListener('grant-test-keyboard-lock', () => grant?.());
+  });
+  for (const external of [false, true]) {
+    await open(page);
+    await page.keyboard.press('Alt+Enter');
+    await expect(page.locator('html')).toHaveAttribute('data-keyboard-lock-pending', 'true');
+    await expect(page.getByRole('button', { name: 'Exit full screen' })).toBeEnabled();
+    if (external) await page.evaluate(() => document.exitFullscreen());
+    else await page.keyboard.press('Alt+Enter');
+    const button = page.getByRole('button', { name: 'Full screen', exact: true });
+    await expect(button).toHaveAttribute('aria-pressed', 'false');
+    const released = await page.evaluate(() => Number(document.documentElement.dataset.keyboardUnlocks));
+    await page.evaluate(() => document.dispatchEvent(new Event('grant-test-keyboard-lock')));
+    await expect(button).toBeEnabled();
+    await expect
+      .poll(() => page.evaluate(() => Number(document.documentElement.dataset.keyboardUnlocks)))
+      .toBeGreaterThan(released);
+    expect(await page.evaluate(() => document.fullscreenElement)).toBeNull();
+  }
+});

@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from './Button';
+import { FullscreenControl } from './FullscreenControl';
 export class GameLoadBoundary extends Component<
   { children: ReactNode; onMenu: () => void },
   { error: Error | null }
@@ -19,6 +20,7 @@ export class GameLoadBoundary extends Component<
           <Button onClick={() => location.reload()}>Reload and retry</Button>
           <Button onClick={this.props.onMenu}>Main Menu</Button>
         </section>
+        <FullscreenControl className="menu-fullscreen" />
       </main>
     );
   }

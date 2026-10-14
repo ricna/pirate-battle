@@ -1,0 +1,704 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=desktop",
+      "--project=mobile-landscape",
+      "--project=production-smoke",
+      "--grep",
+      "pause freezes|menus, records|published build|pause board|options opened from pause|leaving from pause"
+    ],
+    "configFile": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\playwright.config.ts",
+    "rootDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-layout",
+        "name": "mobile-layout",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/mobile.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "rendering",
+        "name": "rendering",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/rendering.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "core",
+        "name": "core",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/core.spec.ts",
+          "**/collision.spec.ts",
+          "**/navigation.spec.ts",
+          "**/presentation.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-landscape",
+        "name": "mobile-landscape",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "production-smoke",
+        "name": "production-smoke",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/smoke.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\reports\\fullscreen-shortcut\\integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5222",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "deviceScaleFactor": 1
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\reports\\fullscreen-shortcut\\integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile-landscape",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5222",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 844,
+            "height": 390
+          },
+          "deviceScaleFactor": 2,
+          "isMobile": true,
+          "hasTouch": true
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile-landscape"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\reports\\fullscreen-shortcut\\integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "production-smoke",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": "**/smoke.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5223",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "deviceScaleFactor": 1
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "production-smoke"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "reports/fullscreen-shortcut/integration-playwright",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/fullscreen-shortcut/integration-playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "accessibility.spec.ts",
+      "file": "accessibility.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "menus, records, gameplay HUD, pause dialog and results pass automated WCAG 2.1 AA checks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10438,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:00:51.285Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "axe-summary",
+                      "contentType": "application/json",
+                      "body": "ewogICJwcm9qZWN0IjogImRlc2t0b3AiLAogICJ0YWdzIjogWwogICAgIndjYWcyYSIsCiAgICAid2NhZzJhYSIsCiAgICAid2NhZzIxYSIsCiAgICAid2NhZzIxYWEiCiAgXSwKICAiYXhlIjogIkBheGUtY29yZS9wbGF5d3JpZ2h0IiwKICAic3VtbWFyaWVzIjogWwogICAgewogICAgICAic2NyZWVuIjogIk1haW4gbWVudSIsCiAgICAgICJwYXNzZXMiOiAxOSwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9LAogICAgewogICAgICAic2NyZWVuIjogIk9wdGlvbnMiLAogICAgICAicGFzc2VzIjogMjUsCiAgICAgICJ2aW9sYXRpb25zIjogW10sCiAgICAgICJpbmNvbXBsZXRlIjogWwogICAgICAgICJjb2xvci1jb250cmFzdCIKICAgICAgXQogICAgfSwKICAgIHsKICAgICAgInNjcmVlbiI6ICJIb3cgVG8gUGxheSIsCiAgICAgICJwYXNzZXMiOiAxOCwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9LAogICAgewogICAgICAic2NyZWVuIjogIkNhcHRhaW4ncyBMb2cg4oCUIFJhbmtpbmciLAogICAgICAicGFzc2VzIjogMjYsCiAgICAgICJ2aW9sYXRpb25zIjogW10sCiAgICAgICJpbmNvbXBsZXRlIjogWwogICAgICAgICJjb2xvci1jb250cmFzdCIKICAgICAgXQogICAgfSwKICAgIHsKICAgICAgInNjcmVlbiI6ICJDYXB0YWluJ3MgTG9nIOKAlCBNYXRjaCBIaXN0b3J5IiwKICAgICAgInBhc3NlcyI6IDI0LAogICAgICAidmlvbGF0aW9ucyI6IFtdLAogICAgICAiaW5jb21wbGV0ZSI6IFsKICAgICAgICAiY29sb3ItY29udHJhc3QiCiAgICAgIF0KICAgIH0sCiAgICB7CiAgICAgICJzY3JlZW4iOiAiR2FtZXBsYXkgSFVEIGFuZCB0b3VjaCBjb250cm9scyIsCiAgICAgICJwYXNzZXMiOiAxOSwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9LAogICAgewogICAgICAic2NyZWVuIjogIlBhdXNlIGRpYWxvZyIsCiAgICAgICJwYXNzZXMiOiAxMCwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9LAogICAgewogICAgICAic2NyZWVuIjogIlJlc3VsdCIsCiAgICAgICJwYXNzZXMiOiAyNCwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ddd864604af8a6a0198f-0ba8bb300bbb712fc3ed",
+          "file": "accessibility.spec.ts",
+          "line": 30,
+          "column": 1
+        },
+        {
+          "title": "menus, records, gameplay HUD, pause dialog and results pass automated WCAG 2.1 AA checks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10049,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:14.687Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "axe-summary",
+                      "contentType": "application/json",
+                      "body": "ewogICJwcm9qZWN0IjogIm1vYmlsZS1sYW5kc2NhcGUiLAogICJ0YWdzIjogWwogICAgIndjYWcyYSIsCiAgICAid2NhZzJhYSIsCiAgICAid2NhZzIxYSIsCiAgICAid2NhZzIxYWEiCiAgXSwKICAiYXhlIjogIkBheGUtY29yZS9wbGF5d3JpZ2h0IiwKICAic3VtbWFyaWVzIjogWwogICAgewogICAgICAic2NyZWVuIjogIk1haW4gbWVudSIsCiAgICAgICJwYXNzZXMiOiAxOSwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9LAogICAgewogICAgICAic2NyZWVuIjogIk9wdGlvbnMiLAogICAgICAicGFzc2VzIjogMjUsCiAgICAgICJ2aW9sYXRpb25zIjogW10sCiAgICAgICJpbmNvbXBsZXRlIjogWwogICAgICAgICJjb2xvci1jb250cmFzdCIKICAgICAgXQogICAgfSwKICAgIHsKICAgICAgInNjcmVlbiI6ICJIb3cgVG8gUGxheSIsCiAgICAgICJwYXNzZXMiOiAxOCwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9LAogICAgewogICAgICAic2NyZWVuIjogIkNhcHRhaW4ncyBMb2cg4oCUIFJhbmtpbmciLAogICAgICAicGFzc2VzIjogMjYsCiAgICAgICJ2aW9sYXRpb25zIjogW10sCiAgICAgICJpbmNvbXBsZXRlIjogWwogICAgICAgICJjb2xvci1jb250cmFzdCIKICAgICAgXQogICAgfSwKICAgIHsKICAgICAgInNjcmVlbiI6ICJDYXB0YWluJ3MgTG9nIOKAlCBNYXRjaCBIaXN0b3J5IiwKICAgICAgInBhc3NlcyI6IDI0LAogICAgICAidmlvbGF0aW9ucyI6IFtdLAogICAgICAiaW5jb21wbGV0ZSI6IFsKICAgICAgICAiY29sb3ItY29udHJhc3QiCiAgICAgIF0KICAgIH0sCiAgICB7CiAgICAgICJzY3JlZW4iOiAiR2FtZXBsYXkgSFVEIGFuZCB0b3VjaCBjb250cm9scyIsCiAgICAgICJwYXNzZXMiOiAxOSwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9LAogICAgewogICAgICAic2NyZWVuIjogIlBhdXNlIGRpYWxvZyIsCiAgICAgICJwYXNzZXMiOiAxMCwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9LAogICAgewogICAgICAic2NyZWVuIjogIlJlc3VsdCIsCiAgICAgICJwYXNzZXMiOiAyNCwKICAgICAgInZpb2xhdGlvbnMiOiBbXSwKICAgICAgImluY29tcGxldGUiOiBbCiAgICAgICAgImNvbG9yLWNvbnRyYXN0IgogICAgICBdCiAgICB9CiAgXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ddd864604af8a6a0198f-138959615d1162d79d48",
+          "file": "accessibility.spec.ts",
+          "line": 30,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "game.spec.ts",
+      "file": "game.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pause freezes simulation and cooldowns, focus loss requires explicit resume",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2921,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:02.245Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-43f5dc442ba96c4f1d8b",
+          "file": "game.spec.ts",
+          "line": 530,
+          "column": 1
+        },
+        {
+          "title": "pause freezes simulation and cooldowns, focus loss requires explicit resume",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2451,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:25.216Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-ff083c9a7567cacf6535",
+          "file": "game.spec.ts",
+          "line": 530,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "pause.spec.ts",
+      "file": "pause.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pause board offers Resume, Options and Main Menu like the reference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2443,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:05.201Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "25eacc81dfcef1ab8000-eb92d8c596351ad7258e",
+          "file": "pause.spec.ts",
+          "line": 17,
+          "column": 1
+        },
+        {
+          "title": "options opened from pause save immediately without changing the running battle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3235,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:07.658Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "25eacc81dfcef1ab8000-4ca2d31587312a4f2caf",
+          "file": "pause.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "leaving from pause asks for confirmation and Stay here returns to the pause board",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2727,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:10.905Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "25eacc81dfcef1ab8000-ea584db03a8730096e26",
+          "file": "pause.spec.ts",
+          "line": 52,
+          "column": 1
+        },
+        {
+          "title": "pause board offers Resume, Options and Main Menu like the reference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2563,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:27.699Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "25eacc81dfcef1ab8000-76a4b6e5227bc96d44e6",
+          "file": "pause.spec.ts",
+          "line": 17,
+          "column": 1
+        },
+        {
+          "title": "options opened from pause save immediately without changing the running battle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3287,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:30.284Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "25eacc81dfcef1ab8000-ea5bad5ab54f55fc07a9",
+          "file": "pause.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "leaving from pause asks for confirmation and Stay here returns to the pause board",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2811,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:33.582Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "25eacc81dfcef1ab8000-4edf53fe9e8c2adffd21",
+          "file": "pause.spec.ts",
+          "line": 52,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "smoke.spec.ts",
+      "file": "smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the published build serves its commit, mocks Ranking and History, and registers a battle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "production-smoke",
+              "projectName": "production-smoke",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3768,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:01:37.263Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4219922fea2e2bd3c691-9540199147b39a154195",
+          "file": "smoke.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-14T15:00:40.521Z",
+    "duration": 61922.492000000006,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

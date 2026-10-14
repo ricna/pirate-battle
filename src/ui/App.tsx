@@ -190,6 +190,7 @@ export function App() {
             fallback={
               <div className="app asset-loading-screen">
                 <AssetLoadingIndicator label="Loading game engine" progress={null} />
+                <FullscreenControl className="menu-fullscreen" />
               </div>
             }
           >

@@ -1,0 +1,7 @@
+# Fullscreen keyboard verification — 14 October 2026
+
+The [final shortcut report](final-playwright/index.html) and [JSON](final-playwright.json) record **7/7 passed** in Chromium. Real Alt+Enter enters/exits fullscreen from a focused main-menu button, playing/paused battle and lazy engine preparation; numeric keypad Enter works, and held-key repeats do not toggle again. Native Keyboard Lock retains fullscreen on a short Escape press while pause and native dialog handling remain usable. Browser fixtures verify unavailable/denied capture and a late grant after both shortcut-driven and external exits. Optional capture does not delay fullscreen exit.
+
+The [integration report](integration-playwright/index.html) and [JSON](integration-playwright.json) record **11/11 passed**: desktop/mobile pause, focus/input clearing, in-battle Options/leave confirmation, automated accessibility across all screens, and optimized production smoke. Typecheck, lint/architecture, Prettier and production build passed. Reports refer to the visible working checkout with concurrent changes; this is focused verification, not a new complete-suite or deployment claim.
+
+Keyboard Lock is browser-dependent and requires a secure context. Unsupported/denied capture keeps the normal browser Esc exit; Chrome's long-Esc exit remains available. No physical-device or non-Chromium compatibility is claimed. See [Chrome's documented behavior](https://developer.chrome.com/blog/better-full-screen-mode).

@@ -18,6 +18,9 @@ export function ServicesProvider({
     () => null,
   );
   useEffect(() => {
+    return services.display.attach();
+  }, [services]);
+  useEffect(() => {
     const element = musicRef.current;
     if (!element) throw new Error('The application requires its authored music element.');
     services.audio.music.attach(element);

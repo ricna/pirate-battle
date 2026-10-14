@@ -1,0 +1,451 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=mobile-layout",
+      "--grep",
+      "Alt.Enter|Keyboard Lock|fullscreen is explicit|unsupported fullscreen|late keyboard capture"
+    ],
+    "configFile": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\playwright.config.ts",
+    "rootDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-layout",
+        "name": "mobile-layout",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/mobile.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "rendering",
+        "name": "rendering",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/rendering.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "core",
+        "name": "core",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/core.spec.ts",
+          "**/collision.spec.ts",
+          "**/navigation.spec.ts",
+          "**/presentation.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-landscape",
+        "name": "mobile-landscape",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/fullscreen-shortcut/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "production-smoke",
+        "name": "production-smoke",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/smoke.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\reports\\fullscreen-shortcut\\final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile-layout",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": "**/mobile.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5220",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile-layout"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "reports/fullscreen-shortcut/final-playwright",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/fullscreen-shortcut/final-playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "mobile.spec.ts",
+      "file": "mobile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "fullscreen is explicit, survives Play and exits with synchronized controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6095,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:05:39.365Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-0879db07e3f4eb8e7ae6",
+          "file": "mobile.spec.ts",
+          "line": 139,
+          "column": 1
+        },
+        {
+          "title": "unsupported fullscreen explains the home-screen route and leaves menus usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2755,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:05:45.915Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-48ea435f6617ff8f7346",
+          "file": "mobile.spec.ts",
+          "line": 158,
+          "column": 1
+        },
+        {
+          "title": "Alt+Enter switches fullscreen from menus and a paused battle without activating focused buttons",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2482,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:05:48.683Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-4afdbfaef0a185e2d490",
+          "file": "mobile.spec.ts",
+          "line": 177,
+          "column": 1
+        },
+        {
+          "title": "native Keyboard Lock keeps a short Escape press in fullscreen while pause and dialogs work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2844,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:05:51.177Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-c6e957ec0b397239270a",
+          "file": "mobile.spec.ts",
+          "line": 214,
+          "column": 1
+        },
+        {
+          "title": "unavailable or denied Keyboard Lock never prevents fullscreen entry or exit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4197,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:05:54.034Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-612b7c9074fa116d06d6",
+          "file": "mobile.spec.ts",
+          "line": 243,
+          "column": 1
+        },
+        {
+          "title": "Alt+Enter still works while the lazy game engine prepares",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3369,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:05:58.263Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-a1e773f24d3e664e1721",
+          "file": "mobile.spec.ts",
+          "line": 280,
+          "column": 1
+        },
+        {
+          "title": "a late keyboard capture never blocks Alt+Enter exit and is released after any fullscreen exit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2491,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T15:06:01.646Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-218a0b782ed5aee94e68",
+          "file": "mobile.spec.ts",
+          "line": 306,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-14T15:05:36.294Z",
+    "duration": 28529.923,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

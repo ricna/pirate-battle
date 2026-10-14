@@ -8,6 +8,8 @@ export function ControlsHelp() {
       <kbd>Space</kbd> front cannon · <kbd>Q</kbd> left broadside · <kbd>E</kbd> right broadside ·{' '}
       <kbd>P</kbd> / <kbd>Esc</kbd> pause
       <br />
+      <kbd>Alt</kbd> + <kbd>Enter</kbd> full screen
+      <br />
       On touch screens, hold movement and attack buttons together. Play in landscape.
     </p>
   );

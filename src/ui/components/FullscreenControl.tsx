@@ -15,6 +15,7 @@ export function FullscreenControl({
   const [message, setMessage] = useState('');
   const [pending, setPending] = useState(false);
   const messageFrame = useRef(0);
+  const requestPending = useRef(false);
   useEffect(() => () => cancelAnimationFrame(messageFrame.current), []);
   const showMessage = (text: string) => {
     cancelAnimationFrame(messageFrame.current);
@@ -22,24 +23,30 @@ export function FullscreenControl({
     messageFrame.current = requestAnimationFrame(() => setMessage(text));
   };
   const toggle = async () => {
-    onBeforeChange?.();
-    if (!display.supported && !active) {
-      showMessage(
-        'This browser cannot open the game in full screen. On iPhone or iPad, use Safari’s Share menu, choose Add to Home Screen, then open Pirate Battle from its icon. You can also keep playing here in landscape.',
-      );
-      return;
-    }
+    if (requestPending.current) return;
+    requestPending.current = true;
     setPending(true);
     try {
+      onBeforeChange?.();
+      if (!display.supported && !active) {
+        showMessage(
+          'This browser cannot open the game in full screen. On iPhone or iPad, use Safari’s Share menu, choose Add to Home Screen, then open Pirate Battle from its icon. You can also keep playing here in landscape.',
+        );
+        return;
+      }
       await display.toggle();
     } catch {
       showMessage(
         'The browser could not change full screen. Try again, or open the game directly in a browser tab instead of an embedded preview.',
       );
     } finally {
+      requestPending.current = false;
       setPending(false);
     }
   };
+  const shortcut = useRef(toggle);
+  shortcut.current = toggle;
+  useEffect(() => display.bindShortcut(() => void shortcut.current()), [display]);
   return (
     <div className={`fullscreen-control ${className}`}>
       <button
@@ -48,6 +55,8 @@ export function FullscreenControl({
         onClick={() => void toggle()}
         disabled={pending}
         aria-pressed={active}
+        aria-keyshortcuts="Alt+Enter"
+        title="Toggle full screen (Alt+Enter)"
       >
         {active ? 'Exit full screen' : 'Full screen'}
       </button>

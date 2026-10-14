@@ -1,0 +1,10 @@
+# Keep reviewed final evidence; earlier diagnostic attempts and transient artifacts stay local.
+*
+!.gitignore
+!README.md
+!final-playwright/
+!final-playwright/**
+!final-playwright.json
+!integration-playwright/
+!integration-playwright/**
+!integration-playwright.json
