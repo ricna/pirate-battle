@@ -80,7 +80,8 @@ test('music volume persists, migrates legacy options and respects master mute an
     .poll(() => page.locator('audio').evaluate((element: HTMLAudioElement) => element.volume))
     .toBeCloseTo(0.012);
   await page.reload();
-  await page.getByRole('button', { name: 'Options', exact: true }).click();
+  // Refresh keeps the Options screen (#options).
+  await expect(page.getByRole('heading', { name: 'Options', exact: true })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Music volume', exact: true }).locator('output')).toHaveText(
     '30 %',
   );

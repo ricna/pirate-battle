@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import type { Scenario } from '../src/infrastructure/network/NetworkSimulator';
+import type { Scenario } from '../src/infrastructure/network/NetworkScenarios';
 export async function open(page: Page) {
   await page.clock.setFixedTime(new Date('2026-10-12T18:00:00Z'));
   await page.goto('/?test=1');
@@ -14,6 +14,53 @@ export async function play(page: Page) {
 export const observe = (page: Page) => page.evaluate(() => window.pirateTest!.observe());
 export const advance = (page: Page, seconds: number) =>
   page.evaluate((s) => window.pirateTest!.advance!(s), seconds);
+
+/**
+ * Waits until every authored image is decoded: <img> elements plus CSS background and border-image
+ * sources (menu panels, buttons). Visual baselines must never capture a partially loaded board.
+ */
+export async function waitForAuthoredArt(page: Page) {
+  await page.waitForFunction(() =>
+    Array.from(document.images).every((image) => image.complete && image.naturalWidth > 0),
+  );
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    const sources = new Set<string>();
+    for (const element of Array.from(document.querySelectorAll<HTMLElement>('*'))) {
+      const style = getComputedStyle(element);
+      for (const value of [style.backgroundImage, style.borderImageSource])
+        for (const match of value.matchAll(/url\("?([^")]+)"?\)/g)) if (match[1]) sources.add(match[1]);
+    }
+    const decodes = [...sources].map((source) => {
+      const image = new Image();
+      image.src = source;
+      return image.decode();
+    });
+    await Promise.all([...decodes, ...Array.from(document.images).map((image) => image.decode())]);
+    // Two frames let the compositor paint the decoded images before a capture.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+}
+
+/** Simulates the browser hiding or showing this tab (visibilitychange). Combat state is never written. */
+export async function setTabHidden(page: Page, hidden: boolean) {
+  await page.evaluate((value) => {
+    if (value) {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    } else {
+      Reflect.deleteProperty(document, 'hidden');
+      Reflect.deleteProperty(document, 'visibilityState');
+    }
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, hidden);
+}
+
+/** Captain's Log tabs follow the WAI-ARIA tabs pattern; the main menu opens them with buttons. */
+export async function selectRecordsTab(page: Page, name: 'Ranking' | 'Match History') {
+  await page.getByRole('tab', { name, exact: true }).click();
+  await expect(page.getByRole('tab', { name, exact: true })).toHaveAttribute('aria-selected', 'true');
+}
 export async function scenario(page: Page, value: Scenario) {
   const details = page.locator('.network-tools');
   if ((await details.getAttribute('open')) === null) await details.locator('summary').click();

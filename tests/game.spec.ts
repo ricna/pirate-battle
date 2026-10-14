@@ -1,7 +1,19 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { AudioConfig } from '../src/game/configuration/AudioConfig';
-import { advance, defendUntilFinished, observe, open, options, play, scenario, setOption } from './helpers';
+import {
+  advance,
+  defendUntilFinished,
+  observe,
+  open,
+  options,
+  play,
+  scenario,
+  selectRecordsTab,
+  setOption,
+  setTabHidden,
+  waitForAuthoredArt,
+} from './helpers';
 const pageErrors = new Map<Page, string[]>();
 test.beforeEach(async ({ page }) => {
   const errors: string[] = [];
@@ -30,12 +42,34 @@ test('options validate, persist, and isolate new matches', async ({ page }) => {
   await setOption(page, 'Game session time', '60 s');
   await setOption(page, 'Enemy spawn time', '10 s');
   await page.reload();
-  await page.getByRole('button', { name: 'Options', exact: true }).click();
+  // Refresh keeps the Options screen (#options) and restores the persisted values.
+  await expect(page.getByRole('heading', { name: 'Options', exact: true })).toBeVisible();
   await expect(session.locator('output')).toHaveText('60 s');
   await expect(spawn.locator('output')).toHaveText('10 s');
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await play(page);
   expect((await observe(page)).config.sessionSeconds).toBe(60);
+  // Each match keeps the snapshot taken at Play; later edits only affect new matches.
+  await page.getByRole('button', { name: 'Pause game' }).click();
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Leave battle' }).click();
+  await options(page, 180, 2);
+  await play(page);
+  expect((await observe(page)).config).toMatchObject({ sessionSeconds: 180, spawnSeconds: 2 });
+});
+test('invalid persisted options are rejected with a visible warning and defaults', async ({ page }) => {
+  await page.evaluate(() =>
+    localStorage.setItem('pirate.options', JSON.stringify({ sessionSeconds: 999, spawnSeconds: 0 })),
+  );
+  await page.reload();
+  await expect(page.locator('.notice')).toContainText('invalid');
+  await page.getByRole('button', { name: 'Options', exact: true }).click();
+  await expect(
+    page.getByRole('group', { name: 'Game session time', exact: true }).locator('output'),
+  ).toHaveText('120 s');
+  await expect(
+    page.getByRole('group', { name: 'Enemy spawn time', exact: true }).locator('output'),
+  ).toHaveText('5 s');
 });
 test('authored map loading failure is visible and retry succeeds', async ({ page }) => {
   let fail = true;
@@ -219,9 +253,7 @@ test('failed lazy engine module has an accessible error and reload recovery', as
   await play(page);
   expect((await observe(page)).snapshot.health).toBe(100);
 });
-test('both enemy behaviours appear on schedule, navigate obstacles and damage the player', async ({
-  page,
-}) => {
+test('both enemy behaviours appear on schedule, approach and navigate around obstacles', async ({ page }) => {
   await play(page);
   await advance(page, 4.9);
   expect((await observe(page)).enemies).toHaveLength(0);
@@ -236,7 +268,6 @@ test('both enemy behaviours appear on schedule, navigate obstacles and damage th
   await advance(page, 12);
   const later = await observe(page);
   expect(later.projectiles.some((p) => p.owner === 'enemy')).toBe(true);
-  expect(later.snapshot.health).toBeLessThanOrEqual(100);
   expect(later.snapshot.score).toBe(0);
   for (const enemy of later.enemies)
     for (const r of later.colliders) {
@@ -244,6 +275,58 @@ test('both enemy behaviours appear on schedule, navigate obstacles and damage th
       const dy = enemy.y - Math.max(r.y, Math.min(enemy.y, r.y + r.height));
       expect(Math.hypot(dx, dy)).toBeGreaterThanOrEqual(enemy.radius - 0.01);
     }
+});
+test('spawns follow the Enemy spawn time option', async ({ page }) => {
+  await options(page, 60, 2);
+  await play(page);
+  await advance(page, 1.9);
+  expect((await observe(page)).enemies).toHaveLength(0);
+  await advance(page, 0.1);
+  expect((await observe(page)).enemies).toHaveLength(1);
+  await advance(page, 2);
+  expect((await observe(page)).enemies.map((enemy) => enemy.kind)).toEqual(['chaser', 'shooter']);
+  await advance(page, 2);
+  expect((await observe(page)).enemies).toHaveLength(3);
+});
+test('a Chaser ram deals its configured damage without scoring; Shooter cannonballs hurt the player', async ({
+  page,
+}) => {
+  await play(page);
+  const { config } = await observe(page);
+  const ramDamage = config.enemies.chaser!.ai!.ramDamage;
+  const shotDamage = config.enemies.shooter!.weapons[0]!.projectile.damage;
+  // The passive player waits at its spawn; each 50 ms step classifies the damage it actually received.
+  const outcome = await page.evaluate(
+    ({ ramDamage, shotDamage }) => {
+      const pilot = window.pirateTest!;
+      let previous = pilot.observe();
+      const result = { rams: 0, shots: 0, score: 0, enemiesSunk: 0, status: previous.snapshot.status };
+      for (let step = 0; step < 2400 && (result.rams === 0 || result.shots === 0); step++) {
+        pilot.advance!(0.05);
+        const current = pilot.observe();
+        result.status = current.snapshot.status;
+        if (current.snapshot.status !== 'playing') break;
+        const received =
+          current.snapshot.statistics.damageReceived - previous.snapshot.statistics.damageReceived;
+        const chaserGone = previous.enemies.some(
+          (enemy) => enemy.kind === 'chaser' && !current.enemies.some((other) => other.id === enemy.id),
+        );
+        if (received === ramDamage && chaserGone) result.rams++;
+        if (received === shotDamage) result.shots++;
+        result.score = current.snapshot.score;
+        result.enemiesSunk = current.snapshot.statistics.enemiesSunk;
+        previous = current;
+      }
+      return result;
+    },
+    { ramDamage, shotDamage },
+  );
+  expect(outcome.status).toBe('playing');
+  expect(outcome.rams).toBeGreaterThan(0);
+  expect(outcome.shots).toBeGreaterThan(0);
+  // A Chaser destroyed by its own ram is never credited.
+  expect(outcome.score).toBe(0);
+  expect(outcome.enemiesSunk).toBe(0);
 });
 test('real cannon input wins on time, fades survival text before results and restarts cleanly', async ({
   page,
@@ -286,9 +369,12 @@ test('real cannon input wins on time, fades survival text before results and res
   await expect(page.locator('.game')).toHaveCount(0);
   await expect(page.locator('.result-panel')).toContainText('You survived! Congratulations!');
   await expect(page.locator('.result-panel')).toContainText('Battle registered');
+  await expect(page.locator('.result-panel')).toContainText('End reason: Time expired');
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.getByRole('button', { name: 'Match History', exact: true }).click();
-  await expect(page.locator('.history tr.highlighted .records-result')).toHaveText('VICTORY');
+  const historyResult = page.locator('.history tr.highlighted .records-result');
+  await expect(historyResult).toContainText('VICTORY');
+  await expect(historyResult.locator('.sr-only')).toHaveText('· Time expired');
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await play(page);
   const clean = await observe(page);
@@ -298,18 +384,27 @@ test('real cannon input wins on time, fades survival text before results and res
   expect(clean.enemies).toHaveLength(0);
   expect(clean.projectiles).toHaveLength(0);
 });
-test('death stops combat and result survives refresh', async ({ page }) => {
+test('death stops combat; the result stays displayed and persisted after refresh', async ({ page }) => {
   await play(page);
   await advance(page, 120);
   await expect(page.getByRole('heading', { name: 'Battle result' })).toBeVisible();
-  await expect(page.locator('.result-panel')).toContainText('ship was lost');
+  const panel = page.locator('.result-panel');
+  await expect(panel).toContainText('ship was lost');
+  await expect(panel).toContainText('End reason: Ship destroyed');
   const result = await page.evaluate(() => localStorage.getItem('pirate.last'));
+  const record = JSON.parse(result!) as { score: number; duration: number };
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBe(result);
   expect(await page.evaluate(() => !!window.pirateTest)).toBe(false);
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  // The result screen is restored from the persisted last completed battle, not re-simulated.
+  await expect(page.getByRole('heading', { name: 'Battle result' })).toBeVisible();
+  await expect(panel).toContainText('End reason: Ship destroyed');
+  await expect(panel).toContainText(`Time played: ${record.duration.toFixed(1)} seconds`);
+  await expect(panel.locator('.sr-only')).toHaveText(`Final score: ${record.score}`);
+  await expect(page.getByRole('button', { name: 'Play Again', exact: true })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBe(result);
+  expect(await page.evaluate(() => !!window.pirateTest)).toBe(false);
 });
 test('terminal sinking persists once before revealing results and keeps crew visible', async ({
   page,
@@ -424,6 +519,27 @@ test('pause freezes simulation and cooldowns, focus loss requires explicit resum
   await page.keyboard.up('w');
   await page.keyboard.up('Space');
 });
+test('hiding the tab pauses combat and showing it again still requires Resume', async ({ page }) => {
+  await play(page);
+  await page.keyboard.down('w');
+  await advance(page, 0.5);
+  await setTabHidden(page, true);
+  await expect(page.getByRole('dialog', { name: 'Battle paused' })).toBeVisible();
+  const hidden = await observe(page);
+  expect(hidden.snapshot.status).toBe('paused');
+  await advance(page, 10);
+  expect((await observe(page)).snapshot.elapsed).toBe(hidden.snapshot.elapsed);
+  expect((await observe(page)).player).toEqual(hidden.player);
+  await setTabHidden(page, false);
+  await advance(page, 5);
+  // Visibility alone never resumes; the timer and momentum stay frozen until the player acts.
+  expect((await observe(page)).snapshot.status).toBe('paused');
+  expect((await observe(page)).snapshot.elapsed).toBe(hidden.snapshot.elapsed);
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await advance(page, 0.5);
+  expect((await observe(page)).snapshot.elapsed).toBeCloseTo(hidden.snapshot.elapsed + 0.5, 5);
+  await page.keyboard.up('w');
+});
 test('abandonment, repeated mounts, refresh and simultaneous touch controls', async ({ page }) => {
   for (let i = 0; i < 3; i++) {
     await play(page);
@@ -472,21 +588,40 @@ test('demo server reset confirmation is shown briefly', async ({ page }) => {
 test('ranking and history handle pages, empty lists, loading and errors', async ({ page }) => {
   await scenario(page, 'multiple-pages');
   await page.getByRole('button', { name: 'Ranking', exact: true }).click();
+  await expect(page.getByRole('tabpanel', { name: 'Ranking' })).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
   await expect(page.getByText('Page 1 of 6')).toBeVisible();
+  // Ranking is ordered by points, highest first, across the page.
+  const points = (await page.locator('tbody .records-points').allTextContents()).map(Number);
+  expect(points).toEqual([...points].sort((a, b) => b - a));
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(page.getByText('Page 2 of 6')).toBeVisible();
-  await page.getByRole('button', { name: 'Match History', exact: true }).click();
+  // Arrow keys move between the Captain's Log tabs (WAI-ARIA tabs pattern).
+  await page.getByRole('tab', { name: 'Ranking', exact: true }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'Match History', exact: true })).toBeFocused();
+  await expect(page.getByRole('tab', { name: 'Match History', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(page.getByText('Page 1 of 4')).toBeVisible();
+  // Refresh keeps the selected tab (#history).
+  await page.reload();
+  await expect(page.getByRole('tab', { name: 'Match History', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
   await expect(page.getByText('Page 1 of 4')).toBeVisible();
   await scenario(page, 'empty');
   await expect(page.getByText('No records yet.', { exact: false })).toBeVisible();
   await scenario(page, 'history-error');
   await expect(page.getByRole('alert')).toContainText('503');
   await scenario(page, 'success');
-  await page.getByRole('button', { name: 'Ranking', exact: true }).click();
+  await selectRecordsTab(page, 'Ranking');
   await expect(page.getByRole('table')).toBeVisible();
   await scenario(page, 'ranking-error');
   await expect(page.getByRole('alert')).toContainText('503');
+  // API failures never block the game.
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await page.waitForFunction(() => !!window.pirateTest);
@@ -497,15 +632,35 @@ test('pending outage submission survives refresh and updates both tabs', async (
   await advance(page, 120);
   await expect(page.getByRole('alert')).toContainText('503');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pirate.pending')!).length)).toBe(1);
+  const record = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('pirate.last')!) as { id: string; score: number },
+  );
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  // The pending battle survives the refresh on its restored result screen.
+  await expect(page.locator('.result-panel')).toContainText('Submission pending');
+  await expect(page.locator('.pending-banner')).toContainText('1 battle(s) awaiting registration');
   await scenario(page, 'success');
   await page.getByRole('button', { name: 'Retry pending battle' }).click();
   await expect(page.locator('.pending-banner')).toHaveCount(0);
+  await expect(page.locator('.result-panel')).toContainText('Battle registered');
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.getByRole('button', { name: 'Match History', exact: true }).click();
   await expect(page.locator('tbody tr')).toHaveCount(1);
-  await page.getByRole('button', { name: 'Ranking', exact: true }).click();
-  await expect(page.getByRole('table')).toBeVisible();
+  await expect(page.locator('tbody tr.highlighted .records-points')).toHaveText(String(record.score));
+  // Both tabs refetch after registration: the same battle now ranks among the fixture captains.
+  await selectRecordsTab(page, 'Ranking');
+  const pageLabel = page.locator('.records-pagination span');
+  await expect(pageLabel).toHaveText(/^Page 1 of \d+$/);
+  const totalPages = Number(/of (\d+)/.exec((await pageLabel.textContent())!)![1]);
+  // A passive battle scores 0 points, so it ranks last.
+  for (let current = 2; current <= totalPages; current++) {
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(pageLabel).toHaveText(`Page ${current} of ${totalPages}`);
+  }
+  const mine = page.locator('tbody tr.highlighted');
+  await expect(mine).toHaveCount(1);
+  await expect(mine.locator('.records-captain')).toHaveText('You');
+  await expect(mine.locator('.records-points')).toHaveText(String(record.score));
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pirate.server')!).length)).toBe(1);
 });
 test('post-commit timeout retries idempotently and late requests do not replace current data', async ({
@@ -517,8 +672,11 @@ test('post-commit timeout retries idempotently and late requests do not replace 
   await expect(page.getByRole('alert')).toContainText('timed out');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pirate.server')!).length)).toBe(1);
   await page.reload();
+  // The same-ID retry after refresh recovers the record the server already committed.
   await expect(page.locator('.pending-banner')).toHaveCount(0);
+  await expect(page.locator('.result-panel')).toContainText('Battle registered');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pirate.server')!).length)).toBe(1);
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await scenario(page, 'out-of-order');
   await page.getByRole('button', { name: 'Ranking', exact: true }).click();
   await scenario(page, 'empty');
@@ -527,8 +685,10 @@ test('post-commit timeout retries idempotently and late requests do not replace 
   await expect(page.locator('tbody tr')).toHaveCount(1);
 });
 test('versioned menu, arena and result visual baselines; layout fits supported screens', async ({ page }) => {
+  await waitForAuthoredArt(page);
   await expect(page).toHaveScreenshot('menu.png', { fullPage: true });
   await play(page);
+  await waitForAuthoredArt(page);
   await expect(page).toHaveScreenshot('arena.png');
   // As in assets/sample.png, the arena fills the screen and every HUD element stays fully visible above it.
   const size = page.viewportSize()!;
@@ -548,6 +708,7 @@ test('versioned menu, arena and result visual baselines; layout fits supported s
   await advance(page, 120);
   await expect(page.locator('.result-panel')).toContainText('Battle registered');
   await expect(page.locator('.app-result')).toHaveCSS('opacity', '1');
+  await waitForAuthoredArt(page);
   await expect(page).toHaveScreenshot('result.png', { fullPage: true });
 });
 

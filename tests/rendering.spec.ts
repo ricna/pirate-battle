@@ -1,5 +1,42 @@
 import { expect, test } from '@playwright/test';
-import { open, play } from './helpers';
+import { observe, open, play } from './helpers';
+
+test('a runtime devicePixelRatio change re-renders the canvas at the new density', async ({ browser }) => {
+  const context = await browser.newContext({ deviceScaleFactor: 1, viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  try {
+    await open(page);
+    await play(page);
+    const density = () =>
+      page.evaluate(() => {
+        const canvas = document.querySelector('canvas')!;
+        return canvas.width / canvas.parentElement!.clientWidth;
+      });
+    expect(await density()).toBeCloseTo(1, 2);
+    const before = await observe(page);
+    // Moving the window to a denser monitor changes devicePixelRatio without resizing the viewport.
+    const cdp = await context.newCDPSession(page);
+    await cdp.send('Emulation.setDeviceMetricsOverride', {
+      width: 1280,
+      height: 800,
+      deviceScaleFactor: 2,
+      mobile: false,
+    });
+    // Emulated density changes do not notify headless pages; a real zoom fires `resize` (and monitor
+    // changes fire the resolution media query), so the test delivers the browser's resize notification.
+    await page.evaluate(() => window.dispatchEvent(new Event('resize')));
+    await expect.poll(density).toBeCloseTo(2, 2);
+    // Density is presentation only: world coordinates and the simulation are unchanged.
+    const after = await observe(page);
+    expect(after.player).toEqual(before.player);
+    expect(after.snapshot.elapsed).toBe(before.snapshot.elapsed);
+    expect(errors).toEqual([]);
+  } finally {
+    await context.close();
+  }
+});
 
 test('static water stays continuous at fractional viewport and DPI scales', async ({ browser }) => {
   for (const deviceScaleFactor of [1, 1.25, 1.5, 2]) {
