@@ -4,6 +4,7 @@ import { FactoryConfig } from './FactoryConfig';
 import { GameDefaults } from './GameDefaults';
 import { PlayerShipConfig } from './PlayerShipConfig';
 import { CollisionConfig } from './CollisionConfig';
+import { CrewConfig } from './CrewConfig';
 import { PresentationConfig, ParticleKind } from './PresentationConfig';
 import type { GameConfig, ShipProfile } from '../contracts/GameConfig';
 import { freezeConfiguration } from '../core/Immutable';
@@ -145,6 +146,7 @@ export class GameConfigFactory {
       rules: GameDefaults.Rules,
       collision: CollisionConfig.Default,
       presentation: PresentationConfig.Default,
+      crew: CrewConfig.Default,
       random: GameDefaults.Random,
       runtime: GameDefaults.Runtime,
     });
@@ -152,7 +154,23 @@ export class GameConfigFactory {
     return freezeConfiguration(config);
   }
   static validate(config: GameConfig): void {
+    positive(config.crew.radius, 'crew collider radius');
+    positive(config.crew.healthPerRescue, 'crew rescue health');
+    if (!Number.isInteger(config.crew.healthPerRescue) || !Number.isInteger(config.crew.seedSalt))
+      throw new Error('Crew rescue health and seed salt must be integers.');
     const presentation = config.presentation;
+    positive(presentation.rescue.combineSeconds, 'rescue label grouping interval');
+    if (presentation.rescue.combineSeconds >= presentation.score.lifetime)
+      throw new Error('Rescue grouping interval must be shorter than the floating label lifetime.');
+    if (config.crew.radius > presentation.profiles[ParticleKind.Crew].waterRadius)
+      throw new Error('Crew collider must fit inside its authored water clearance.');
+    if (
+      !Number.isInteger(presentation.rescue.color) ||
+      presentation.rescue.color < 0 ||
+      presentation.rescue.color > 0xffffff ||
+      !Number.isFinite(presentation.rescue.offsetY)
+    )
+      throw new Error('Invalid crew rescue label settings.');
     finite(presentation.crew.foamPulse, 'foam pulse');
     if (presentation.crew.foamPulse >= 1 || !presentation.score.fontFamily)
       throw new Error('Invalid foam pulse or feedback font.');
@@ -236,12 +254,16 @@ export class GameConfigFactory {
       presentation.score.fontSize,
       presentation.score.hudSeconds,
       presentation.terminalSeconds,
+      presentation.victory.seconds,
+      presentation.victory.fadeOutSeconds,
       presentation.terminalFadeInSeconds,
       presentation.resultFadeSeconds,
       presentation.resultCountSeconds,
       presentation.water.overscan,
     ])
       positive(value, 'presentation settings');
+    if (presentation.victory.fadeOutSeconds > presentation.victory.seconds)
+      throw new Error('Victory fade must fit inside the terminal presentation window.');
     if (
       !presentation.crew.foamSprite ||
       !presentation.score.prefix ||

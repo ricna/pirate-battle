@@ -2,6 +2,7 @@ import { Application, Texture } from 'pixi.js';
 import type { TextureSource } from 'pixi.js';
 import type { GameConfig } from '../contracts/GameConfig';
 import type { Action } from '../contracts/GameDomain';
+import { EndReason } from '../contracts/GameDomain';
 import type { GameObservation } from '../contracts/GameObservation';
 import { TiledMapLoader } from '../assets/TiledMapLoader';
 import type { GameTextureLibrary } from '../assets/GameTextureLibrary';
@@ -20,6 +21,7 @@ export interface GameSessionCallbacks {
   readonly onError: (message: string) => void;
   readonly onComplete: (snapshot: Snapshot) => void;
   readonly onResultReveal: () => void;
+  readonly onTerminalElapsed: (seconds: number) => void;
   readonly onResultReady: () => void;
 }
 
@@ -217,14 +219,15 @@ export class GameSession {
     const game = this.#game;
     if (!game || !this.#finished || this.#transitionComplete || document.hidden) return;
     const { config } = this.#dependencies;
-    const totalSeconds = config.presentation.terminalSeconds + config.presentation.resultFadeSeconds;
+    const victory = game.reason === EndReason.Time;
+    const revealSeconds = victory ? config.presentation.victory.seconds : config.presentation.terminalSeconds;
+    const totalSeconds = revealSeconds + (victory ? 0 : config.presentation.resultFadeSeconds);
     const remaining = Math.min(seconds, totalSeconds - this.#terminalElapsed);
     game.advancePresentation(remaining);
     this.#terminalElapsed += remaining;
-    if (
-      !this.#revealed &&
-      this.#terminalElapsed + config.rules.clockTolerance >= config.presentation.terminalSeconds
-    ) {
+    // Victory fades on this same clock, including hidden-tab suspension and test advancement.
+    if (victory) this.#dependencies.callbacks.onTerminalElapsed(this.#terminalElapsed);
+    if (!this.#revealed && this.#terminalElapsed + config.rules.clockTolerance >= revealSeconds) {
       this.#revealed = true;
       this.#dependencies.callbacks.onResultReveal();
     }
@@ -330,6 +333,7 @@ export class GameSession {
       renderPools: arena.poolStatistics(),
       effects: game.effects.length,
       presentation: {
+        labels: game.presentation.labels,
         particles: game.presentation.particles,
         crew: game.presentation.crewEmissions,
         pools: game.presentation.statistics(),

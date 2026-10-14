@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { GameConfig } from '../../game/contracts/GameConfig';
+import { EndReason } from '../../game/contracts/GameDomain';
 import type { Snapshot } from '../../game/runtime/GameManager';
 import { GameSession } from '../../game/runtime/GameSession';
 import { useApplicationServices } from '../hooks/UseApplicationServices';
@@ -43,6 +44,7 @@ export function GameCanvas({
   const [progress, setProgress] = useState(0);
   const [attempt, setAttempt] = useState(0);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [terminalElapsed, setTerminalElapsed] = useState(0);
   const [abandon, setAbandon] = useState(false);
   const pause = () => sessionRef.current?.pause();
   const resume = () => sessionRef.current?.resume();
@@ -73,6 +75,7 @@ export function GameCanvas({
             onError: setError,
             onComplete: (value) => callbacks.current.onComplete(value),
             onResultReveal: () => callbacks.current.onResultReveal(),
+            onTerminalElapsed: setTerminalElapsed,
             onResultReady: () => callbacks.current.onResultReady(),
           },
         });
@@ -93,6 +96,14 @@ export function GameCanvas({
   }, [attempt, config, audio, services]);
   const paused = snapshot?.status === 'paused';
   const ended = snapshot?.status === 'ended';
+  const victory = ended && snapshot.reason === EndReason.Time;
+  const victoryOpacity = Math.min(
+    1,
+    Math.max(
+      0,
+      (config.presentation.victory.seconds - terminalElapsed) / config.presentation.victory.fadeOutSeconds,
+    ),
+  );
   const commandsDisabled = status !== 'ready' || paused || ended;
   const touchInput: TouchInput = {
     press: (source, action) => sessionRef.current?.press(source, action),
@@ -115,8 +126,12 @@ export function GameCanvas({
       <div ref={viewportRef} className="arena" aria-busy={status === 'loading'}>
         <canvas key={attempt} ref={canvasRef} aria-label="Naval battle arena" />
         {ended && (
-          <div className="terminal-banner" role="status">
-            {snapshot.reason === 'death' ? 'Game Over' : 'Battle Complete'}
+          <div
+            className={`terminal-banner${victory ? ' terminal-victory' : ''}`}
+            style={victory ? { opacity: victoryOpacity } : undefined}
+            role="status"
+          >
+            {victory ? 'You survived! Congratulations!' : 'Game Over'}
           </div>
         )}
         {status === 'loading' && (

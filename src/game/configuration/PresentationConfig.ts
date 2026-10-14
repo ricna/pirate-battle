@@ -67,6 +67,8 @@ export interface PresentationProfile {
     readonly hudSeconds: number;
   };
   readonly terminalSeconds: number;
+  readonly victory: { readonly seconds: number; readonly fadeOutSeconds: number };
+  readonly rescue: { readonly color: number; readonly offsetY: number; readonly combineSeconds: number };
   readonly terminalFadeInSeconds: number;
   readonly resultFadeSeconds: number;
   readonly resultCountSeconds: number;
@@ -197,6 +199,8 @@ export class PresentationConfig {
       hudSeconds: 0.45,
     },
     terminalSeconds: 3,
+    victory: { seconds: 4, fadeOutSeconds: 2 },
+    rescue: { color: 0x68ef83, offsetY: -28, combineSeconds: 0.35 },
     terminalFadeInSeconds: 1,
     resultFadeSeconds: 1,
     resultCountSeconds: 0.7,

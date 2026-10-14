@@ -1,4 +1,5 @@
 import type { MatchRecord } from '../../application/records/MatchRecord';
+import { EndReason } from '../../game/contracts/GameDomain';
 import { Button } from '../components/Button';
 import { uiAsset } from '../assets/UiAssets';
 import { ResultScore } from '../records/ResultScore';
@@ -25,10 +26,10 @@ export function ResultScreen({
 }) {
   return (
     <section className="panel result-panel">
-      <p className="eyebrow">{record.reason === 'death' ? 'Ship Sunk' : 'Battle Complete'}</p>
+      <p className="eyebrow">{record.reason === EndReason.Death ? 'Ship Sunk' : 'VICTORY'}</p>
       <h1>Battle result</h1>
       <p>
-        {record.reason === 'time' ? 'Time expired. The voyage is complete.' : 'Your ship was lost at sea.'}
+        {record.reason === EndReason.Time ? 'You survived! Congratulations!' : 'Your ship was lost at sea.'}
       </p>
       <div className="result-score">
         <img src={uiAsset('hud/icon_score')} alt="" />

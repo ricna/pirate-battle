@@ -1,4 +1,5 @@
 import type { GameConfig } from '../../game/contracts/GameConfig';
+import { EndReason } from '../../game/contracts/GameDomain';
 import metadata from '../../../assets/spritesheet/ui_sheet.json';
 
 import type { Snapshot } from '../../game/runtime/GameManager';
@@ -46,7 +47,7 @@ export function MatchStatusHud({
   const health = snapshot?.health ?? config.player.health;
   const maxHealth = snapshot?.maxHealth ?? config.player.health;
   const ratio = health / maxHealth;
-  const remaining = snapshot?.remaining ?? config.sessionSeconds;
+  const remaining = snapshot?.reason === EndReason.Time ? 0 : (snapshot?.remaining ?? config.sessionSeconds);
   const lowHealth = ratio <= config.rules.lowHealthRatio;
   const lowTime = remaining <= config.rules.timeWarning;
 

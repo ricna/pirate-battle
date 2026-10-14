@@ -21,6 +21,7 @@ export interface GameObservation {
     resultRevealing: boolean;
   };
   presentation: {
+    labels: GameManager['presentation']['labels'];
     particles: GameManager['presentation']['particles'];
     crew: GameManager['presentation']['crewEmissions'];
     pools: ReturnType<GameManager['presentation']['statistics']>;

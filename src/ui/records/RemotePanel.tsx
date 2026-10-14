@@ -22,7 +22,7 @@ const TimeFormat = new Intl.DateTimeFormat('en-GB', {
 });
 
 const ResultLabels: Readonly<Record<EndReason, string>> = Object.freeze({
-  [EndReason.Time]: 'Time up',
+  [EndReason.Time]: 'VICTORY',
   [EndReason.Death]: 'Defeated',
 });
 

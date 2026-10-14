@@ -25,6 +25,7 @@ import type { EffectReadView } from '../entities/Effect';
 import { PresentationSystem } from '../presentation/PresentationSystem';
 import type { PresentationReadView } from '../presentation/PresentationSystem';
 import { FeedbackKind, ImpactKind } from '../contracts/FeedbackEvent';
+import { CrewSystem } from '../systems/CrewSystem';
 import { MatchStatistics } from '../systems/MatchStatistics';
 import type { StatisticsSnapshot } from '../systems/MatchStatistics';
 import type { GameReadView } from '../contracts/GameReadView';
@@ -70,6 +71,7 @@ export class GameManager {
   #disposed = false;
   readonly #contactAt = new Map<string, number>();
   readonly #presentation: PresentationSystem;
+  readonly #crew: CrewSystem;
   readonly #statistics = new MatchStatistics();
   constructor(config: GameConfig, map: LoadedMap, factory?: IShipFactory) {
     this.#readView = createReadView(this);
@@ -84,13 +86,17 @@ export class GameManager {
       new ProjectileFactory(this.#config.pools.projectiles, this.#ids),
     );
     this.#effects = new EffectSystem(this.#config, this.#ids);
-    this.#presentation = new PresentationSystem(this.#config, this.#world);
+    this.#crew = new CrewSystem(this.#config, this.#world, this.#ids);
+    this.#presentation = new PresentationSystem(this.#config, this.#world, this.#crew.readView, this.#ids);
     this.#damage = new DamageSystem(
       this.#config,
       this.#effects,
       this.#match,
       (event) => this.#events.push(event),
-      (event) => this.#presentation.accept(event),
+      (event) => {
+        this.#crew.accept(event);
+        this.#presentation.accept(event);
+      },
       this.#statistics,
     );
     this.#player = this.#factory.createPlayer(this.#ids.next());
@@ -138,6 +144,7 @@ export class GameManager {
   advancePresentation(dt: number): void {
     if (this.#disposed || this.status !== MatchStatus.Ended) return;
     this.#effects.update(dt);
+    this.#crew.update(dt);
     this.#presentation.update(dt);
   }
   get status(): MatchStatus {
@@ -182,8 +189,11 @@ export class GameManager {
     if (this.#disposed || this.status !== MatchStatus.Playing) return;
     dt = this.#match.advance(dt);
     if (!dt) return;
+    const playerStart = { x: this.#player.x, y: this.#player.y };
+    this.#crew.update(dt);
     this.#world.setBodies([this.#player, ...this.#enemies]);
     this.#player.update(dt, input, this.#world);
+    this.#crew.rescue(this.#player, playerStart, (event) => this.#presentation.accept(event));
     for (const mount of this.#config.player.weapons)
       if (input.has(mount.id)) this.#fire(this.#player, mount.id);
     this.#spawning.update(this.elapsed, this.#player, this.#enemies, (profileId, point) => {
@@ -300,6 +310,7 @@ export class GameManager {
     this.#contactAt.clear();
     this.#world.setBodies([]);
     this.#world.drainContacts();
+    this.#crew.dispose();
     this.#presentation.dispose();
   }
 }

@@ -134,12 +134,40 @@ test('both enemy behaviours appear on schedule, navigate obstacles and damage th
     expect(Math.hypot(dx, dy)).toBeGreaterThanOrEqual(enemy.radius - 0.01);
   }
 });
-test('real cannon input sinks enemies once and battle ends on time', async ({ page }) => {
-  await options(page, 60, 10); await play(page); await defendUntilFinished(page);
+test('real cannon input wins on time, fades survival text before results and restarts cleanly', async ({ page }, testInfo) => {
+  await options(page, 60, 10); await play(page); await defendUntilFinished(page, false);
+  const ended = await observe(page);
+  const saved = await page.evaluate(() => localStorage.getItem('pirate.last'));
   const result = await page.evaluate(() => JSON.parse(localStorage.getItem('pirate.last')!) as { reason: string; score: number; duration: number });
   expect(result.reason).toBe('time'); expect(result.duration).toBeCloseTo(60, 3); expect(result.score).toBeGreaterThan(0);
-  await expect(page.locator('.result-panel')).toContainText('Time expired');
-  await page.getByRole('button', { name: 'Play Again' }).click(); await page.waitForFunction(() => !!window.pirateTest);
+  const message = page.getByRole('status').filter({ hasText: 'You survived! Congratulations!' });
+  await expect(message).toBeVisible();
+  await expect(page.locator('.hud-time strong')).toHaveText('00:00');
+  await expect(message).toHaveCSS('color', 'rgb(255, 220, 145)');
+  await expect(message).toHaveCSS('-webkit-text-stroke-color', 'rgb(0, 0, 0)');
+  await expect(message).toHaveCSS('opacity', '1');
+  expect(ended.audio.music.mixGain).toBe(1);
+  const capture = await page.screenshot({ path: `reports/victory-message-${testInfo.project.name}.png` });
+  await testInfo.attach('survival-message-before-results', { body: capture, contentType: 'image/png' });
+  await advance(page, 2 - ended.terminal.elapsed);
+  await expect(message).toHaveCSS('opacity', '1');
+  await advance(page, 1);
+  await expect(message).toHaveCSS('opacity', '0.5');
+  await testInfo.attach('survival-message-half-faded', { body: await page.screenshot({ path: `reports/victory-fade-${testInfo.project.name}.png` }), contentType: 'image/png' });
+  await advance(page, 0.99);
+  await expect(page.getByRole('heading', { name: 'Battle result' })).toHaveCount(0);
+  expect((await observe(page)).snapshot).toEqual(ended.snapshot);
+  expect(await page.evaluate(() => localStorage.getItem('pirate.last'))).toBe(saved);
+  await advance(page, 0.01);
+  await expect(page.locator('.result-panel .eyebrow')).toHaveText('VICTORY');
+  await expect(page.locator('.game')).toHaveCount(0);
+  await expect(page.locator('.result-panel')).toContainText('You survived! Congratulations!');
+  await expect(page.locator('.result-panel')).toContainText('Battle registered');
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Match History', exact: true }).click();
+  await expect(page.locator('.history tr.highlighted .records-result')).toHaveText('VICTORY');
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await play(page);
   const clean = await observe(page); expect(clean.snapshot.health).toBe(100); expect(clean.snapshot.score).toBe(0);
   expect(clean.snapshot.elapsed).toBe(0); expect(clean.enemies).toHaveLength(0); expect(clean.projectiles).toHaveLength(0);
 });
@@ -349,4 +377,69 @@ test('authored loading bar follows engine, map and texture completion', async ({
   } finally {
     releaseEngine(); releaseMap(); releaseAtlas();
   }
+});
+
+
+test('floating crew rescue heals once per person with green feedback and freezes on pause', async ({ page }, testInfo) => {
+  if (testInfo.project.name === 'desktop') await page.setViewportSize({ width: 1800, height: 1000 });
+  await play(page);
+  let state = await page.evaluate(() => {
+    for (let frame = 0; frame < 800; frame++) {
+      window.pirateTest!.advance!(0.1);
+      const current = window.pirateTest!.observe();
+      if (current.presentation.crew.length || current.snapshot.status === 'ended') return current;
+    }
+    return window.pirateTest!.observe();
+  });
+  expect(state.snapshot.status).toBe('playing');
+  expect(state.snapshot.statistics.damageReceived).toBeGreaterThan(0);
+  await page.locator('.game').focus();
+  for (let frame = 0; frame < 300 && !state.presentation.labels.some((label) => label.color === state.config.presentation.rescue.color); frame++) {
+    const target = state.presentation.particles.filter((person) => person.kind === 'crew').sort((a, b) =>
+      Math.hypot(a.x - state.player.x, a.y - state.player.y) - Math.hypot(b.x - state.player.x, b.y - state.player.y))[0];
+    if (!target) throw new Error('Expected live floating crew for the rescue pilot.');
+    const desired = Math.atan2(target.x - state.player.x, state.player.y - target.y);
+    const turn = Math.atan2(Math.sin(desired - state.player.angle), Math.cos(desired - state.player.angle));
+    await page.keyboard.up('a'); await page.keyboard.up('d'); await page.keyboard.up('w');
+    if (Math.abs(turn) > 0.05) await page.keyboard.down(turn > 0 ? 'd' : 'a');
+    if (Math.abs(turn) < 0.3) await page.keyboard.down('w');
+    const previousHealth = state.snapshot.health;
+    const previousDamage = state.snapshot.statistics.damageReceived;
+    await advance(page, state.config.fixedStep);
+    state = await observe(page);
+    const newLabels = state.presentation.labels.filter((label) => label.color === state.config.presentation.rescue.color);
+    if (newLabels.length) expect(state.snapshot.health).toBe(previousHealth + newLabels.reduce((sum, label) => sum + Number(label.text.slice(1)), 0) - (state.snapshot.statistics.damageReceived - previousDamage));
+  }
+  const healthBeforeBatch = state.snapshot.health;
+  const damageBeforeBatch = state.snapshot.statistics.damageReceived;
+  const firstAmount = Number(state.presentation.labels.find((label) => label.color === state.config.presentation.rescue.color)!.text.slice(1));
+  await advance(page, 0.2);
+  state = await observe(page);
+  await page.keyboard.up('a'); await page.keyboard.up('d'); await page.keyboard.up('w');
+  const rescued = state.presentation.labels.filter((label) => label.color === state.config.presentation.rescue.color);
+  expect(rescued.length).toBeGreaterThanOrEqual(1);
+  expect(rescued.length).toBeLessThanOrEqual(5);
+  expect(rescued).toHaveLength(1);
+  expect(rescued[0]!.text).toMatch(/^\+[1-5]$/);
+  expect(state.snapshot.health).toBe(healthBeforeBatch + Number(rescued[0]!.text.slice(1)) - firstAmount - (state.snapshot.statistics.damageReceived - damageBeforeBatch));
+  expect(state.snapshot.score).toBe(0);
+  await expect(page.locator('.hud-health strong')).toHaveText(`${state.snapshot.health} / ${state.player.maxHealth}`);
+  const capture = await page.screenshot({ path: `reports/crew-rescue/rescue-${testInfo.project.name}.png` });
+  await testInfo.attach('green-rescue-feedback', { body: capture, contentType: 'image/png' });
+  await page.getByRole('button', { name: 'Pause game', exact: true }).click();
+  const paused = await observe(page);
+  await advance(page, 2);
+  expect((await observe(page)).presentation).toEqual(paused.presentation);
+  expect((await observe(page)).snapshot.health).toBe(paused.snapshot.health);
+  await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  await advance(page, 0.1);
+  expect((await observe(page)).snapshot.health).toBeGreaterThanOrEqual(paused.snapshot.health);
+  await page.getByRole('button', { name: 'Pause game', exact: true }).click();
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await page.getByRole('button', { name: 'Leave battle', exact: true }).click();
+  await play(page);
+  const restarted = await observe(page);
+  expect(restarted.presentation.labels).toHaveLength(0);
+  expect(restarted.presentation.pools.crew.active).toBe(0);
+  expect(restarted.snapshot.health).toBe(restarted.player.maxHealth);
 });

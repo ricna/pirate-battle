@@ -10,6 +10,7 @@ export const FeedbackKind = {
   Damage: 'damage',
   Sunk: 'sunk',
   Score: 'score',
+  Rescue: 'rescue',
   Contact: 'contact',
   ProjectileImpact: 'projectile-impact',
 } as const;
@@ -21,6 +22,12 @@ interface ShipEvent {
 }
 
 export type FeedbackEvent =
+  | {
+      readonly kind: typeof FeedbackKind.Rescue;
+      readonly crewId: number;
+      readonly point: Point;
+      readonly amount: number;
+    }
   | (ShipEvent & { readonly kind: typeof FeedbackKind.Shot; readonly angle: number; readonly weapon: Action })
   | (ShipEvent & { readonly kind: typeof FeedbackKind.Damage; readonly amount: number })
   | (ShipEvent & {

@@ -1,5 +1,5 @@
 import { ObjectPool } from '../core/ObjectPool';
-import { EntityIdSequence } from '../core/EntityIdSequence';
+import type { EntityIdSequence } from '../core/EntityIdSequence';
 import type { ICollisionWorld } from '../core/CollisionWorld';
 import type { GameConfig, ShipVisualProfile } from '../contracts/GameConfig';
 import { ParticleKind } from '../configuration/PresentationConfig';
@@ -12,6 +12,7 @@ import type { FeedbackEvent } from '../contracts/FeedbackEvent';
 import { CosmeticRandom } from './CosmeticRandom';
 import { VisualParticle } from './VisualParticle';
 import type { ParticleReadView } from './VisualParticle';
+import type { CrewEmission, CrewSystemReadView } from '../systems/CrewSystem';
 
 export interface ShipFeedback {
   readonly damageAt: number;
@@ -24,12 +25,6 @@ export interface FloatingScore extends Point {
   readonly alpha: number;
   readonly text: string;
   readonly color: number;
-}
-export interface CrewEmission {
-  readonly shipId: number;
-  readonly count: number;
-  readonly at: number;
-  readonly sprites: readonly string[];
 }
 export interface PresentationReadView {
   readonly time: number;
@@ -55,9 +50,9 @@ export class PresentationSystem {
   readonly #config: GameConfig;
   readonly #world: ICollisionWorld;
   readonly #random: CosmeticRandom;
-  readonly #ids = new EntityIdSequence();
+  readonly #ids: EntityIdSequence;
   readonly #pool: ObjectPool<VisualParticle>;
-  readonly #crewPool: ObjectPool<VisualParticle>;
+  readonly #crew: CrewSystemReadView;
   readonly #feedback = new Map<number, ShipFeedback>();
   readonly #trailAt = new Map<number, number>();
   readonly #sunkIds = new Set<number>();
@@ -70,26 +65,25 @@ export class PresentationSystem {
     readonly text: string;
     readonly color: number;
   })[] = [];
-  #crews: readonly CrewEmission[] = [];
   #time = 0;
   #shakeAt = -Infinity;
   #shakeStrength = 0;
   #scoreAt = -Infinity;
+  #rescueAt = -Infinity;
+  #rescueLabelId: number | null = null;
+  #rescueAmount = 0;
   #reducedMotion = false;
   #disposed = false;
   readonly #readView: PresentationReadView;
 
-  constructor(config: GameConfig, world: ICollisionWorld) {
+  constructor(config: GameConfig, world: ICollisionWorld, crew: CrewSystemReadView, ids: EntityIdSequence) {
+    this.#crew = crew;
+    this.#ids = ids;
     this.#config = config;
     this.#world = world;
     this.#random = new CosmeticRandom(config.seed ^ config.presentation.seedSalt, config.random);
     this.#pool = new ObjectPool(
       config.presentation.particles,
-      () => new VisualParticle(),
-      (particle) => particle.reset(),
-    );
-    this.#crewPool = new ObjectPool(
-      config.presentation.crewPool,
       () => new VisualParticle(),
       (particle) => particle.reset(),
     );
@@ -126,10 +120,10 @@ export class PresentationSystem {
     return this.#time;
   }
   get particles(): readonly ParticleReadView[] {
-    return this.#view;
+    return Object.freeze([...this.#view, ...this.#crew.particles]);
   }
   get crewEmissions(): readonly CrewEmission[] {
-    return this.#crews;
+    return this.#crew.emissions;
   }
   get reducedMotion(): boolean {
     return this.#reducedMotion;
@@ -175,16 +169,10 @@ export class PresentationSystem {
   #emit(kind: ParticleKind, point: Point, options: ParticleEmission = {}): void {
     const profile = options.profile ?? this.#config.presentation.profiles[kind];
     if (profile.waterOnly && !this.#world.isFree(point, profile.waterRadius)) {
-      if (kind === ParticleKind.Crew) throw new Error('Crew emission requires validated water clearance.');
       return;
     }
-    const pool = kind === ParticleKind.Crew ? this.#crewPool : this.#pool;
-    const particle = pool.acquire();
-    if (!particle) {
-      if (kind === ParticleKind.Crew)
-        throw new Error('Configured crew capacity cannot satisfy the required survivor count.');
-      return;
-    }
+    const particle = this.#pool.acquire();
+    if (!particle) return;
     const selected =
       options.sprite ?? profile.sprites[Math.floor(this.#random.next() * profile.sprites.length)];
     if (!selected) throw new Error('Presentation requires an explicit authored sprite.');
@@ -220,27 +208,6 @@ export class PresentationSystem {
     if (this.#sunkIds.has(shipId)) return;
     this.#sunkIds.add(shipId);
     const settings = this.#config.presentation;
-    const count = Math.floor(this.#random.between(settings.crew.minimum, settings.crew.maximum + 1));
-    if (this.#crewPool.available < count)
-      throw new Error('Crew pool must reserve every survivor in a sinking group.');
-    const profile = settings.profiles[ParticleKind.Crew];
-    const sprites: string[] = [];
-    for (let index = 0; index < count; index++) {
-      const sprite = profile.sprites[Math.floor(this.#random.next() * profile.sprites.length)]!;
-      sprites.push(sprite);
-      this.#emit(ParticleKind.Crew, point, {
-        angle: (index / count) * Math.PI * 2 + this.#random.between(0, Math.PI / count),
-        speed: settings.crew.scatterSpeed,
-        sprite,
-        sourceShipId: shipId,
-      });
-    }
-    this.#crews = Object.freeze(
-      [
-        ...this.#crews,
-        Object.freeze({ shipId, count, at: this.#time, sprites: Object.freeze(sprites) }),
-      ].slice(-settings.eventHistoryCapacity),
-    );
     const wreckSprite = visual.wreckSprite;
     if (!wreckSprite) throw new Error('Sinking requires an authored damage-stage sprite.');
     this.#emit(ParticleKind.Wreck, point, {
@@ -319,6 +286,28 @@ export class PresentationSystem {
           ].slice(-settings.score.maxCount),
         );
         break;
+      case FeedbackKind.Rescue: {
+        const previous = this.#labels.find((label) => label.id === this.#rescueLabelId);
+        const combine = previous && this.#time - this.#rescueAt <= settings.rescue.combineSeconds;
+        this.#rescueAmount = (combine ? this.#rescueAmount : 0) + event.amount;
+        this.#rescueLabelId = combine ? previous.id : this.#ids.next();
+        this.#rescueAt = this.#time;
+        const label = Object.freeze({
+          ...event.point,
+          id: this.#rescueLabelId,
+          at: this.#time,
+          y: event.point.y + settings.rescue.offsetY,
+          text: `+${this.#rescueAmount}`,
+          color: settings.rescue.color,
+        });
+        this.#labels = Object.freeze(
+          (combine
+            ? this.#labels.map((existing) => (existing.id === label.id ? label : existing))
+            : [...this.#labels, label]
+          ).slice(-settings.score.maxCount),
+        );
+        break;
+      }
       case FeedbackKind.Contact:
         this.#emit(ParticleKind.Splash, event.contact.point);
         if (event.contact.sourceId === event.playerId || event.contact.targetId === event.playerId) {
@@ -339,8 +328,7 @@ export class PresentationSystem {
     for (const particle of this.#active) particle.update(dt, this.#world, !this.#reducedMotion);
     this.#active = this.#active.filter((particle) => {
       if (!particle.expired) return true;
-      const pool = particle.view.kind === ParticleKind.Crew ? this.#crewPool : this.#pool;
-      pool.release(particle);
+      this.#pool.release(particle);
       return false;
     });
     for (const projectile of projectiles) {
@@ -370,9 +358,6 @@ export class PresentationSystem {
     this.#labels = this.#labels.filter(
       (label) => this.#time - label.at < this.#config.presentation.score.lifetime,
     );
-    this.#crews = this.#crews.filter(
-      (crew) => this.#time - crew.at < this.#config.presentation.profiles[ParticleKind.Crew].lifetime,
-    );
     this.#publish();
   }
 
@@ -380,20 +365,21 @@ export class PresentationSystem {
     this.#view = Object.freeze(this.#active.map((particle) => particle.view));
   }
   statistics() {
-    return { particles: this.#pool.statistics(), crew: this.#crewPool.statistics() };
+    return { particles: this.#pool.statistics(), crew: this.#crew.statistics() };
   }
   dispose(): void {
     if (this.#disposed) return;
     this.#disposed = true;
     this.#active.length = 0;
     this.#pool.dispose((particle) => particle.reset());
-    this.#crewPool.dispose((particle) => particle.reset());
     this.#feedback.clear();
     this.#trailAt.clear();
     this.#sunkIds.clear();
     this.#scoredIds.clear();
     this.#labels = [];
-    this.#crews = [];
+    this.#rescueLabelId = null;
+    this.#rescueAmount = 0;
+    this.#rescueAt = -Infinity;
     this.#publish();
   }
 }

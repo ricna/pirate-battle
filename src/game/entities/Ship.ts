@@ -115,6 +115,13 @@ export abstract class Ship extends Entity {
     this.#health = Math.max(0, this.#health - amount);
     return !this.alive;
   }
+  restoreHealth(amount: number): number {
+    if (!Number.isFinite(amount) || amount < 0) throw new Error('Healing must be finite and non-negative.');
+    if (!this.alive) return 0;
+    const restored = Math.min(amount, this.maxHealth - this.#health);
+    this.#health += restored;
+    return restored;
+  }
   protected steer(turn: number, dt: number): void {
     const maximum = this.#profile.movement.turnSpeed * dt;
     this.#angle += Math.max(-maximum, Math.min(maximum, turn));

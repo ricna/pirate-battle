@@ -15,6 +15,11 @@ export function HowToPlay({ onMainMenu }: { onMainMenu: () => void }) {
         broadside.
       </p>
 
+      <p>
+        Sail over floating crew to rescue them and recover 1 health per person. Quick rescues combine into a
+        green +2, +3 or more. At full health, crew remain available until they disappear.
+      </p>
+
       <h2>Controls</h2>
       <ControlsHelp />
 

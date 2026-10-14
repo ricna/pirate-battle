@@ -2,6 +2,7 @@ import type { Action, Allegiance, EffectKind, GameEvent } from './GameDomain';
 import type { Point } from '../math/Geometry';
 import type { CollisionProfile } from '../configuration/CollisionConfig';
 import type { PresentationProfile } from '../configuration/PresentationConfig';
+import type { CrewProfile } from '../configuration/CrewConfig';
 
 export interface MovementProfile {
   readonly initialSpeed: number;
@@ -115,6 +116,7 @@ export interface GameConfig {
   readonly pools: { readonly projectiles: PoolProfile; readonly effects: PoolProfile };
   readonly collision: CollisionProfile;
   readonly presentation: PresentationProfile;
+  readonly crew: CrewProfile;
   readonly effects: Readonly<Record<EffectKind, EffectProfile>>;
   readonly rules: {
     readonly pointsPerKill: number;

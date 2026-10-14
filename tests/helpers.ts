@@ -32,10 +32,11 @@ export async function options(page: Page, duration: number, spawn: number) {
 }
 // Steering uses actual keyboard controls and advances the actual fixed-step rules.
 // It never writes positions, health, scores, entities or cooldowns.
-export async function defendUntilFinished(page: Page) {
+export async function defendUntilFinished(page: Page, waitForResult = true) {
   await page.locator('.game').focus(); await page.keyboard.down('Space');
   for (let i = 0; i < 700; i++) {
     const state = await page.evaluate(() => window.pirateTest?.observe()); if (!state) break;
+    if (!waitForResult && state.snapshot.status === 'ended') break;
     const enemy = [...state.enemies].sort((a, b) =>
       Math.hypot(a.x - state.player.x, a.y - state.player.y) - Math.hypot(b.x - state.player.x, b.y - state.player.y))[0];
     let turn = 0;
@@ -46,5 +47,5 @@ export async function defendUntilFinished(page: Page) {
     await page.evaluate((s) => window.pirateTest?.advance?.(s), Math.abs(turn) > 0.02 ? Math.min(0.2, Math.abs(turn) / state.config.player.movement.turnSpeed) : 0.2);
   }
   await page.keyboard.up('Space'); await page.keyboard.up('a'); await page.keyboard.up('d');
-  await expect(page.getByRole('heading', { name: 'Battle result' })).toBeVisible();
+  if (waitForResult) await expect(page.getByRole('heading', { name: 'Battle result' })).toBeVisible();
 }
