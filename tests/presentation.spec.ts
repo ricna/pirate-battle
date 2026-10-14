@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { AudioConfig } from '../src/game/configuration/AudioConfig';
 
 import { GameConfigFactory } from '../src/game/configuration/GameConfigFactory';
+import { freezeConfiguration } from '../src/game/core/Immutable';
 import { ParticleKind } from '../src/game/configuration/PresentationConfig';
 import { CollisionWorld } from '../src/game/core/CollisionWorld';
 import { CrewSystem } from '../src/game/systems/CrewSystem';
@@ -319,7 +320,9 @@ test('rapid rescue feedback updates the same label, restarts its lifetime and sp
 });
 
 test('the authored ship trail follows the stern, stays bounded, freezes on pause and fades after stopping', () => {
-  const config = GameConfigFactory.create({ ...OptionsConfig.Default, spawnSeconds: 10 });
+  // No opening fleet and the longest spawn interval leave the player's trail as the only one.
+  const base = GameConfigFactory.create({ ...OptionsConfig.Default, spawnSeconds: 10 });
+  const config = freezeConfiguration({ ...base, spawning: { ...base.spawning, initialCount: 0 } });
   const settings = config.presentation.shipTrail;
   const game = new GameManager(config, map());
   const sail = (actions: readonly Action[], seconds: number) => {

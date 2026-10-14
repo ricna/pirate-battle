@@ -1,5 +1,6 @@
 import { OptionsConfig } from '../src/application/configuration/OptionsConfig';
 import { GameConfigFactory } from '../src/game/configuration/GameConfigFactory';
+import { freezeConfiguration } from '../src/game/core/Immutable';
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
@@ -122,8 +123,9 @@ test('island contact dissipates speed and does not spam impacts while held', () 
 });
 
 test('each separate island collision costs the player 1 health, never scores and can sink the ship', () => {
-  // The longest spawn interval keeps enemies out of this short, enemy-free manoeuvre.
-  const config = GameConfigFactory.create({ ...OptionsConfig.Default, spawnSeconds: 10 });
+  // No opening fleet and the longest spawn interval keep this short manoeuvre enemy-free.
+  const base = GameConfigFactory.create({ ...OptionsConfig.Default, spawnSeconds: 10 });
+  const config = freezeConfiguration({ ...base, spawning: { ...base.spawning, initialCount: 0 } });
   const damage = config.collision.islandImpactDamage.player;
   expect(damage).toBe(1);
   expect(config.collision.islandImpactDamage.enemy).toBe(0);

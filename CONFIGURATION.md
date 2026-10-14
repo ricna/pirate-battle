@@ -11,7 +11,7 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | `EnemyShooterConfig.ts` | Shooter health, movement, navigation, range, aim cone and weapon cooldown |
 | `ProjectileConfig.ts` | Front/broadside/enemy projectile damage, speed, acceleration, drag, TTL, radius and sprite dimensions |
 | `ShipVisualConfig.ts` | Each ship's explicit intact/damaged/heavily damaged sprites, hull dimensions, fire and health indicator assets |
-| `GameDefaults.ts` | Simulation clock, seed, spawn points/weights/cap, pool capacities, effects, warnings and runtime budgets |
+| `GameDefaults.ts` | Simulation clock, seed, spawn points, opening fleet, reinforcements, spawn-point choice, weights and cap, pool capacities, effects, warnings and runtime budgets |
 | `FactoryConfig.ts` | Enemy profile → concrete subclass registrations |
 | `InputConfig.ts` | Keyboard bindings, pause keys, touch command labels/icons and Forward drag threshold/heading tolerance |
 | `CameraConfig.ts` | Display-only compact viewport thresholds, visible map area fraction and minimum ship scale; see [MOBILE.md](MOBILE.md) |
@@ -67,9 +67,35 @@ To add a different enemy behaviour:
 
 GameManager, projectile collision/scoring and ArenaRenderer do not branch on enemy kind. `ShipFactory` uses the registration, the new subclass supplies behaviour, and its profile supplies rendering. The core tests demonstrate a third registered subclass without changing these systems.
 
-The initial sequence guarantees the first successful enemy types; subsequent spawns use normalized positive weights. Player distance and existing-ship separation filter authored points. If all points are unsafe or the active cap is reached, that interval is skipped. No synthetic spawn position is created.
+## Enemy spawning
 
-`GameDefaults.Spawning.hullSeparation` is the minimum distance between a spawn point and an existing enemy, as a multiple of that enemy's hull radius plus the largest registered enemy hull radius (the profile is rolled after the point). It must be at least 1, so a new hull never starts inside another. `safeDistance` must be at least the player hull radius plus the largest enemy hull radius. A new enemy faces the target when a straight sailing line is clear, otherwise the first corner of its route, so it does not start by turning into an island.
+Spawn balance lives in `GameDefaults.Spawning` and `GameDefaults.SpawnPoints` (`src/game/configuration/GameDefaults.ts`); the interval is the player's **Enemy spawn time** option. Enemies arrive from three sources that add up:
+
+1. **Opening fleet.** `initialCount` enemies are already sailing on the first frame.
+2. **Interval.** One enemy every `spawnSeconds` (Options, default 5 s), as before.
+3. **Reinforcements.** Every `sunkEnemiesPerReinforcement` enemies sunk, by any cause (cannon fire or a Chaser's own ram), one extra enemy arrives on the next fixed step, even if an interval spawn has just happened.
+
+With `initialCount: 3` and `sunkEnemiesPerReinforcement: 1`, every sinking is replaced at once, so at least three enemies are always hunting the player. The interval keeps adding enemies on top, and since sinkings are replaced, the fleet never shrinks below the size it has reached.
+
+| Setting | Default | Unit and rule | Effect |
+| --- | --- | --- | --- |
+| `initialCount` | 3 | Enemies; integer from 0 to `maxCount` | Opening fleet. 0 restores an empty start. |
+| `sunkEnemiesPerReinforcement` | 1 | Sunk enemies; positive integer | 1 replaces every sinking; 2 brings one enemy for every two sunk, so the fleet slowly thins as the player wins. |
+| `maxCount` | 28 | Live enemies; positive integer | Cap for every source. |
+| `safeDistance` | 440 | Logical pixels from the player | Closer points are never used. |
+| `hullSeparation` | 1.25 | Multiple of hull radii, at least 1 | Keeps a new hull clear of enemies near a point. |
+| `farthestPointChoices` | 4 | Points; positive integer | A spawn picks at random among this many usable points farthest from the player. 1 always uses the farthest; higher values spread arrivals around the arena. |
+| `recentPointsExcluded` | 2 | Points; integer below the number of spawn points | The latest points used cannot be used again, so enemies never arrive twice in a row from one place. 0 allows repeats. |
+| `initialSequence` | Chaser, Shooter | Registered enemy IDs | The first successful spawns, so both behaviours appear at once. |
+| `weights` | Shooter 0.5, Chaser 0.5 | Positive, normalized | Profile of every later spawn. |
+
+`GameDefaults.SpawnPoints` lists 21 authored water positions: around the arena border, then in the open channels between islands. A point is usable when it is at least `safeDistance` from the player, is not one of the `recentPointsExcluded` latest points and has no enemy hull nearby. The usable points are ranked by distance from the player and one of the first `farthestPointChoices` is chosen with the match seed. No synthetic spawn position is created. When no point is usable or the cap is reached, an interval spawn is skipped, while the opening fleet and reinforcements are owed and arrive at the first step with a usable point.
+
+`hullSeparation` is the minimum distance between a spawn point and an existing enemy, as a multiple of that enemy's hull radius plus the largest registered enemy hull radius (the profile is rolled after the point). It must be at least 1, so a new hull never starts inside another. `safeDistance` must be at least the player hull radius plus the largest enemy hull radius. A new enemy faces the target when a straight sailing line is clear, otherwise the first corner of its route, so it does not start by turning into an island.
+
+Every authored point must be free water for every registered enemy radius; the match fails to start otherwise. A new point should also have a sailing route to the rest of the arena. More sinkings also mean more survivors in the water: `PresentationConfig.crewPool` must hold five survivors for every sinking that can happen within a crew lifetime, which validation estimates from the cap, the interval and one generation of reinforcements. Lowering `sunkEnemiesPerReinforcement` or `spawnSeconds` can require a larger crew pool, and validation reports the required size.
+
+Balance version `arena_00-v1/balance-v8` introduced the opening fleet, reinforcements and the 21-point farthest-choice selection, and separates its ranking snapshots from earlier ones.
 
 ## Enemy navigation
 

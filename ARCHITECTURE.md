@@ -63,7 +63,7 @@ Chasers seek and ram, causing damage and self-destruction without score. Shooter
 
 Island collisions damage hulls. `ShipCollisionWorld` records the strongest blocked-movement contact per ship and coast in each step; `GameManager` keeps the existing significance filter (`minimumImpactSpeed`, then one event per `impactCooldown` for that contact key), which already drives the impact sound and splash. Each significant island contact then applies `config.collision.islandImpactDamage[allegiance]` from the frozen match snapshot through `DamageSystem` with no kill credit: 1 for the player and 0 for enemies by default, authored in `CollisionConfig.Default`. A hull resting against a coast stops generating significant contacts, so health is lost once per collision rather than once per frame. Island damage that sinks the player ends the match by death in the same step. Boundary contacts never apply island damage, and the Chaser retains its independent configured ram damage.
 
-Spawn candidates are explicit authored water positions. Each is validated against the map before combat. At spawn time candidates must be sufficiently far from the player and nearby enemies. If no candidate is safe, that interval is skipped. The first two successful spawns guarantee both types; subsequent distribution is seeded. The active enemy cap is 28.
+Spawn candidates are 21 explicit authored water positions. Each is validated against the map before combat. `SpawnSystem` adds enemies from three sources: the opening fleet (spawned by the `GameManager` constructor, so it is on the water from the first frame), the configured interval, and one reinforcement per `sunkEnemiesPerReinforcement` sinkings, which `GameManager` reports as it removes each sunk enemy. At spawn time candidates must be sufficiently far from the player and nearby enemies and must not be one of the most recently used points; one of the farthest remaining candidates is chosen with the match seed. If no candidate is usable, an interval spawn is skipped, while the opening fleet and reinforcements stay owed until one is. The first two successful spawns guarantee both types; subsequent distribution is seeded. The active enemy cap is 28.
 
 ## Rendering, UI and audio
 
@@ -121,7 +121,7 @@ Playwright runs isolated desktop and landscape mobile Chromium contexts, real ke
 
 ## Balancing decisions
 
-Values come from the authored profiles (balance `arena_00-v1/balance-v7`, seed 20261012). The intent is a readable three-minute arcade fight in which positioning matters more than reflexes.
+Values come from the authored profiles (balance `arena_00-v1/balance-v8`, seed 20261012). The intent is a readable three-minute arcade fight in which positioning matters more than reflexes.
 
 | Decision | Values | Reasoning |
 | --- | --- | --- |
@@ -130,7 +130,7 @@ Values come from the authored profiles (balance `arena_00-v1/balance-v7`, seed 2
 | Enemies need different answers | Chaser 40 HP at 125 px/s; Shooter 65 HP at 100 px/s, range 580, cooldown 2.2 s | The Chaser is fragile but closes in and must be sunk before contact; the slower, tougher Shooter holds at range, so the player must approach or outmanoeuvre it. |
 | Readable enemy fire | Player balls 780 px/s; enemy balls 340 px/s; lifetime 1.6 s | Enemy balls are slow enough to dodge, yet reach about 600 px from the hull (58 px muzzle offset plus 544 px of flight), covering the 580 px holding range. |
 | Gradual sailing | Player 230 px/s, acceleration 230 px/s², braking 115 px/s², turn 2.6 rad/s | About 1 s to full speed and 2 s to stop gives momentum without sluggish controls; enemies turn more slowly (2.1 rad/s), so out-turning them is a skill. |
-| Spawn pressure | Default 5 s (Options 2–10 s), first Chaser then Shooter, then seeded 50/50, cap 28, at least 440 px from the player | Both behaviours appear early in every session. The minimum interval bounds pressure and entity counts; the maximum still produces both types in a 60 s session. Spawns never start within ramming reach. |
+| Spawn pressure | Opening fleet of 3; every sinking replaced at once; plus one enemy every 5 s (Options 2–10 s); first Chaser then Shooter, then seeded 50/50; cap 28; at least 440 px from the player, at random among the 4 farthest points and never one of the last 2 used | At least three enemies hunt the player from the first frame, and both behaviours appear at once. Replacing every sinking keeps pressure constant while the interval raises it over time. Choosing among several far points, without reuse, spreads arrivals instead of a queue from one place. Spawns never start within ramming reach. |
 | Recovery | Each rescued survivor restores 1 HP (2–5 per sinking) | Sinking enemies sustains an aggressive player; healing never exceeds the maximum and never scores. |
 | Close ship contact | Hull radius 40 for every ship (sprite 67 × 113) | Side-by-side hulls stop 13 px apart instead of a full ship width; head-on bows overlap at most 33 px, a smaller visual error than the previous empty gap. Rams and rescues require a correspondingly closer approach. |
 

@@ -124,7 +124,7 @@ export class PresentationConfig {
     seedSalt: 0x5f3759df,
     eventHistoryCapacity: 64,
     particles: { initialCapacity: 96, growthSize: 64, maxCapacity: 512 },
-    crewPool: { initialCapacity: 32, growthSize: 32, maxCapacity: 256 },
+    crewPool: { initialCapacity: 32, growthSize: 32, maxCapacity: 352 },
     profiles: {
       [ParticleKind.Crew]: {
         ...particleBase,

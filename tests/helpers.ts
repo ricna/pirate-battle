@@ -82,35 +82,53 @@ export async function options(page: Page, duration: number, spawn: number) {
   await setOption(page, 'Enemy spawn time', `${spawn} s`);
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
 }
+// Pilot tuning, in logical pixels and radians: survivors are collected only while no enemy is this close,
+// and the bow must point this close to a survivor before sailing to it.
+const rescueClearance = 350;
+const rescueHeadingTolerance = 0.6;
+const headingTolerance = 0.02;
+const wrapAngle = (angle: number) => Math.atan2(Math.sin(angle), Math.cos(angle));
+const bearing = (from: { x: number; y: number }, to: { x: number; y: number }) =>
+  Math.atan2(to.x - from.x, from.y - to.y);
 // Steering uses actual keyboard controls and advances the actual fixed-step rules.
 // It never writes positions, health, scores, entities or cooldowns.
+// Every enemy is replaced when sunk, so the pilot keeps sailing with the nearest enemy abeam for its
+// broadsides, and heals from survivors whenever no enemy is close.
 export async function defendUntilFinished(page: Page, waitForResult = true) {
   await page.locator('.game').focus();
-  await page.keyboard.down('Space');
-  for (let i = 0; i < 700; i++) {
+  for (const key of ['w', 'Space', 'q', 'e']) await page.keyboard.down(key);
+  for (let i = 0; i < 1500; i++) {
     const state = await page.evaluate(() => window.pirateTest?.observe());
     if (!state) break;
     if (!waitForResult && state.snapshot.status === 'ended') break;
-    const enemy = [...state.enemies].sort(
-      (a, b) =>
-        Math.hypot(a.x - state.player.x, a.y - state.player.y) -
-        Math.hypot(b.x - state.player.x, b.y - state.player.y),
-    )[0];
+    const { player } = state;
+    const range = (point: { x: number; y: number }) => Math.hypot(point.x - player.x, point.y - player.y);
+    const enemy = [...state.enemies].sort((a, b) => range(a) - range(b))[0];
+    const survivor = state.presentation.particles
+      .filter((particle) => particle.kind === 'crew')
+      .sort((a, b) => range(a) - range(b))[0];
     let turn = 0;
-    if (enemy) {
-      const desired = Math.atan2(enemy.x - state.player.x, state.player.y - enemy.y);
-      turn = Math.atan2(Math.sin(desired - state.player.angle), Math.cos(desired - state.player.angle));
+    let sail = true;
+    if (survivor && player.health < player.maxHealth && (!enemy || range(enemy) > rescueClearance)) {
+      turn = wrapAngle(bearing(player, survivor) - player.angle);
+      sail = Math.abs(turn) < rescueHeadingTolerance;
+    } else if (enemy) {
+      const port = wrapAngle(bearing(player, enemy) + Math.PI / 2 - player.angle);
+      const starboard = wrapAngle(bearing(player, enemy) - Math.PI / 2 - player.angle);
+      turn = Math.abs(port) < Math.abs(starboard) ? port : starboard;
     }
     await page.keyboard.up('a');
     await page.keyboard.up('d');
-    if (Math.abs(turn) > 0.02) await page.keyboard.down(turn > 0 ? 'd' : 'a');
+    if (sail) await page.keyboard.down('w');
+    else await page.keyboard.up('w');
+    if (Math.abs(turn) > headingTolerance) await page.keyboard.down(turn > 0 ? 'd' : 'a');
+    const turning = Math.abs(turn) > headingTolerance;
+    const turnSeconds = Math.abs(turn) / state.config.player.movement.turnSpeed;
     await page.evaluate(
       (s) => window.pirateTest?.advance?.(s),
-      Math.abs(turn) > 0.02 ? Math.min(0.2, Math.abs(turn) / state.config.player.movement.turnSpeed) : 0.2,
+      turning ? Math.max(state.config.fixedStep, Math.min(0.2, turnSeconds)) : 0.2,
     );
   }
-  await page.keyboard.up('Space');
-  await page.keyboard.up('a');
-  await page.keyboard.up('d');
+  for (const key of ['w', 'Space', 'q', 'e', 'a', 'd']) await page.keyboard.up(key);
   if (waitForResult) await expect(page.getByRole('heading', { name: 'Battle result' })).toBeVisible();
 }

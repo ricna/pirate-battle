@@ -27,6 +27,7 @@ Accepted product, gameplay and presentation decisions, in the order they were ma
 | D17 | [Screen routes and result persistence](#d17--screen-routes-and-result-persistence) | 14 October 2026 |
 | D18 | [Fullscreen keyboard controls](#d18--fullscreen-keyboard-controls) | 14 October 2026 |
 | D19 | [Compact result and no-scroll screens](#d19--compact-result-and-no-scroll-screens) | 14 October 2026 |
+| D20 | [Opening fleet, reinforcements and spawn-point variety](#d20--opening-fleet-reinforcements-and-spawn-point-variety) | 14 October 2026 |
 | D21 | [Required full screen, Quit and the rotated landscape layout](#d21--required-full-screen-quit-and-the-rotated-landscape-layout) | 14 October 2026 |
 | D22 | [Compact fixed-size controls](#d22--compact-fixed-size-controls) | 14 October 2026 |
 
@@ -184,6 +185,12 @@ The owner requested Alt+Enter to toggle fullscreen and, where possible, to keep 
 _Accepted 14 October 2026._
 
 The owner requested a cleaner Battle result and required every menu screen to fit on phones without scrolling, including short landscape. The result groups the score, outcome, duration and end reason beside centered statistic cards, with registration feedback and 44-pixel actions below. Main Menu, Options, Captain's Log, How To Play, Pause and Battle result must keep their boards and actions inside the available viewport. How To Play divides its content into three selectable topics; records continue to use their existing pagination. Preserve the authored panel/button art, visible information and keyboard access. On compact screens, the full-screen command may use its symbol while retaining its accessible name and Alt+Enter shortcut. This supersedes the short-screen scrolling allowance in D07 and the earlier mobile notes.
+
+## D20 — Opening fleet, reinforcements and spawn-point variety
+
+_Accepted 14 October 2026._
+
+The owner requested that a battle start with three enemies already sailing, that every enemy sunk be replaced immediately by a new one in addition to the interval spawns, so at least three enemies always hunt the player and an accumulated fleet never shrinks, and that the number of sinkings per replacement be configurable. Sinkings by any cause count, including a Chaser destroyed by its own ram. The owner also found arrivals repetitive, as if every enemy came from one place in a queue: there must be more spawn points, arrivals must prefer points far from the player, and two consecutive enemies must never come from the same point. `GameDefaults.Spawning` authors `initialCount` (3), `sunkEnemiesPerReinforcement` (1), `farthestPointChoices` (4) and `recentPointsExcluded` (2); `GameDefaults.SpawnPoints` grows from 8 to 21 validated water positions. The opening fleet and reinforcements wait for a usable point instead of being skipped. The Enemy spawn time option keeps its meaning and limits. See [CONFIGURATION.md](CONFIGURATION.md#enemy-spawning). This is a rule change: balance version `balance-v8`.
 
 ## D21 — Required full screen, Quit and the rotated landscape layout
 

@@ -58,7 +58,13 @@ for (const kind of [ShipKind.Chaser, ShipKind.Shooter]) {
       ...base,
       playerSpawn: coastHuggingPlayer,
       spawnPoints: [hiddenSpawn],
-      spawning: { ...base.spawning, maxCount: 1, initialSequence: [kind] },
+      spawning: {
+        ...base.spawning,
+        maxCount: 1,
+        initialCount: 1,
+        recentPointsExcluded: 0,
+        initialSequence: [kind],
+      },
     });
     const simulation = new GameManager(config, map());
     const seconds = 25;

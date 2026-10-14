@@ -45,6 +45,7 @@ export default defineConfig({
         '**/collision.spec.ts',
         '**/navigation.spec.ts',
         '**/presentation.spec.ts',
+        '**/spawning.spec.ts',
       ],
     },
     {

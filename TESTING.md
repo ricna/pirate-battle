@@ -37,7 +37,7 @@ npm run test:docker        # the same suite inside the CI Linux image
 
 | Project | Environment | Specs |
 | --- | --- | --- |
-| `core` | Node, no browser | `core`, `collision`, `navigation`, `presentation`: configuration validation, pools, factories, collisions, island damage, navigation, crew rescue, ship trail, presentation rules |
+| `core` | Node, no browser | `core`, `collision`, `navigation`, `presentation`, `spawning`: configuration validation, pools, factories, collisions, island damage, navigation, spawning, crew rescue, ship trail, presentation rules |
 | `rendering` | Chromium, 1482×962 and others, DPR 1–2 | Seamless water at fractional viewport/DPI scales; runtime devicePixelRatio change |
 | `mobile-layout` | Chromium at phone and tablet sizes, portrait and landscape | `mobile`: player-following camera bounds, the rotated portrait layout, compact menus and HUD without overflow and with 4 px spacing, required full screen, Alt+Enter, Quit, and unsupported or refused full screen |
 | `desktop` | Chromium 1280×800 at 1× | `game`, `music`, `network`, `accessibility`, `pause` |
@@ -54,7 +54,7 @@ npm run test:docker        # the same suite inside the CI Linux image
 | Assets | Failed map, atlas and lazy engine module are reported accessibly and recover on retry; the loading bar follows engine, map and texture completion |
 | Movement and collisions | Gradual acceleration/braking, bounded rotation, arena borders, island blocking, 1 health per island collision (once per collision, not per frame), swept hull contact |
 | Weapons and scoring | One front ball, three parallel broadside balls, independent cooldowns, lifetime expiry, one damage application per ball, exactly one point per credited kill |
-| Enemies and spawning | Chaser first and Shooter second at the configured interval (default and Options value), safe spawn distance, obstacle-aware routes, Chaser ram damage without score, Shooter fire damage |
+| Enemies and spawning | Opening fleet of Chaser, Shooter and a seeded third enemy, interval spawns on top of it (default and Options value), one immediate reinforcement per configured number of sinkings, random choice among the farthest safe points without reusing recent ones, spawn setting validation, safe spawn distance, obstacle-aware routes, Chaser ram damage without score, Shooter fire damage |
 | Match end | Real keyboard pilot survives a 60 s session (VICTORY message, fade, result), death result, combat frozen during terminal presentation, record saved once, clean restart |
 | Pause | Manual pause, window blur and hidden tab pause; timer, cooldowns and momentum frozen; resume requires an action and clears held input. The pause board offers Resume, Options and Main Menu; Options from pause persists at once without changing the running battle's configuration; Escape steps back from Options and from the leave confirmation |
 | Results | Score, time played, end reason, record status; the result stays visible after refresh |

@@ -118,6 +118,28 @@ function validateShip(profile: ShipProfile): void {
       throw new Error(`Avoidance step of ${profile.id} must not exceed a half turn.`);
   }
 }
+/** Fleet sizes come first because pool budgets are derived from them. */
+function spawnCounts(config: GameConfig): void {
+  const spawning = config.spawning;
+  if (!Number.isInteger(spawning.maxCount) || spawning.maxCount <= 0)
+    throw new Error('Invalid enemy capacity.');
+  if (
+    !Number.isInteger(spawning.initialCount) ||
+    spawning.initialCount < 0 ||
+    spawning.initialCount > spawning.maxCount
+  )
+    throw new Error('The opening fleet must be a whole number of enemies within the enemy capacity.');
+  if (!Number.isInteger(spawning.sunkEnemiesPerReinforcement) || spawning.sunkEnemiesPerReinforcement <= 0)
+    throw new Error('Sunk enemies per reinforcement must be a positive integer.');
+  if (!Number.isInteger(spawning.farthestPointChoices) || spawning.farthestPointChoices <= 0)
+    throw new Error('Farthest spawn point choices must be a positive integer.');
+  if (
+    !Number.isInteger(spawning.recentPointsExcluded) ||
+    spawning.recentPointsExcluded < 0 ||
+    spawning.recentPointsExcluded >= config.spawnPoints.length
+  )
+    throw new Error('Recently used spawn points must leave at least one authored point available.');
+}
 export class GameConfigFactory {
   private constructor() {}
   static create(
@@ -154,6 +176,7 @@ export class GameConfigFactory {
     return freezeConfiguration(config);
   }
   static validate(config: GameConfig): void {
+    spawnCounts(config);
     positive(config.crew.radius, 'crew collider radius');
     positive(config.crew.healthPerRescue, 'crew rescue health');
     if (!Number.isInteger(config.crew.healthPerRescue) || !Number.isInteger(config.crew.seedSalt))
@@ -234,11 +257,14 @@ export class GameConfigFactory {
     }
     if (presentation.crew.minimum !== 2 || presentation.crew.maximum !== 5)
       throw new Error('Every sinking must emit 2–5 crew.');
-    const requiredCrew =
-      presentation.crew.maximum *
-      (config.spawning.maxCount +
-        Math.ceil(presentation.profiles[ParticleKind.Crew].lifetime / config.spawnSeconds) +
-        1);
+    // Sinkings while survivors still float: the whole live fleet, the interval spawns and one generation of
+    // the reinforcements those sinkings call in.
+    const fleetSinkings =
+      config.spawning.maxCount +
+      Math.ceil(presentation.profiles[ParticleKind.Crew].lifetime / config.spawnSeconds) +
+      1;
+    const reinforcementSinkings = Math.ceil(fleetSinkings / config.spawning.sunkEnemiesPerReinforcement);
+    const requiredCrew = presentation.crew.maximum * (fleetSinkings + reinforcementSinkings);
     if (presentation.crewPool.maxCapacity < requiredCrew)
       throw new Error(
         `Crew capacity requires at least ${requiredCrew} slots for this spawn/lifetime budget.`,
@@ -326,8 +352,6 @@ export class GameConfigFactory {
     if (config.fixedStep > config.sessionSeconds) throw new Error('Fixed step exceeds session duration.');
     if (!Number.isInteger(config.seed) || config.seed < 0 || config.seed >= config.random.modulus)
       throw new Error('Invalid seed.');
-    if (!Number.isInteger(config.spawning.maxCount) || config.spawning.maxCount <= 0)
-      throw new Error('Invalid enemy capacity.');
     positive(config.spawning.safeDistance, 'safe spawn distance');
     if (!Number.isFinite(config.spawning.hullSeparation) || config.spawning.hullSeparation < 1) {
       throw new Error('Spawn hull separation must keep new hulls from overlapping (at least 1).');

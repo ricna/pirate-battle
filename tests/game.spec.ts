@@ -95,7 +95,7 @@ test('movement, rotation, island collision and arena limits', async ({ page }) =
   const island = (await observe(page)).player;
   expect(island.y).toBeLessThan(initial.y);
   expect(island.y).toBeGreaterThanOrEqual(630 + island.radius);
-  // The island collision costs exactly 1 health; arena borders below cost nothing.
+  // The island collision costs exactly 1 health; the arena border below costs nothing.
   expect(island.health).toBe(initial.health - 1);
   await expect(page.locator('.hud-health strong')).toHaveText(`${initial.health - 1} / ${initial.maxHealth}`);
   await page.keyboard.down('d');
@@ -105,7 +105,10 @@ test('movement, rotation, island collision and arena limits', async ({ page }) =
   await page.keyboard.down('w');
   await advance(page, 2.5);
   await page.keyboard.up('w');
-  expect((await observe(page)).player.y).toBeCloseTo(1118, 0);
+  // Pressed on the border before the opening fleet can reach the player, so any loss would be the border's.
+  const border = (await observe(page)).player;
+  expect(border.y).toBeCloseTo(1118, 0);
+  expect(border.health).toBe(initial.health - 1);
   await page.keyboard.down('a');
   await advance(page, Math.PI / 2 / 2.6);
   await page.keyboard.up('a');
@@ -115,7 +118,6 @@ test('movement, rotation, island collision and arena limits', async ({ page }) =
   const final = (await observe(page)).player;
   expect(final.x).toBeGreaterThan(1950);
   expect(final.x).toBeLessThanOrEqual(2048 - final.radius);
-  expect(final.health).toBe(initial.health - 1);
 });
 test('the authored ship trail follows the sailing player and fades after it stops', async ({
   page,
@@ -130,13 +132,17 @@ test('the authored ship trail follows the sailing player and fades after it stop
   const trail = sailing.presentation.trails.find((candidate) => candidate.shipId === sailing.player.id)!;
   expect(trail.points.length).toBeGreaterThan(2);
   expect(trail.alpha).toBeGreaterThan(0.5);
-  expect(sailing.renderPools.shipTrails).toMatchObject({ active: 1, exhausted: 0 });
+  // The opening fleet sails too: every live trail has exactly one pooled view.
+  expect(sailing.renderPools.shipTrails).toMatchObject({
+    active: sailing.presentation.trails.length,
+    exhausted: 0,
+  });
   const capture = await page.screenshot({ path: evidencePath(`ship-trail-${testInfo.project.name}.png`) });
   await testInfo.attach('authored-ship-trail', { body: capture, contentType: 'image/png' });
   await page.keyboard.up('w');
   await page.keyboard.up('d');
   await advance(page, 4);
-  // The player has stopped; enemies that spawned meanwhile keep their own trails.
+  // The player has stopped; enemies keep their own trails.
   const stopped = await observe(page);
   expect(stopped.player.speed).toBe(0);
   expect(stopped.presentation.trails.some((candidate) => candidate.shipId === stopped.player.id)).toBe(false);
@@ -287,15 +293,20 @@ test('failed lazy engine module has an accessible error and reload recovery', as
 });
 test('both enemy behaviours appear on schedule, approach and navigate around obstacles', async ({ page }) => {
   await play(page);
+  const opening = await observe(page);
+  const { initialCount, safeDistance } = opening.config.spawning;
+  expect(opening.enemies).toHaveLength(initialCount);
+  expect(opening.enemies.slice(0, 2).map((e) => e.kind)).toEqual(['chaser', 'shooter']);
+  for (const enemy of opening.enemies)
+    expect(Math.hypot(enemy.x - opening.player.x, enemy.y - opening.player.y)).toBeGreaterThanOrEqual(
+      safeDistance,
+    );
+  const first = opening.enemies[0]!;
   await advance(page, 4.9);
-  expect((await observe(page)).enemies).toHaveLength(0);
+  expect((await observe(page)).enemies).toHaveLength(initialCount);
   await advance(page, 0.1);
-  const first = (await observe(page)).enemies[0]!;
-  expect(first.kind).toBe('chaser');
-  expect(Math.hypot(first.x - 1024, first.y - 960)).toBeGreaterThan(400);
-  await advance(page, 5);
   const enemies = (await observe(page)).enemies;
-  expect(enemies.map((e) => e.kind)).toEqual(['chaser', 'shooter']);
+  expect(enemies).toHaveLength(initialCount + 1);
   expect(enemies[0]!.x).not.toBe(first.x);
   await advance(page, 12);
   const later = await observe(page);
@@ -311,14 +322,16 @@ test('both enemy behaviours appear on schedule, approach and navigate around obs
 test('spawns follow the Enemy spawn time option', async ({ page }) => {
   await options(page, 60, 2);
   await play(page);
+  // The interval adds enemies on top of the opening fleet.
+  const { initialCount } = (await observe(page)).config.spawning;
   await advance(page, 1.9);
-  expect((await observe(page)).enemies).toHaveLength(0);
+  expect((await observe(page)).enemies).toHaveLength(initialCount);
   await advance(page, 0.1);
-  expect((await observe(page)).enemies).toHaveLength(1);
+  expect((await observe(page)).enemies).toHaveLength(initialCount + 1);
   await advance(page, 2);
-  expect((await observe(page)).enemies.map((enemy) => enemy.kind)).toEqual(['chaser', 'shooter']);
+  expect((await observe(page)).enemies).toHaveLength(initialCount + 2);
   await advance(page, 2);
-  expect((await observe(page)).enemies).toHaveLength(3);
+  expect((await observe(page)).enemies).toHaveLength(initialCount + 3);
 });
 test('a Chaser ram deals its configured damage without scoring; Shooter cannonballs hurt the player', async ({
   page,
@@ -417,7 +430,7 @@ test('real cannon input wins on time, fades survival text before results and res
   expect(clean.snapshot.health).toBe(100);
   expect(clean.snapshot.score).toBe(0);
   expect(clean.snapshot.elapsed).toBe(0);
-  expect(clean.enemies).toHaveLength(0);
+  expect(clean.enemies).toHaveLength(clean.config.spawning.initialCount);
   expect(clean.projectiles).toHaveLength(0);
 });
 test('death stops combat; the result stays displayed and persisted after refresh', async ({ page }) => {

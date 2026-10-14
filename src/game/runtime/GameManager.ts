@@ -110,6 +110,7 @@ export class GameManager {
           throw new Error(`Authored spawn is obstructed for ${profile.id}.`);
     this.#weapons.set(this.#player.id, this.#createWeapons(this.#player));
     this.#publishFleet();
+    this.#spawnEnemies();
   }
   get config(): GameConfig {
     return this.#config;
@@ -174,6 +175,18 @@ export class GameManager {
     const damage = this.#config.collision.islandImpactDamage[ship.allegiance];
     if (damage > 0) this.#damage.apply(ship, damage, false);
   }
+  /** The opening fleet sails from the first frame; later calls add interval spawns and reinforcements. */
+  #spawnEnemies(): void {
+    this.#spawning.update(this.elapsed, this.#player, this.#enemies, (profileId, point) => {
+      const profile = this.#config.enemies[profileId];
+      if (!profile) throw new Error(`Spawn references unregistered enemy ${profileId}.`);
+      const heading = EnemyShip.spawnHeading(this.#world, point, this.#player, profile.radius);
+      const ship = this.#factory.createEnemy(profileId, this.#ids.next(), point, heading);
+      this.#enemies.push(ship);
+      this.#weapons.set(ship.id, this.#createWeapons(ship));
+      this.#publishFleet();
+    });
+  }
   #createWeapons(ship: ShipEntity): WeaponController {
     return new WeaponController(ship, this.#projectiles, this.#config.rules.clockTolerance);
   }
@@ -211,15 +224,7 @@ export class GameManager {
     this.#crew.rescue(this.#player, playerStart, (event) => this.#presentation.accept(event));
     for (const mount of this.#config.player.weapons)
       if (input.has(mount.id)) this.#fire(this.#player, mount.id);
-    this.#spawning.update(this.elapsed, this.#player, this.#enemies, (profileId, point) => {
-      const profile = this.#config.enemies[profileId];
-      if (!profile) throw new Error(`Spawn references unregistered enemy ${profileId}.`);
-      const heading = EnemyShip.spawnHeading(this.#world, point, this.#player, profile.radius);
-      const ship = this.#factory.createEnemy(profileId, this.#ids.next(), point, heading);
-      this.#enemies.push(ship);
-      this.#weapons.set(ship.id, this.#createWeapons(ship));
-      this.#publishFleet();
-    });
+    this.#spawnEnemies();
     this.#world.setBodies([this.#player, ...this.#enemies]);
     for (const enemy of this.#enemies)
       enemy.update({
@@ -272,6 +277,7 @@ export class GameManager {
       if (!this.#enemies[i]!.alive) {
         this.#weapons.delete(this.#enemies[i]!.id);
         this.#enemies.splice(i, 1);
+        this.#spawning.enemySunk();
         removed = true;
       }
     if (removed) this.#publishFleet();

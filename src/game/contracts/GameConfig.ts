@@ -106,9 +106,13 @@ export interface GameConfig {
   readonly playerSpawn: Readonly<Point>;
   readonly enemies: Readonly<Record<string, ShipProfile>>;
   readonly spawning: {
+    readonly initialCount: number;
+    readonly sunkEnemiesPerReinforcement: number;
     readonly maxCount: number;
     readonly safeDistance: number;
     readonly hullSeparation: number;
+    readonly farthestPointChoices: number;
+    readonly recentPointsExcluded: number;
     readonly initialSequence: readonly string[];
     readonly weights: readonly { readonly profileId: string; readonly weight: number }[];
   };
