@@ -41,7 +41,11 @@ const git = (args) => {
     return 'unavailable';
   }
 };
-const dirty = git(['status', '--porcelain', '--untracked-files=no', '--', 'src', 'tests', 'public']);
+// CI and the Docker runner pass the checked-out commit; a local run reads Git and reports local edits.
+const ciCommit = process.env.GITHUB_SHA?.slice(0, 12);
+const dirty = ciCommit
+  ? ''
+  : git(['status', '--porcelain', '--untracked-files=no', '--', 'src', 'tests', 'public']);
 const stats = report.stats ?? {};
 const total = rows.length;
 const passed = rows.filter((row) => row.status === 'passed').length;
@@ -56,7 +60,7 @@ const lines = [
   `| Result | **${passed}/${total} passed**${stats.unexpected ? `, ${stats.unexpected} failed` : ''}${stats.flaky ? `, ${stats.flaky} flaky` : ''} |`,
   `| Started | ${stats.startTime ?? 'unknown'} |`,
   `| Duration | ${minutes} minutes |`,
-  `| Source commit | \`${git(['rev-parse', '--short=12', 'HEAD'])}\`${dirty && dirty !== 'unavailable' ? ' (with uncommitted source/test changes)' : ''} |`,
+  `| Source commit | \`${ciCommit ?? git(['rev-parse', '--short=12', 'HEAD'])}\`${dirty && dirty !== 'unavailable' ? ' (with uncommitted source/test changes)' : ''} |`,
   `| Playwright | ${report.config?.version ?? 'unknown'} |`,
   `| Runner | ${os.type()} ${os.release()} (${process.platform}), Node ${process.version} |`,
   '',

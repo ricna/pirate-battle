@@ -23,11 +23,13 @@ const script = [
   'set +e',
   `npx playwright test ${playwrightArguments}`,
   'status=$?',
+  'node scripts/report-summary.mjs reports/playwright.json reports/TEST-SUMMARY.md',
   'find tests -name "*-linux.png" | while read -r file; do cp "$file" "/src/$file"; done',
   'mkdir -p /src/reports/linux',
-  'rm -rf /src/reports/linux/playwright',
+  'rm -rf /src/reports/linux/playwright /src/reports/linux/accessibility',
   'cp -r reports/playwright /src/reports/linux/playwright 2>/dev/null',
-  'cp reports/playwright.json /src/reports/linux/playwright.json 2>/dev/null',
+  'cp reports/playwright.json reports/TEST-SUMMARY.md /src/reports/linux/ 2>/dev/null',
+  'cp -r reports/accessibility /src/reports/linux/accessibility 2>/dev/null',
   'exit $status',
 ].join('\n');
 
