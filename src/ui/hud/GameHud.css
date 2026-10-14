@@ -215,3 +215,103 @@
   width: calc(142 * var(--hud-px));
   pointer-events: none;
 }
+
+/* Compact layouts use independent, readable HUD sizes instead of shrinking the reference artwork. */
+@media (max-width: 1024px), (max-height: 600px) {
+  .game.game {
+    --hud-px: 0.8px;
+    --hud-left: max(12px, env(safe-area-inset-left));
+    --hud-right: max(12px, env(safe-area-inset-right));
+  }
+
+  .match-hud {
+    inset: max(8px, env(safe-area-inset-top)) var(--hud-right) auto var(--hud-left);
+    display: grid;
+    grid-template-columns: 26px minmax(72px, 160px) 72px 84px 88px 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    height: auto;
+  }
+
+  .match-hud > * {
+    position: static;
+    inset: auto;
+  }
+  .match-hud .hud-heart {
+    width: 26px;
+    height: 26px;
+  }
+  .match-hud .hud-health {
+    position: relative;
+    width: 100%;
+    height: 36px;
+  }
+  .hud-health strong {
+    font-size: 14px;
+  }
+  .hud-counter {
+    width: 100%;
+    height: 36px;
+    gap: 4px;
+  }
+  .hud-counter img {
+    width: 22px;
+    height: 22px;
+  }
+  .hud-counter strong {
+    font-size: 16px;
+  }
+  .match-hud .hud-pause {
+    position: relative;
+    grid-column: 6;
+    grid-row: 1;
+    width: 44px;
+    height: 44px;
+  }
+  .match-hud .hud-fullscreen {
+    grid-column: 5;
+    grid-row: 1;
+    transform: none;
+  }
+  .hud-fullscreen .fullscreen-button {
+    width: 88px;
+    padding: 5px;
+    font-size: 12px;
+  }
+
+  .touch-cluster {
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .touch-cluster-movement {
+    left: var(--hud-left);
+  }
+  .touch-cluster-weapons {
+    right: var(--hud-right);
+  }
+  .hud-studio-logo {
+    display: none;
+  }
+}
+
+@media (max-width: 540px) {
+  .match-hud {
+    grid-template-columns: 26px minmax(60px, 1fr) 64px 76px 44px;
+    gap: 4px;
+  }
+  .match-hud .hud-pause {
+    grid-column: 5;
+  }
+  .match-hud .hud-fullscreen {
+    grid-column: 4 / 6;
+    grid-row: 2;
+    justify-self: end;
+  }
+  .touch-cluster {
+    transform: scale(0.8);
+    transform-origin: bottom left;
+  }
+  .touch-cluster-weapons {
+    transform-origin: bottom right;
+  }
+}

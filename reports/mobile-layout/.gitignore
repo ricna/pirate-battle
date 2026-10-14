@@ -1,0 +1,23 @@
+# Keep final evidence; exploratory reports, traces and duplicate captures remain local.
+*
+!.gitignore
+!VERIFICATION.md
+!final-playwright/
+!final-playwright/**
+!final-playwright.json
+!linux-playwright/
+!linux-playwright/**
+!linux-playwright.json
+!full-playwright.json
+!FULL-TEST-SUMMARY.md
+!FINAL-TEST-SUMMARY.md
+!profile.json
+!menu-844x390.png
+!arena-844x390.png
+!options-844x390.png
+!records-844x390.png
+!menu-568x320.png
+!arena-568x320.png
+!menu-390x844.png
+!options-390x844.png
+!records-320x568.png

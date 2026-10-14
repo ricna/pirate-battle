@@ -34,6 +34,7 @@ export default defineConfig({
   outputDir: process.env.PIRATE_TEST_OUTPUT_DIR ?? 'test-results',
   use: { baseURL, channel: 'chromium', trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: [
+    { name: 'mobile-layout', testMatch: '**/mobile.spec.ts' },
     { name: 'rendering', testMatch: '**/rendering.spec.ts' },
     {
       name: 'core',

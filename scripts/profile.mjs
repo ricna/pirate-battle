@@ -12,6 +12,16 @@ if (!['defend', 'boundary'].includes(pilot)) throw new Error('Unknown profiling 
 const sessionSeconds = Number(process.env.PROFILE_SESSION_SECONDS ?? 180);
 const spawnSeconds = Number(process.env.PROFILE_SPAWN_SECONDS ?? 5);
 const output = process.env.PROFILE_OUTPUT ?? 'reports/profile.json';
+const viewport = {
+  width: Number(process.env.PROFILE_VIEWPORT_WIDTH ?? 1280),
+  height: Number(process.env.PROFILE_VIEWPORT_HEIGHT ?? 800),
+};
+const deviceScaleFactor = Number(process.env.PROFILE_DEVICE_SCALE ?? 1);
+const mobile = process.env.PROFILE_MOBILE === 'true';
+if (
+  ![viewport.width, viewport.height, deviceScaleFactor].every((value) => Number.isFinite(value) && value > 0)
+)
+  throw new Error('Profiling viewport dimensions and device scale must be positive finite numbers.');
 if (!Number.isFinite(sessionSeconds) || !Number.isFinite(spawnSeconds))
   throw new Error('PROFILE_SESSION_SECONDS and PROFILE_SPAWN_SECONDS must be numbers.');
 
@@ -36,7 +46,7 @@ const route = [
 ];
 let waypoint = 0;
 const browser = await chromium.launch({ channel: 'chromium', headless: true });
-const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport, deviceScaleFactor, isMobile: mobile, hasTouch: mobile });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 await page.goto(`${url}?profile=1`);
@@ -165,8 +175,9 @@ const report = {
   version: await page.evaluate(
     () => document.querySelector('meta[name="build-commit"]')?.getAttribute('content') ?? null,
   ),
-  viewport: '1280x800',
-  deviceScaleFactor: 1,
+  viewport: `${viewport.width}x${viewport.height}`,
+  deviceScaleFactor,
+  mobile,
   build: 'optimized Vite preview',
   options: { sessionSeconds: config.sessionSeconds, spawnSeconds: config.spawnSeconds, sound: true },
   pilot,

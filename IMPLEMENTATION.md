@@ -387,6 +387,10 @@ The owner requires an authored progress bar whenever game assets are loading, in
 
 For navigation in the owner's local environment, the personal wiki entry is [Implementation context](../Docs/13-contexto-de-implementacao.md). This optional link is outside the clone; all mandatory rules are contained in this document and the repository's AGENTS.md.
 
+## Mobile camera and responsive layout — 14 October 2026
+
+The owner requested explicit browser fullscreen, larger ships on phones, an explorable map approximately four viewport areas in size, and compact aligned UI. This supersedes the whole-map contain fit and reference-pixel scaling on compact screens in sections 20, 23 and 24. Desktop retains the reference overview/composition; compact screens use a bounded player-following camera, readable fixed-size HUD controls, safe-area insets and responsive menu boards. Preserve the authored map geometry and all simulation rules. Fullscreen is a user-gesture browser request with synchronized entry/exit controls and visible failure/unsupported guidance; it must not be simulated with CSS. Combat remains landscape with explicit Resume after portrait or fullscreen changes. See [MOBILE.md](MOBILE.md) for display tuning, ownership and verification.
+
 
 ## Crew rescue — 13 October 2026
 

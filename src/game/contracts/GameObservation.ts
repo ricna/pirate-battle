@@ -2,6 +2,7 @@ import type { GameConfig } from './GameConfig';
 import type { GameManager, Snapshot } from '../runtime/GameManager';
 import type { ArenaRenderer } from '../rendering/ArenaRenderer';
 import type { AudioManager } from '../audio/AudioManager';
+import type { WorldCamera } from '../rendering/WorldCamera';
 
 /** Detached observations only; instrumentation cannot write combat state. */
 export interface GameObservation {
@@ -13,6 +14,7 @@ export interface GameObservation {
   renderPools: ReturnType<ArenaRenderer['poolStatistics']>;
   effects: number;
   config: GameConfig;
+  camera: ReturnType<WorldCamera['observation']>;
   colliders: GameManager['map']['colliders'];
   frames: number[];
   entityPeak: number;

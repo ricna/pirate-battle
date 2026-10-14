@@ -1,0 +1,26 @@
+.fullscreen-button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #c4a16b;
+  border-radius: 6px;
+  background: #102c3cf2;
+  color: #fff1cf;
+  font:
+    bold 13px/1.2 Arial,
+    Helvetica,
+    sans-serif;
+  touch-action: manipulation;
+}
+
+.menu-fullscreen {
+  position: fixed;
+  z-index: 6;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+}
+
+.hud-fullscreen {
+  top: calc(28 * var(--hud-px));
+  left: 50%;
+  transform: translateX(-50%);
+}

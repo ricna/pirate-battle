@@ -1,0 +1,885 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=mobile-layout",
+      "--project=desktop",
+      "--project=mobile-landscape",
+      "--project=production-smoke",
+      "--grep",
+      "compact menus|camera follows|fullscreen|authored loading bar|pause freezes|versioned menu|published build",
+      "--update-snapshots"
+    ],
+    "configFile": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\playwright.config.ts",
+    "rootDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/mobile-layout/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-layout",
+        "name": "mobile-layout",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/mobile.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/mobile-layout/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "rendering",
+        "name": "rendering",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/rendering.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/mobile-layout/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "core",
+        "name": "core",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/core.spec.ts",
+          "**/collision.spec.ts",
+          "**/navigation.spec.ts",
+          "**/presentation.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/mobile-layout/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/mobile-layout/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-landscape",
+        "name": "mobile-landscape",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/reports/mobile-layout/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "production-smoke",
+        "name": "production-smoke",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/smoke.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\reports\\mobile-layout\\final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile-layout",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": "**/mobile.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5212",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile-layout"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\reports\\mobile-layout\\final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5212",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "deviceScaleFactor": 1
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\reports\\mobile-layout\\final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile-landscape",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5212",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 844,
+            "height": 390
+          },
+          "deviceScaleFactor": 2,
+          "isMobile": true,
+          "hasTouch": true
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile-landscape"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\reports\\mobile-layout\\final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "production-smoke",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": "**/smoke.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5213",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "deviceScaleFactor": 1
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "production-smoke"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "reports/mobile-layout/final-playwright",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/mobile-layout/final-playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "changed",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "mobile.spec.ts",
+      "file": "mobile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "camera follows the player, clamps all four shores and retains the desktop overview",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 27,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:08:19.684Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-ec24e7237fb14161ecd4",
+          "file": "mobile.spec.ts",
+          "line": 11,
+          "column": 1
+        },
+        {
+          "title": "compact menus and HUD remain usable at 568x320",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12873,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:08:19.802Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-eea748e8500fe9f10289",
+          "file": "mobile.spec.ts",
+          "line": 47,
+          "column": 3
+        },
+        {
+          "title": "compact menus and HUD remain usable at 667x375",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12396,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:08:33.497Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-0a56f3ddde3f38197187",
+          "file": "mobile.spec.ts",
+          "line": 47,
+          "column": 3
+        },
+        {
+          "title": "compact menus and HUD remain usable at 844x390",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15124,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:08:45.913Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-ad205b81256979a0a636",
+          "file": "mobile.spec.ts",
+          "line": 47,
+          "column": 3
+        },
+        {
+          "title": "compact menus and HUD remain usable at 932x430",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13027,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:09:01.118Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-593c7ec89cc3e4a51bd3",
+          "file": "mobile.spec.ts",
+          "line": 47,
+          "column": 3
+        },
+        {
+          "title": "compact menus and HUD remain usable at 320x568",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10959,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:09:14.209Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-5c8135b2892933fc1f5f",
+          "file": "mobile.spec.ts",
+          "line": 47,
+          "column": 3
+        },
+        {
+          "title": "compact menus and HUD remain usable at 390x844",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12527,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:09:25.199Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-f87052208d7976afe5cb",
+          "file": "mobile.spec.ts",
+          "line": 47,
+          "column": 3
+        },
+        {
+          "title": "fullscreen is explicit, survives Play and exits with synchronized controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7250,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:09:37.746Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-0879db07e3f4eb8e7ae6",
+          "file": "mobile.spec.ts",
+          "line": 139,
+          "column": 1
+        },
+        {
+          "title": "unsupported fullscreen explains the home-screen route and leaves menus usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-layout",
+              "projectName": "mobile-layout",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9291,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:09:45.010Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-48ea435f6617ff8f7346",
+          "file": "mobile.spec.ts",
+          "line": 158,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "game.spec.ts",
+      "file": "game.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "pause freezes simulation and cooldowns, focus loss requires explicit resume",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8086,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:10:09.524Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-43f5dc442ba96c4f1d8b",
+          "file": "game.spec.ts",
+          "line": 530,
+          "column": 1
+        },
+        {
+          "title": "versioned menu, arena and result visual baselines; layout fits supported screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10279,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:10:18.266Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-c230b7f065ef08123001",
+          "file": "game.spec.ts",
+          "line": 718,
+          "column": 1
+        },
+        {
+          "title": "authored loading bar follows engine, map and texture completion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6872,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:10:28.568Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-4a1a5a0f163202dea916",
+          "file": "game.spec.ts",
+          "line": 746,
+          "column": 1
+        },
+        {
+          "title": "pause freezes simulation and cooldowns, focus loss requires explicit resume",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14469,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:10:53.279Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-ff083c9a7567cacf6535",
+          "file": "game.spec.ts",
+          "line": 530,
+          "column": 1
+        },
+        {
+          "title": "versioned menu, arena and result visual baselines; layout fits supported screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17315,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests\\game.spec.ts-snapshots\\result-mobile-landscape-win32.png is re-generated, writing actual.\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:11:09.575Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-8c9033a09366aef81ecf",
+          "file": "game.spec.ts",
+          "line": 718,
+          "column": 1
+        },
+        {
+          "title": "authored loading bar follows engine, map and texture completion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12303,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:11:26.904Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-9bc07652cb5ef7f6418e",
+          "file": "game.spec.ts",
+          "line": 746,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "smoke.spec.ts",
+      "file": "smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the published build serves its commit, mocks Ranking and History, and registers a battle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "production-smoke",
+              "projectName": "production-smoke",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8073,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T10:11:53.976Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4219922fea2e2bd3c691-9540199147b39a154195",
+          "file": "smoke.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-14T10:07:54.593Z",
+    "duration": 277316.02,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

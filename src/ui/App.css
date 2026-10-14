@@ -58,7 +58,8 @@ strong {
   color: #fff4d6;
 }
 .app {
-  min-height: 100svh;
+  /* Follow browser chrome as it expands or collapses. */
+  min-height: 100dvh;
   background:
     linear-gradient(#0b143466, #0b143466),
     url('../../assets/ui_scene_background.png') center/cover fixed;
@@ -209,7 +210,7 @@ select {
 }
 .dialog {
   width: min(470px, calc(100% - 24px));
-  max-height: calc(100svh - 24px);
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   text-align: center;
   background: transparent;
   overflow: auto;
@@ -454,4 +455,60 @@ main h1[tabindex='-1']:focus {
   border-radius: 0.5rem;
   background: #13212c;
   color: #ffebbc;
+}
+
+@media (max-width: 1024px), (max-height: 600px) {
+  .app.app-menu,
+  .app.app-options,
+  .app.app-records,
+  .app {
+    position: relative;
+    padding: calc(60px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+      calc(52px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  }
+  .app.app-menu .shell,
+  .app.app-options .shell,
+  .app.app-records .shell {
+    width: 100%;
+  }
+  .network-tools {
+    position: absolute;
+    left: max(8px, env(safe-area-inset-left));
+    bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  .network-tools summary {
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+  }
+  .network-tools[open] {
+    max-height: calc(100dvh - 80px);
+    overflow: auto;
+  }
+  .studio-logo {
+    position: absolute;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .dialog {
+    padding-bottom: 0;
+  }
+  .dialog p {
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 8px 0;
+  }
+  .dialog .sprite-button {
+    height: 44px;
+    min-width: 130px;
+    font-size: 16px;
+    margin: 4px;
+  }
+  .dialog .text-button {
+    min-height: 44px;
+  }
+  .how-to-play,
+  .result-panel {
+    margin: 0 auto;
+  }
 }

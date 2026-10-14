@@ -236,7 +236,7 @@ export class GameSession {
       this.#resolution(),
     );
     this.#mapView?.resize(application.screen.width, application.screen.height);
-    application.render();
+    this.#draw();
   };
 
   #publishSnapshot(): void {
@@ -306,6 +306,7 @@ export class GameSession {
   #draw(): void {
     const game = this.#game;
     if (!game) return;
+    this.#mapView?.follow(game.player);
     this.#mapView?.animate(
       game.presentation.time,
       game.presentation.reducedMotion,
@@ -368,6 +369,7 @@ export class GameSession {
       },
       audio: this.#dependencies.audio.observation(),
       config: this.#dependencies.config,
+      camera: this.#mapView!.camera.observation(),
       colliders: game.map.colliders,
       frames: includeFrames ? [...this.#instrumentation.frames] : [],
       entityPeak: this.#instrumentation.entityPeak,

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useApplicationServices } from '../hooks/UseApplicationServices';
 import { AudioConfig } from '../../game/configuration/AudioConfig';
@@ -12,6 +12,7 @@ export function Dialog({
   onClose: () => void;
 }) {
   const { audio } = useApplicationServices();
+  const titleId = useId();
   const ref = useRef<HTMLDialogElement>(null);
   const close = () => {
     audio.playUi(AudioConfig.Cues.Close, 'ui-close');
@@ -33,13 +34,13 @@ export function Dialog({
     <dialog
       ref={ref}
       className="panel dialog"
-      aria-labelledby="dialog-title"
+      aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault();
         close();
       }}
     >
-      <h2 id="dialog-title">{title}</h2>
+      <h2 id={titleId}>{title}</h2>
       {children}
       <button type="button" className="text-button" onClick={close}>
         Close

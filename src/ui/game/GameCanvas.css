@@ -1,14 +1,14 @@
 /*
  * Gameplay screen of assets/sample.png: the arena fills the viewport and the HUD (GameHud.css) floats above it.
- * --hud-px is one pixel of the 1800×1000 reference. Small screens keep at least 0.72 of the reference size,
- * so the 76-pixel touch buttons stay about 55 CSS pixels wide, unless the 920-pixel top row would not fit.
+ * --hud-px is one pixel of the 1800×1000 desktop reference. GameHud.css provides a compact grid and
+ * independent touch sizes for phones and other small viewports.
  */
 .game {
   --hud-px: max(min(100vw / 1800, 100svh / 1000), min(0.72px, 100vw / 920));
 
   position: relative;
   width: 100%;
-  height: 100svh;
+  height: 100dvh;
   overflow: hidden;
   outline: none;
   background: #123744;

@@ -12,9 +12,14 @@ import { SoundEffectPlayer } from '../game/audio/SoundEffectPlayer';
 import { MusicPlayer } from '../game/audio/MusicPlayer';
 import { AudioConfig } from '../game/configuration/AudioConfig';
 import type { GameTextureLibrary } from '../game/assets/GameTextureLibrary';
+import { FullscreenDisplay } from '../infrastructure/browser/FullscreenDisplay';
 
 /** Composition root: creates application services once, never a global service locator. */
 export class ApplicationServices {
+  readonly #display = new FullscreenDisplay(document);
+  get display(): FullscreenDisplay {
+    return this.#display;
+  }
   readonly #storage = new LocalStorageStore('pirate');
   readonly #options = new OptionsRepository(this.#storage);
   readonly #matches = new MatchRepository(this.#storage);

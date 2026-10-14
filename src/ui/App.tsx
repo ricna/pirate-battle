@@ -8,6 +8,7 @@ import { useMutation } from '@tanstack/react-query';
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })));
 import { Button } from './components/Button';
 import { AssetLoadingIndicator } from './components/AssetLoadingIndicator';
+import { FullscreenControl } from './components/FullscreenControl';
 import { GameLoadBoundary } from './components/GameLoadBoundary';
 import { CaptainsLog } from './screens/CaptainsLog';
 import type { RecordsTab } from './screens/CaptainsLog';
@@ -269,6 +270,7 @@ export function App() {
             )}
           </div>
           <DemoNetworkTools scenario={scenario} onSelect={selectScenario} onReset={resetDemoServer} />
+          <FullscreenControl className="menu-fullscreen" />
           <img className="studio-logo" src={MenuArt.StudioLogo} alt="Jungle Gaming" />
         </main>
       )}

@@ -14,6 +14,7 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | `GameDefaults.ts` | Simulation clock, seed, spawn points/weights/cap, pool capacities, effects, warnings and runtime budgets |
 | `FactoryConfig.ts` | Enemy profile → concrete subclass registrations |
 | `InputConfig.ts` | Keyboard bindings, pause keys and touch command labels/icons |
+| `CameraConfig.ts` | Display-only compact viewport thresholds, visible map area fraction and minimum ship scale; see [MOBILE.md](MOBILE.md) |
 | `AudioConfig.ts` | UI cues, gameplay-event sound variants, pitch ranges, repeat cooldowns, voice priorities/budget and mix gains |
 | `CrewConfig.ts` | Rescue trigger radius, health per survivor and independent seed salt |
 | `CollisionConfig.ts` | Hull separation, slide iteration budget, impact threshold, repeat cooldown and island impact damage per allegiance |

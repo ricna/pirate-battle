@@ -22,6 +22,11 @@ export function HowToPlay({ onMainMenu }: { onMainMenu: () => void }) {
 
       <h2>Controls</h2>
       <ControlsHelp />
+      <p>
+        On phones, play in landscape. The camera follows your ship as you explore the larger map. Use Full
+        screen in the menu or battle HUD to hide browser chrome when supported. Changing full screen during
+        combat pauses the battle; press Resume when ready.
+      </p>
 
       <h2>Enemies</h2>
       <div className="enemy-guide">

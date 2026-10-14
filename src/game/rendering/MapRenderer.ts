@@ -5,6 +5,7 @@ import type { GameTextures } from '../assets/GameTextureLibrary';
 import { requiredTexture } from '../assets/GameTextureLibrary';
 import type { PresentationProfile } from '../configuration/PresentationConfig';
 import type { Point } from '../math/Geometry';
+import { WorldCamera } from './WorldCamera';
 
 export class MapRenderer {
   readonly #world = new Container();
@@ -12,6 +13,10 @@ export class MapRenderer {
     return this.#world;
   }
   readonly #frames = new Map<number, Texture>();
+  readonly #camera: WorldCamera;
+  get camera(): WorldCamera {
+    return this.#camera;
+  }
   #mapTexture: RenderTexture | null = null;
   #destroyed = false;
   readonly #water: TilingSprite;
@@ -29,6 +34,7 @@ export class MapRenderer {
     textures: GameTextures,
   ) {
     this.#world.label = 'authored-arena';
+    this.#camera = new WorldCamera(map.width * map.tileWidth, map.height * map.tileHeight);
     this.#presentation = presentation;
     this.#water = new TilingSprite({ texture: requiredTexture(textures, presentation.water.sprite) });
     this.#setWaterMargin(presentation.water.overscan, presentation.water.overscan);
@@ -112,15 +118,20 @@ export class MapRenderer {
   resize(width: number, height: number) {
     const worldWidth = this.map.width * this.map.tileWidth;
     const worldHeight = this.map.height * this.map.tileHeight;
-    const scale = Math.min(width / worldWidth, height / worldHeight);
+    this.#camera.resize(width, height);
+    const scale = this.#camera.scale;
     this.#world.scale.set(scale);
-    this.#world.position.set((width - worldWidth * scale) / 2, (height - worldHeight * scale) / 2);
-    // The arena keeps its contain fit inside the full-screen HUD; deep water continues under the letterbox.
+    // Overscan only extends water on axes where the whole map is narrower than the viewport.
     const overscan = this.#presentation.water.overscan;
     this.#setWaterMargin(
-      Math.ceil(this.#world.position.x / scale) + overscan,
-      Math.ceil(this.#world.position.y / scale) + overscan,
+      Math.max(0, Math.ceil((width / scale - worldWidth) / 2)) + overscan,
+      Math.max(0, Math.ceil((height / scale - worldHeight) / 2)) + overscan,
     );
+  }
+
+  follow(target: Point): void {
+    this.#camera.follow(target);
+    this.#world.position.set(this.#camera.x, this.#camera.y);
   }
 
   #setWaterMargin(x: number, y: number) {

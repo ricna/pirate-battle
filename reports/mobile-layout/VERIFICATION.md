@@ -1,0 +1,18 @@
+# Mobile display verification — 14 October 2026
+
+Windows Chromium emulation verified the compact camera, HUD and menus at 568×320, 667×375, 844×390 and 932×430; portrait navigation at 320×568 and 390×844; explicit rotation/resume; unchanged simulation observations across desktop/mobile resize; actual sailing/camera movement; and camera freeze on pause. Fullscreen enters/exits on the document root, survives Play and synchronizes its control. An unsupported-browser fixture verifies the home-screen explanation from menus and from combat, with guidance above the pause dialog and explicit Resume afterward.
+
+- The [full suite JSON](full-playwright.json) and [summary](FULL-TEST-SUMMARY.md) record **120/123 passed** in 22.8 minutes. Desktop loading did not reach its arena stage within the 8-second expectation. Mobile pause exhausted the 60-second scenario budget while waiting for initialization, before any pause input. Mobile Results differed from the reference captured before the final footer adjustment. Concurrent source edits and another Docker verification were present; the run is not presented as a clean 123/123 result.
+- The final fresh-origin [HTML report](final-playwright/index.html), [JSON](final-playwright.json) and [summary](FINAL-TEST-SUMMARY.md) record **16/16 passed**. They include every compact viewport, fullscreen/unsupported behavior, desktop/mobile pause and loading, all three visual baselines, and the optimized production smoke. The three previous failures passed; only the intentionally changed mobile result reference was refreshed after review.
+- Linux [HTML](linux-playwright/index.html) and [JSON](linux-playwright.json) record **2/2 passed** for desktop/mobile visual references in `mcr.microsoft.com/playwright:v1.64.0-noble`. Linux and Windows mobile references were updated for the requested composition and zoom changes.
+- Typecheck, lint/architecture, Prettier and production build passed. The renderer regression in the full run found no water gaps across 20 viewport/DPI combinations, and runtime density changes preserved simulation state.
+
+Retained PNGs show landscape menus/options/arena/records, a 568×320 menu/arena, portrait menu/options and a narrow table with contained horizontal scrolling. Other exploratory reports and duplicate captures remain local through this directory's `.gitignore`.
+
+## Optimized compact-camera profile
+
+[Raw measurement](profile.json): Chromium 156.0.8078.4 on Windows, RTX 3060/ANGLE Direct3D 11, 844×390 at 2× with touch/mobile emulation. The real-time pilot completed 180 active seconds at the shipped 5-second spawn interval, with music/effects enabled and all three weapons, 35 kills, peak 84 entities and no page errors. Mean frame rate was **59.98 FPS**, P95 **16.9 ms**, across 10,496 sampled intervals. This measures the compact renderer on a desktop GPU; the aiming pilot stayed at the spawn position. Real camera travel is covered by the input/resize regressions, not by this sustained pilot.
+
+Five start/play/leave cycles completed. Collected heap samples increased from 9,629,980 to 10,140,736 bytes (about 0.49 MiB); this short series does not establish leak-free memory. The JSON preserves all samples, pool/voice budgets, frame intervals, frozen configuration and the dirty working revision/build identity. Concurrent repository work was present; this is a working-checkout measurement, not a released-build claim.
+
+These checks use Chromium and emulated mobile input/density. They do not certify physical iPhone/Android fullscreen, home-screen installation, Safari/WebKit or real-device performance. No publication is claimed.

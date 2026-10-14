@@ -1,0 +1,8 @@
+{
+  "name": "Pirate Battle",
+  "short_name": "Pirate Battle",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#123744",
+  "theme_color": "#123744"
+}

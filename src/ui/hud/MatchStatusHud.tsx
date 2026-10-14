@@ -5,6 +5,7 @@ import metadata from '../../../assets/spritesheet/ui_sheet.json';
 import type { Snapshot } from '../../game/runtime/GameManager';
 import { retinaAsset } from '../assets/UiAssets';
 import './GameHud.css';
+import { FullscreenControl } from '../components/FullscreenControl';
 
 const SecondsPerMinute = 60;
 
@@ -85,6 +86,7 @@ export function MatchStatusHud({
       >
         <img src={retinaAsset('ui/controls/icon_pause')} alt="" />
       </button>
+      <FullscreenControl className="hud-fullscreen" onBeforeChange={onPause} />
     </header>
   );
 }

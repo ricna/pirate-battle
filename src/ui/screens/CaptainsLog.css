@@ -286,3 +286,79 @@
   color: #382b1f;
   text-shadow: none;
 }
+
+@media (max-width: 1024px), (max-height: 600px) {
+  .captains-log {
+    --board-px: 0.75px;
+    width: min(820px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+    min-height: 0;
+    border-width: 24px 20px;
+    padding: 8px 0;
+  }
+  .captains-log h1 {
+    margin: 0;
+    font-size: 26px;
+  }
+  .captains-log .remote-panel {
+    width: 100%;
+    min-width: 0;
+  }
+  .records-tabs {
+    width: 100%;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .records-tabs .sprite-button {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    height: 44px;
+    font-size: 13px;
+  }
+  .records-body {
+    overflow-x: auto;
+    margin-top: 18px;
+    min-height: 0;
+  }
+  .remote-panel table {
+    min-width: 480px;
+  }
+  .remote-panel th {
+    font-size: 11px;
+  }
+  .remote-panel td {
+    font-size: 14px;
+    height: 38px;
+  }
+  .ranking th:nth-child(1) {
+    width: 12%;
+  }
+  .ranking th:nth-child(2) {
+    width: 36%;
+  }
+  .ranking th:nth-child(3) {
+    width: 18%;
+  }
+  .history th:nth-child(1) {
+    width: 34%;
+  }
+  .history th:nth-child(2) {
+    width: 18%;
+  }
+  .history th:nth-child(3) {
+    width: 24%;
+  }
+  .records-updating {
+    position: static;
+    min-height: 16px;
+  }
+  .records-page-button {
+    width: 44px;
+    height: 44px;
+  }
+  .captains-log .captains-log-menu {
+    height: 44px;
+    margin-bottom: 0;
+    font-size: 16px;
+  }
+}
