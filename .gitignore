@@ -19,7 +19,7 @@ dist/
 test-results/
 playwright-report/
 assets/maps/*.tiled-session
-.openai/*.tar.gz
+.openai/
 .sites-runtime/
 
 # Local editor/agent state
