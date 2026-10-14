@@ -10,7 +10,7 @@ export class EnemyChaserConfig {
     allegiance: Allegiance.Enemy,
     health: 40,
     radius: 30,
-    hullRadius: 66,
+    hullRadius: 40,
     movement: { initialSpeed: 0, maxSpeed: 125, acceleration: 1200, deceleration: 1800, turnSpeed: 2.1 },
     weapons: [],
     visual: ShipVisualConfig.Chaser,

@@ -165,3 +165,11 @@ test('island impact damage must be a non-negative integer per allegiance', () =>
       }),
     ).toThrow(/Island impact damage/);
 });
+
+test('ship hull radius must exceed half of the sprite width', () => {
+  const config = GameConfigFactory.create(OptionsConfig.Default);
+  const withHullRadius = (hullRadius: number) => ({ ...config, player: { ...config.player, hullRadius } });
+  const halfWidth = config.player.visual.width / 2;
+  expect(() => GameConfigFactory.validate(withHullRadius(halfWidth))).toThrow(/Hull radius must exceed/);
+  expect(() => GameConfigFactory.validate(withHullRadius(halfWidth + 1))).not.toThrow();
+});

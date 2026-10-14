@@ -411,6 +411,10 @@ GameManager owns CrewSystem and its bounded pool. Rescue sweeps relative motion 
 
 The owner requested that every island collision cost 1 health. `CollisionConfig.islandImpactDamage` authors the damage per allegiance (player 1, enemy 0) and is validated as non-negative integers. A collision is the existing significant island contact (at least `minimumImpactSpeed`, once per `impactCooldown` per contact key), so sustained pressure against a coast does not drain health every frame; arena borders never damage. Damage passes through `DamageSystem` without kill credit and can sink the player. This is a rule change: balance version `balance-v6`.
 
+## Ship hull radius — 14 October 2026
+
+The owner kept circular ship colliders but reduced every ship's `hullRadius` from 66 to 40, because a circle enclosing the whole 67 × 113 sprite left a ship-width gap between side-by-side hulls. Validation now requires `hullRadius` to exceed half of the visual width instead of the sprite diagonal; slight bow overlap in head-on contact is accepted. Per-pixel sprite collision and polygon/capsule hulls were discussed and not adopted. The coast/cannonball `radius` and the authored rectangular island colliders are unchanged. This is a rule change: balance version `balance-v7`.
+
 ## Ship trail — 14 October 2026
 
 The owner requested the continuous ship trail with the owner-authored `assets/authored/shipt-trail.png`, completing the replacement left pending by section 21. `ShipTrailSystem` (presentation clock, bounded stern history, fades after stopping) and `ShipTrailRenderer` (pooled `MeshRope`, texture stretched once with its strong end at the stern) implement it. Settings live in `PresentationConfig.shipTrail`; the logical and visual capacities are the same validated pool and must cover every live ship. Keep the image unchanged and the `authored/ship_trail` key stable.

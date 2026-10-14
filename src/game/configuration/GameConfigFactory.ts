@@ -69,8 +69,8 @@ function validateShip(profile: ShipProfile): void {
   }
   const visual = profile.visual;
   positive(profile.hullRadius, `${profile.id} hull radius`);
-  if (profile.hullRadius < Math.hypot(visual.width, visual.height) / 2)
-    throw new Error(`Hull radius must contain ${profile.id}'s configured sprite bounds.`);
+  if (profile.hullRadius <= visual.width / 2)
+    throw new Error(`Hull radius must exceed half of ${profile.id}'s configured sprite width.`);
   if (!visual.wreckSprite) throw new Error(`Missing wreck sprite for ${profile.id}.`);
   stages(visual.damageStages, profile.id);
   stages(visual.healthFills, profile.id);

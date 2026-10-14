@@ -73,7 +73,7 @@ How To Play, one click from the main menu, presents these controls and the enemi
 
 Options (saved immediately, kept after refresh): **Game session time** 60–180 s in 10 s steps (default 120), **Enemy spawn time** 2–10 s in 0.2 s steps (default 5), Sound on/off, master Volume and Music volume. Each match freezes a validated snapshot of the configuration at Play; later edits only affect new matches.
 
-All gameplay tuning lives in static profiles under `src/game/configuration/` (ships, weapons, projectiles, spawning, collisions, presentation, audio). [CONFIGURATION.md](CONFIGURATION.md) explains every file, unit and validation rule, and how to add an enemy type without touching the systems. Current balance: `arena_00-v1/balance-v6`, seed `20261012`; the reasoning behind the values is in [ARCHITECTURE.md](ARCHITECTURE.md#balancing-decisions).
+All gameplay tuning lives in static profiles under `src/game/configuration/` (ships, weapons, projectiles, spawning, collisions, presentation, audio). [CONFIGURATION.md](CONFIGURATION.md) explains every file, unit and validation rule, and how to add an enemy type without touching the systems. Current balance: `arena_00-v1/balance-v7`, seed `20261012`; the reasoning behind the values is in [ARCHITECTURE.md](ARCHITECTURE.md#balancing-decisions).
 
 ## Ranking and Match History
 

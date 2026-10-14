@@ -121,7 +121,7 @@ Playwright runs isolated desktop and landscape mobile Chromium contexts, real ke
 
 ## Balancing decisions
 
-Values come from the authored profiles (balance `arena_00-v1/balance-v6`, seed 20261012). The intent is a readable three-minute arcade fight in which positioning matters more than reflexes.
+Values come from the authored profiles (balance `arena_00-v1/balance-v7`, seed 20261012). The intent is a readable three-minute arcade fight in which positioning matters more than reflexes.
 
 | Decision | Values | Reasoning |
 | --- | --- | --- |
@@ -132,11 +132,12 @@ Values come from the authored profiles (balance `arena_00-v1/balance-v6`, seed 2
 | Gradual sailing | Player 230 px/s, acceleration 230 px/s², braking 115 px/s², turn 2.6 rad/s | About 1 s to full speed and 2 s to stop gives momentum without sluggish controls; enemies turn more slowly (2.1 rad/s), so out-turning them is a skill. |
 | Spawn pressure | Default 5 s (Options 2–10 s), first Chaser then Shooter, then seeded 50/50, cap 28, at least 440 px from the player | Both behaviours appear early in every session. The minimum interval bounds pressure and entity counts; the maximum still produces both types in a 60 s session. Spawns never start within ramming reach. |
 | Recovery | Each rescued survivor restores 1 HP (2–5 per sinking) | Sinking enemies sustains an aggressive player; healing never exceeds the maximum and never scores. |
+| Close ship contact | Hull radius 40 for every ship (sprite 67 × 113) | Side-by-side hulls stop 13 px apart instead of a full ship width; head-on bows overlap at most 33 px, a smaller visual error than the previous empty gap. Rams and rescues require a correspondingly closer approach. |
 
 ## Known limitations
 
 - Chromium desktop and landscape mobile emulation are the reference browsers; physical iOS/Android audio, performance and browser-specific behaviour are not verified.
-- Hulls are circles and islands are rectangles, which favours predictable navigation over exact silhouettes; contact near bows and sterns is approximate.
+- Hulls are circles and islands are rectangles, which favours predictable navigation over exact silhouettes; contact near bows and sterns is approximate. The 40-pixel ship-to-ship circle is narrower than the 113-pixel hull length, so bows may overlap slightly in head-on contact.
 - The Tiled loader supports this finite orthogonal map, external image tilesets and rectangular collision objects; other shapes fail visibly.
 - Enemies share no plan; a dense crowd at the 28-enemy cap can queue briefly around the player.
 - Portrait combat is not supported (it pauses); menus work in portrait.

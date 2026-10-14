@@ -6,7 +6,7 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 
 | File under `src/game/configuration/` | Editable defaults |
 | --- | --- |
-| `PlayerShipConfig.ts` | Player health, circle radius, movement, weapon mounts and visual profile |
+| `PlayerShipConfig.ts` | Player health, coast/cannonball radius, ship-to-ship hull radius, movement, weapon mounts and visual profile |
 | `EnemyChaserConfig.ts` | Chaser health, movement, navigation and ram damage |
 | `EnemyShooterConfig.ts` | Shooter health, movement, navigation, range, aim cone and weapon cooldown |
 | `ProjectileConfig.ts` | Front/broadside/enemy projectile damage, speed, acceleration, drag, TTL, radius and sprite dimensions |
@@ -174,6 +174,14 @@ Balance version `arena_00-v1/balance-v5` introduced rescue-enabled ranking snaps
 `CollisionConfig.Default.islandImpactDamage = { player: 1, enemy: 0 }` is the hull damage of each significant island collision, per allegiance. A collision is significant under the same rule as its impact sound and splash: the hull meets the coast at `minimumImpactSpeed` (20 pixels/s) or more, at most once per `impactCooldown` (0.65 s) for the same ship and contact. Pressing against a coast after the hull has stopped therefore costs nothing more; leaving and hitting it again costs another point. Arena borders never cause damage. The damage passes through `DamageSystem` (statistics, damage label, hit flash, low-health warning) with no kill credit, so a player at 1 health can sink against an island. Values must be non-negative integers. Raising the enemy value would let enemies lose health on coasts without awarding points.
 
 Balance version `arena_00-v1/balance-v6` separates ranking snapshots with island damage from earlier ones.
+
+### Ship hull radii
+
+Each ship profile authors two circles centred on the ship, in logical pixels. `radius` (player 34, enemies 30) blocks islands and arena borders, receives cannonballs, validates spawn points and plans enemy routes. `hullRadius` (40 for every ship) keeps hulls apart: two ships stop when their centres are the sum of their hull radii apart. It also sets the Chaser ram contact, enemy separation probes, the crew rescue reach (`hullRadius + radius` of `CrewConfig`) and the minimum safe spawn spacing.
+
+`hullRadius` must exceed half of the profile's visual width, so two side-by-side sprites never overlap. It does not enclose the whole 67 × 113 sprite: a circle cannot follow the elongated silhouette in both directions. With 40, side-by-side hulls stop 13 pixels apart and head-on bows overlap by at most 33 pixels.
+
+Balance version `arena_00-v1/balance-v7` separates ranking snapshots with the 40-pixel hull radius from earlier ones.
 
 ### Ship trail
 

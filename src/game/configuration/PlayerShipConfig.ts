@@ -11,7 +11,7 @@ export class PlayerShipConfig {
     allegiance: Allegiance.Player,
     health: 100,
     radius: 34,
-    hullRadius: 66,
+    hullRadius: 40,
     movement: { initialSpeed: 0, maxSpeed: 230, acceleration: 230, deceleration: 115, turnSpeed: 2.6 },
     weapons: [
       {

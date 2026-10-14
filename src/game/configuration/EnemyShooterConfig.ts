@@ -11,7 +11,7 @@ export class EnemyShooterConfig {
     allegiance: Allegiance.Enemy,
     health: 65,
     radius: 30,
-    hullRadius: 66,
+    hullRadius: 40,
     movement: { initialSpeed: 0, maxSpeed: 100, acceleration: 1000, deceleration: 1600, turnSpeed: 2.1 },
     weapons: [
       {
