@@ -1,6 +1,6 @@
 import type { GameConfig } from '../../game/contracts/GameConfig';
 import { GameConfigIdentity } from '../../game/configuration/GameConfigIdentity';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { RecordsApi } from '../../infrastructure/network/RecordsApi';
 import type { MatchRecord, RankedMatch } from '../../application/records/MatchRecord';
@@ -11,6 +11,7 @@ import { Button } from '../components/Button';
 import { uiAsset } from '../assets/UiAssets';
 import { useApplicationServices } from '../hooks/UseApplicationServices';
 import { AudioConfig } from '../../game/configuration/AudioConfig';
+import { EndReasonLabels } from './EndReasonLabels';
 
 /** Match dates are shown in UTC, matching the stored ISO timestamps and the ranking order. */
 const DayFormat = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', timeZone: 'UTC' });
@@ -75,12 +76,16 @@ function PageButton({
  * Ranking highlights this player's records; history highlights the last completed battle.
  */
 export function RemotePanel({
+  id,
+  labelledBy,
   kind,
   playerId,
   config,
   revision,
   lastMatchId,
 }: {
+  id: string;
+  labelledBy: string;
   kind: 'ranking' | 'history';
   playerId: string;
   config: GameConfig;
@@ -94,6 +99,8 @@ export function RemotePanel({
     queryKey: [kind, kind === 'ranking' ? key : playerId, page, revision],
     queryFn: ({ signal }) =>
       kind === 'ranking' ? api.ranking(key, page, signal) : api.history(playerId, page, signal),
+    // Keeps the current page visible (dimmed, with a status) while the next page loads.
+    placeholderData: keepPreviousData,
   });
   const highlighted = (record: MatchRecord) =>
     kind === 'ranking' ? record.playerId === playerId : record.id === lastMatchId;
@@ -103,7 +110,7 @@ export function RemotePanel({
       .join(' ') || undefined;
 
   return (
-    <section className={`remote-panel ${kind}`} aria-label={kind === 'ranking' ? 'Ranking' : 'Match History'}>
+    <section id={id} role="tabpanel" aria-labelledby={labelledBy} className={`remote-panel ${kind}`}>
       <p className="records-subtitle">
         {kind === 'ranking'
           ? `${config.sessionSeconds} second battles · ${config.spawnSeconds} second spawn interval`
@@ -113,7 +120,7 @@ export function RemotePanel({
       <div className="records-body">
         {query.isPending && <p role="status">Loading records…</p>}
         {query.isFetching && !query.isPending && (
-          <p role="status" className="sr-only">
+          <p role="status" className="records-updating">
             Updating records…
           </p>
         )}
@@ -167,7 +174,10 @@ export function RemotePanel({
                       </td>
                       <td className="records-points">{record.score}</td>
                       <td className="records-duration">{formatDuration(record.duration)}</td>
-                      <td className={`records-result ${record.reason}`}>{ResultLabels[record.reason]}</td>
+                      <td className={`records-result ${record.reason}`}>
+                        {ResultLabels[record.reason]}
+                        <span className="sr-only"> · {EndReasonLabels[record.reason]}</span>
+                      </td>
                     </>
                   )}
                 </tr>

@@ -89,10 +89,23 @@
 
 /* Keeps the pagination and Main Menu in place while a page loads, is empty or fails. */
 .records-body {
+  position: relative;
   width: 100%;
   min-height: calc(318 * var(--board-px));
   margin-top: calc(33 * var(--board-px));
   text-align: center;
+}
+/* Background refresh status sits in the gap above the table, so the rows never shift. */
+.records-updating {
+  position: absolute;
+  top: calc(-26 * var(--board-px));
+  right: calc(12 * var(--board-px));
+  margin: 0;
+  font-size: max(calc(12 * var(--board-px)), 10px);
+  font-weight: bold;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #ffdc91;
 }
 
 .remote-panel table {

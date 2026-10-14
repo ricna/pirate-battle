@@ -2,6 +2,7 @@ import type { MatchRecord } from '../../application/records/MatchRecord';
 import { EndReason } from '../../game/contracts/GameDomain';
 import { Button } from '../components/Button';
 import { uiAsset } from '../assets/UiAssets';
+import { EndReasonLabels } from '../records/EndReasonLabels';
 import { ResultScore } from '../records/ResultScore';
 
 /** Completed-battle presentation receives a record and commands, never active domain entities. */
@@ -38,6 +39,9 @@ export function ResultScreen({
       </div>
       <p>
         Time played: <strong>{record.duration.toFixed(1)} seconds</strong>
+      </p>
+      <p>
+        End reason: <strong>{EndReasonLabels[record.reason]}</strong>
       </p>
       {record.statistics && (
         <dl className="battle-statistics">

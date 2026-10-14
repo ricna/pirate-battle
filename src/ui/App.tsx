@@ -25,6 +25,8 @@ import { RecordsApi } from '../infrastructure/network/RecordsApi';
 import type { MatchRecord } from '../application/records/MatchRecord';
 import type { Scenario } from '../infrastructure/network/NetworkScenarios';
 import { ResultScreen } from './screens/ResultScreen';
+import { fragmentForScreen, screenFromFragment } from './navigation/ScreenRoute';
+import type { Screen } from './navigation/ScreenRoute';
 export function App() {
   const {
     audio,
@@ -38,14 +40,17 @@ export function App() {
   } = useApplicationServices();
   const [options, setOptions] = useState(() => optionsRepository.load());
   const [playerId] = useState(() => player.load());
-  const [screen, setScreen] = useState<'menu' | 'options' | 'howToPlay' | 'records' | 'game' | 'result'>(
-    'menu',
-  );
-  const [recordsTab, setRecordsTab] = useState<RecordsTab>('ranking');
+  const [last, setLast] = useState(() => matches.last());
+  // Refresh keeps the visible screen; a result fragment needs the persisted last completed battle.
+  const [route] = useState(() => {
+    const restored = screenFromFragment(window.location.hash);
+    return restored.screen === 'result' && !last ? screenFromFragment('') : restored;
+  });
+  const [screen, setScreen] = useState<Screen>(route.screen);
+  const [recordsTab, setRecordsTab] = useState<RecordsTab>(route.tab);
   const [config, setConfig] = useState<GameConfig | null>(null);
   const [gameId, setGameId] = useState('');
-  const [resultReady, setResultReady] = useState(false);
-  const [last, setLast] = useState(() => matches.last());
+  const [resultReady, setResultReady] = useState(route.screen === 'result');
   const [pending, setPending] = useState(() => matches.pending());
   const pendingRef = useRef(pending);
   const attempted = useRef(new Set<string>());
@@ -84,6 +89,16 @@ export function App() {
   useEffect(() => {
     audio.configure(options);
   }, [audio, options]);
+  useEffect(() => {
+    const fragment = fragmentForScreen({ screen, tab: recordsTab });
+    if (window.location.hash === fragment) return;
+    // replaceState keeps refresh on the same screen without adding browser history entries.
+    window.history.replaceState(
+      window.history.state,
+      '',
+      `${window.location.pathname}${window.location.search}${fragment}`,
+    );
+  }, [screen, recordsTab]);
   useEffect(() => {
     if (screen === 'game') return;
     const heading = document.querySelector<HTMLElement>('main h1');
