@@ -678,8 +678,11 @@ test('dragging Forward steers toward the touch delta while sailing', async ({ pa
 test('how to play explains the controls and only returns to the main menu', async ({ page }) => {
   await page.getByRole('button', { name: 'How To Play', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'How To Play' })).toBeVisible();
+  await page.getByRole('button', { name: 'Controls', exact: true }).click();
   await expect(page.locator('.controls-help')).toContainText('left broadside');
-  await expect(page.locator('.how-to-play').getByRole('button')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Enemies', exact: true }).click();
+  await expect(page.locator('.how-to-play')).toContainText('Chaser');
+  await expect(page.locator('.how-to-play').getByRole('button')).toHaveCount(4);
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
 });
@@ -743,10 +746,10 @@ test('pending outage submission survives refresh and updates both tabs', async (
   await page.reload();
   // The pending battle survives the refresh on its restored result screen.
   await expect(page.locator('.result-panel')).toContainText('Submission pending');
-  await expect(page.locator('.pending-banner')).toContainText('1 battle(s) awaiting registration');
+  await expect(page.getByRole('button', { name: 'Retry submission' })).toBeVisible();
   await scenario(page, 'success');
-  await page.getByRole('button', { name: 'Retry pending battle' }).click();
-  await expect(page.locator('.pending-banner')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Retry submission' }).click();
+  await expect(page.getByRole('button', { name: 'Retry submission' })).toHaveCount(0);
   await expect(page.locator('.result-panel')).toContainText('Battle registered');
   await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
   await page.getByRole('button', { name: 'Match History', exact: true }).click();

@@ -1,0 +1,95 @@
+.app-howToPlay {
+  display: grid;
+  place-items: center;
+}
+
+.how-to-play {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.how-to-play h1 {
+  margin: 0;
+}
+
+.help-topics {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.help-topics .sprite-button {
+  min-width: 0;
+  min-height: 44px;
+}
+
+.help-content {
+  min-height: 200px;
+}
+
+.help-content p {
+  line-height: 1.35;
+}
+
+.how-to-play .enemy-guide {
+  text-align: left;
+}
+
+.how-to-play .button-row {
+  margin-top: 8px;
+}
+
+.how-to-play .build-label {
+  margin: 2px 0 0;
+}
+
+@media (max-width: 1024px), (max-height: 600px) {
+  .app-howToPlay {
+    padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+      max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+  .how-to-play {
+    border-width: 16px 14px;
+    padding: 4px 8px;
+  }
+  .how-to-play h1 {
+    font-size: 22px;
+  }
+  .help-content {
+    min-height: 0;
+  }
+  .help-content p {
+    margin: 6px 0;
+    font-size: 12px;
+  }
+  .help-topics {
+    margin-top: 6px;
+    gap: 4px;
+  }
+  .help-topics .sprite-button {
+    height: 44px;
+    padding: 6px;
+    font-size: 13px;
+  }
+  .how-to-play .enemy-guide img {
+    width: 28px;
+    height: 46px;
+  }
+  .how-to-play .button-row .sprite-button {
+    height: 44px;
+    min-width: 0;
+    font-size: 14px;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .help-content p {
+    margin: 2px 0;
+  }
+  .how-to-play .button-row {
+    margin-top: 4px;
+  }
+}

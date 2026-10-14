@@ -55,10 +55,14 @@ export function FullscreenControl({
         onClick={() => void toggle()}
         disabled={pending}
         aria-pressed={active}
+        aria-label={active ? 'Exit full screen' : 'Full screen'}
         aria-keyshortcuts="Alt+Enter"
         title="Toggle full screen (Alt+Enter)"
       >
-        {active ? 'Exit full screen' : 'Full screen'}
+        <span className="fullscreen-label">{active ? 'Exit full screen' : 'Full screen'}</span>
+        <span className="fullscreen-symbol" aria-hidden="true">
+          ⛶
+        </span>
       </button>
       {message && (
         <Dialog title="Full screen" onClose={() => setMessage('')}>

@@ -1,6 +1,6 @@
 /*
  * Options board using the sample's authored art, grouped into Game and Audio.
- * Short landscape phones retain touch target sizes and scroll through the board.
+ * Compact screens reflow the settings so every control stays visible without scrolling.
  */
 
 .app-options {
@@ -351,5 +351,70 @@
   }
   .options-board .options-restore {
     margin-top: 16px;
+  }
+}
+
+@media (max-width: 1024px), (max-height: 600px) {
+  .options-board {
+    border-width: 14px;
+    padding: 4px 6px;
+  }
+  .options-board h1 {
+    font-size: 22px;
+  }
+  .options-section {
+    margin-top: 5px;
+  }
+  .options-section h2 {
+    padding-bottom: 2px;
+    font-size: 16px;
+  }
+  .options-setting {
+    grid-template-columns: minmax(74px, 0.7fr) minmax(0, 1fr);
+    grid-template-rows: 1fr 1fr;
+    min-height: 44px;
+    margin-top: 3px;
+    column-gap: 4px;
+  }
+  .options-label {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: end;
+    font-size: 12px;
+    line-height: 1.05;
+  }
+  .options-slider-value {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    margin: 1px 0 0;
+    font-size: 13px;
+  }
+  .options-stepper,
+  .options-toggle {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+    margin: 0;
+  }
+  .options-stepper {
+    gap: 2px;
+  }
+  .options-board .options-main-menu {
+    height: 44px;
+    margin-top: 5px;
+  }
+  .options-board .options-restore {
+    min-height: 44px;
+    margin: 5px 0 0;
+  }
+}
+
+@media (max-height: 600px) and (min-width: 541px) and (orientation: landscape) {
+  .options-board {
+    gap: 0 10px;
+  }
+  .options-board .options-restore {
+    margin-top: 5px;
   }
 }

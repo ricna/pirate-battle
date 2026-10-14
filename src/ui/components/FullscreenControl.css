@@ -24,3 +24,22 @@
   left: 50%;
   transform: translateX(-50%);
 }
+
+.fullscreen-symbol {
+  display: none;
+}
+
+@media (max-width: 1024px), (max-height: 600px) {
+  .menu-fullscreen .fullscreen-button {
+    width: 44px;
+    padding: 0;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .menu-fullscreen .fullscreen-label {
+    display: none;
+  }
+  .menu-fullscreen .fullscreen-symbol {
+    display: block;
+  }
+}

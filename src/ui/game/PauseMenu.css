@@ -118,3 +118,13 @@
     font-size: 18px;
   }
 }
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .pause-options .options-board {
+    border-top-width: 6px;
+    border-bottom-width: 6px;
+  }
+  .pause-options .options-note {
+    margin-top: 0;
+  }
+}

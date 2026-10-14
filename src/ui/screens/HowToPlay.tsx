@@ -1,54 +1,77 @@
+import { useState } from 'react';
 import { Button } from '../components/Button';
 import { ControlsHelp } from '../components/ControlsHelp';
+import './HowToPlay.css';
 
 const ChaserShip = new URL('../../../assets/png/default/ships/ship_2.png', import.meta.url).href;
 const ShooterShip = new URL('../../../assets/png/default/ships/ship_3.png', import.meta.url).href;
 
-/** Game briefing and control reference. Its only action returns to the main menu. */
+/** Compact briefing split into authored topics so every section fits on a phone without scrolling. */
 export function HowToPlay({ onMainMenu }: { onMainMenu: () => void }) {
+  const [topic, setTopic] = useState<'overview' | 'controls' | 'enemies'>('overview');
   return (
     <section className="panel how-to-play">
       <h1>How To Play</h1>
-      <p>
-        Survive until the timer runs out, sink enemy ships and earn your place among the captains. Keep
-        moving. Aim your bow for a single cannon shot, or turn alongside an enemy for a three-cannon
-        broadside.
-      </p>
-
-      <p>
-        Sail over floating crew to rescue them and recover 1 health per person. Quick rescues combine into a
-        green +2, +3 or more. At full health, crew remain available until they disappear.
-      </p>
-
-      <h2>Controls</h2>
-      <ControlsHelp />
-      <p>
-        On phones, play in landscape. The camera follows your ship as you explore the larger map. Use Full
-        screen in the menu or battle HUD to hide browser chrome when supported. Changing full screen during
-        combat pauses the battle; press Resume when ready.
-      </p>
-
-      <h2>Enemies</h2>
-      <div className="enemy-guide">
-        <img src={ChaserShip} alt="Black-sailed Chaser" />
-        <p>
-          <strong>Chaser</strong>
-          <br />
-          Pursues and rams your ship. Sink it before impact. Its own explosion earns no points.
-        </p>
+      <nav className="help-topics" aria-label="Help topics">
+        {(['overview', 'controls', 'enemies'] as const).map((value) => (
+          <Button
+            key={value}
+            className="compact"
+            variant={topic === value ? 'primary' : 'secondary'}
+            aria-pressed={topic === value}
+            onClick={() => setTopic(value)}
+          >
+            {value === 'overview' ? 'Overview' : value === 'controls' ? 'Controls' : 'Enemies'}
+          </Button>
+        ))}
+      </nav>
+      <div className="help-content">
+        {topic === 'overview' && (
+          <>
+            <p>
+              Survive until time runs out. Sink enemies with a bow shot or a three-cannon broadside to earn
+              points.
+            </p>
+            <p>
+              Rescue floating crew to recover 1 health each; quick rescues combine as +2, +3 and more. Crew
+              wait until they disappear if your health is full.
+            </p>
+            <p>
+              Islands block ships and shots. An island impact costs 1 health; arena borders cause no damage.
+            </p>
+          </>
+        )}
+        {topic === 'controls' && (
+          <>
+            <ControlsHelp />
+            <p>
+              The camera follows your ship. Full screen hides browser chrome when supported; changing it
+              during battle pauses until Resume.
+            </p>
+          </>
+        )}
+        {topic === 'enemies' && (
+          <>
+            <div className="enemy-guide">
+              <img src={ChaserShip} alt="Black-sailed Chaser" />
+              <p>
+                <strong>Chaser</strong>
+                <br />
+                Pursues and rams you. Its own explosion earns no points.
+              </p>
+            </div>
+            <div className="enemy-guide">
+              <img src={ShooterShip} alt="Red-sailed Shooter" />
+              <p>
+                <strong>Shooter</strong>
+                <br />
+                Attacks from a distance. Dodge its shots and return fire.
+              </p>
+            </div>
+            <p className="muted">Each enemy you sink earns 1 point. Losing focus pauses the battle.</p>
+          </>
+        )}
       </div>
-      <div className="enemy-guide">
-        <img src={ShooterShip} alt="Red-sailed Shooter" />
-        <p>
-          <strong>Shooter</strong>
-          <br />
-          Attacks from a distance. Dodge its cannonballs and return fire.
-        </p>
-      </div>
-      <p className="muted">
-        Islands stop ships and cannonballs. Island impacts cost 1 health; arena borders cause no damage. Each
-        enemy you sink earns 1 point. Losing focus pauses the battle.
-      </p>
 
       <div className="button-row">
         <Button variant="secondary" icon="icon_home" onClick={onMainMenu}>

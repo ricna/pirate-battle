@@ -256,13 +256,11 @@ export function App() {
                 {network.warning ?? storage.warning ?? notice}
               </p>
             )}
-            {pending.length > 0 && (
+            {pending.length > 0 && screen !== 'result' && (
               <aside className="pending-banner" aria-label="Pending submissions">
                 <div>
                   <p>{pending.length} battle(s) awaiting registration. You can keep playing.</p>
-                  {screen !== 'result' && pending[0] && errors[pending[0].id] && (
-                    <p role="alert">{errors[pending[0].id]}</p>
-                  )}
+                  {pending[0] && errors[pending[0].id] && <p role="alert">{errors[pending[0].id]}</p>}
                 </div>
                 <Button className="compact" disabled={save.isPending} onClick={retry}>
                   {save.isPending ? 'Submitting…' : 'Retry pending battle'}

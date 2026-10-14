@@ -6,7 +6,7 @@ Phones use a player-following camera instead of shrinking the complete arena. At
 
 The compact HUD uses a grid for health, score, time, fullscreen and pause. Movement/fire buttons are 60.8 CSS pixels; pause/fullscreen and menu controls are at least 44 pixels high. CSS accounts for safe-area insets, and the game uses `100dvh` so the canvas follows browser chrome changes. Combat remains landscape-only; portrait pauses and requires explicit Resume after rotation.
 
-Main Menu uses two columns on short landscape screens and readable stacked controls in portrait. Options places Game and Audio side by side in landscape and stacks them in portrait; short screens scroll instead of shrinking controls. Captain's Log contains horizontal table scrolling when columns cannot fit legibly. The original supplied art remains the source for panels and controls.
+Main Menu uses two columns on short landscape screens and readable stacked controls in portrait. Options places Game and Audio side by side in landscape and stacks them in portrait, with labels and values beside the 44-pixel setting controls. Captain's Log tightens its five-row table in landscape and fits the columns in portrait. How To Play offers Overview, Controls and Enemies as separate topics. The Battle result uses a centered overview beside compact statistic cards, with registration status and actions below. These screens and paused Options fit the supported phone viewports without page, table or dialog scrolling. The original supplied art remains the source for panels and controls.
 
 ## Fullscreen
 
@@ -21,6 +21,8 @@ The browser can deny or lack fullscreen support. The authored dialog reports tha
 ## Verification
 
 `tests/mobile.spec.ts` covers four landscape sizes (568×320, 667×375, 844×390, 932×430), two portrait sizes (320×568, 390×844), readable controls, no HUD overlap, menu/table containment, rotation, real sailing, camera movement/pause, all four camera bounds, desktop overview, fullscreen entry/exit and unsupported-browser guidance. Run `npm run test:e2e -- --project=mobile-layout`; captures and isolated reports are under `reports/mobile-layout`.
+
+The later screen-fit cases check Main Menu, Options, Captain's Log, all three help topics, Pause/Options and Battle result at 568×320, 844×390 and 320×568. They assert that every board and visible button remains inside the viewport and that the document, records table and pause dialog do not scroll. This is browser emulation evidence; physical devices still need inspection.
 
 The final focused run passed 16/16 scenarios, including production smoke and the three cases rechecked after the full 120/123 run. The full run's two startup timing failures and preceding result-baseline mismatch remain recorded; it is not relabeled 123/123. Linux reference captures passed 2/2 in the CI container. See [verification evidence](reports/mobile-layout/VERIFICATION.md). Physical devices remain unverified.
 

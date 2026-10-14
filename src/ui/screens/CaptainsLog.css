@@ -362,3 +362,105 @@
     font-size: 16px;
   }
 }
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .captains-log {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    align-items: center;
+    border-width: 14px;
+    padding: 3px 6px;
+  }
+  .captains-log h1 {
+    grid-column: 1;
+    font-size: 20px;
+  }
+  .records-tabs {
+    width: min(220px, 100%);
+    justify-self: start;
+    grid-column: 2;
+    margin: 0;
+  }
+  .records-tabs .sprite-button {
+    height: 44px;
+    font-size: 12px;
+  }
+  .captains-log .remote-panel {
+    grid-column: 1 / -1;
+  }
+  .records-subtitle {
+    margin: 0;
+    font-size: 10px;
+  }
+  .records-body {
+    margin-top: 0;
+    overflow: visible;
+  }
+  .remote-panel table {
+    min-width: 0;
+    border-spacing: 0 2px;
+    margin-top: 0;
+  }
+  .remote-panel th {
+    padding: 0 3px 1px;
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+  .remote-panel td,
+  .ranking tr.leader td {
+    height: 21px;
+    padding-left: 4px;
+    font-size: 11px;
+  }
+  .remote-panel td.records-result,
+  .played-time,
+  .ranking .played-day {
+    font-size: 10px;
+  }
+  .records-star {
+    width: 15px;
+    height: 15px;
+    margin-right: 3px;
+  }
+  .records-pagination {
+    margin-top: 1px;
+  }
+  .captains-log .captains-log-menu {
+    grid-column: 1 / -1;
+    justify-self: center;
+    height: 44px;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 540px) and (orientation: portrait) {
+  .captains-log {
+    border-width: 16px 14px;
+    padding: 4px;
+  }
+  .records-body {
+    overflow: visible;
+  }
+  .remote-panel table {
+    min-width: 0;
+    border-spacing: 0 3px;
+  }
+  .remote-panel th,
+  .remote-panel td {
+    padding-left: 3px;
+    font-size: 10px;
+  }
+  .remote-panel td {
+    height: 34px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .played-time {
+    display: none;
+  }
+  .records-star {
+    width: 14px;
+    height: 14px;
+    margin-right: 2px;
+  }
+}

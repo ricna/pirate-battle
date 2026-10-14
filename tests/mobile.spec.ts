@@ -1,12 +1,111 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { WorldCamera } from '../src/game/rendering/WorldCamera';
-import { advance, observe, open, play, waitForAuthoredArt } from './helpers';
+import { advance, observe, open, play, scenario, waitForAuthoredArt } from './helpers';
 
 async function capture(page: Page, name: string) {
   await waitForAuthoredArt(page);
   await page.screenshot({ path: `reports/mobile-layout/${name}.png`, fullPage: true });
 }
+
+async function expectScreenFits(page: Page, selector: string) {
+  await expect
+    .poll(async () =>
+      page.evaluate((target) => {
+        const panel = document.querySelector(target)?.getBoundingClientRect();
+        const records = document.querySelector('.records-body');
+        const dialog = document.querySelector<HTMLDialogElement>('.pause-dialog[open]');
+        if (!panel) return false;
+        const visibleButtons = Array.from(
+          document.querySelectorAll<HTMLButtonElement>('.app button, .pause-dialog button'),
+        ).filter(
+          (button) =>
+            !button.closest('details:not([open])') &&
+            button.getClientRects().length > 0 &&
+            getComputedStyle(button).visibility !== 'hidden',
+        );
+        return (
+          document.documentElement.scrollWidth <= innerWidth + 1 &&
+          document.documentElement.scrollHeight <= innerHeight + 1 &&
+          panel.left >= -1 &&
+          panel.top >= -1 &&
+          panel.right <= innerWidth + 1 &&
+          panel.bottom <= innerHeight + 1 &&
+          (!records || records.scrollWidth <= records.clientWidth + 1) &&
+          (!dialog || dialog.scrollHeight <= dialog.clientHeight + 1) &&
+          visibleButtons.every((button) => {
+            const box = button.getBoundingClientRect();
+            return (
+              box.left >= -1 && box.top >= -1 && box.right <= innerWidth + 1 && box.bottom <= innerHeight + 1
+            );
+          })
+        );
+      }, selector),
+    )
+    .toBe(true);
+}
+
+for (const viewport of [
+  { width: 568, height: 320 },
+  { width: 844, height: 390 },
+  { width: 320, height: 568 },
+]) {
+  test(`menu screens fit without scrolling at ${viewport.width}x${viewport.height}`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport, isMobile: true, hasTouch: true });
+    const page = await context.newPage();
+    try {
+      await open(page);
+      await expectScreenFits(page, '.main-menu');
+      await page.getByRole('button', { name: 'Options', exact: true }).click();
+      await expectScreenFits(page, '.options-board');
+      await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+      await page.getByRole('button', { name: 'Ranking', exact: true }).click();
+      await expect(page.locator('tbody tr').first()).toBeVisible();
+      await expectScreenFits(page, '.captains-log');
+      await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+      await page.getByRole('button', { name: 'Match History', exact: true }).click();
+      await expectScreenFits(page, '.captains-log');
+      await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+      await page.getByRole('button', { name: 'How To Play', exact: true }).click();
+      for (const topic of ['Overview', 'Controls', 'Enemies']) {
+        await page.getByRole('button', { name: topic, exact: true }).click();
+        await expectScreenFits(page, '.how-to-play');
+      }
+    } finally {
+      await context.close();
+    }
+  });
+}
+
+test('pause options and battle results fit on a short landscape phone and after portrait rotation', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    viewport: { width: 568, height: 320 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  const page = await context.newPage();
+  try {
+    await open(page);
+    await scenario(page, 'outage');
+    await play(page);
+    await page.getByRole('button', { name: 'Pause game' }).click();
+    await expectScreenFits(page, '.pause-board');
+    await page.getByRole('button', { name: 'Options', exact: true }).click();
+    await expectScreenFits(page, '.pause-dialog .options-board');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await page.getByRole('button', { name: 'Resume', exact: true }).click();
+    await advance(page, 120);
+    await expect(page.getByRole('heading', { name: 'Battle result' })).toBeVisible();
+    await expect(page.locator('.result-panel').getByRole('alert')).toContainText('503');
+    await expectScreenFits(page, '.result-panel');
+    await page.setViewportSize({ width: 320, height: 568 });
+    await expectScreenFits(page, '.result-panel');
+  } finally {
+    await context.close();
+  }
+});
 
 test('camera follows the player, clamps all four shores and retains the desktop overview', () => {
   const camera = new WorldCamera(2048, 1152);

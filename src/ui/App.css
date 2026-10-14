@@ -166,11 +166,6 @@ kbd {
   }
 }
 
-.result-panel {
-  width: min(600px, 100%);
-  margin: 25px auto;
-  text-align: center;
-}
 select {
   display: block;
   width: 100%;
@@ -187,20 +182,6 @@ select {
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 16px;
-}
-.result-score {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  color: #ffe599;
-  font-size: 76px;
-}
-.result-score img {
-  width: 55px;
-}
-.result-score span {
-  font-size: 18px;
 }
 .eyebrow {
   text-transform: uppercase;
@@ -293,9 +274,6 @@ select {
   .pending-banner {
     flex-wrap: wrap;
   }
-  .result-panel {
-    margin-top: 12px;
-  }
 }
 @media (max-height: 550px) and (orientation: landscape) {
   .app {
@@ -322,26 +300,6 @@ select {
   h2 {
     font-size: 21px;
   }
-}
-.battle-statistics {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 18px;
-  text-align: left;
-  margin: 18px 0;
-}
-.battle-statistics div {
-  border-bottom: 1px solid #97734a70;
-  padding: 5px 0;
-}
-.battle-statistics dt {
-  color: #dac99f;
-  font-size: 12px;
-}
-.battle-statistics dd {
-  margin: 2px 0 0;
-  font-variant-numeric: tabular-nums;
-  font-size: 18px;
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -373,10 +331,6 @@ select {
 .sprite-button.secondary:active {
   background-image: url('../../assets/png/default/ui/menu/button_secondary_pressed.png');
 }
-.result-score > span[aria-hidden='true'] {
-  font-size: 76px;
-  line-height: 1;
-}
 .sprite-button.secondary {
   color: #fff1cf;
   text-shadow: 0 1px 2px #071729;
@@ -405,15 +359,6 @@ select {
 .app-menu .shell,
 .app-records .shell {
   width: auto;
-}
-
-.how-to-play {
-  width: min(760px, 100%);
-  margin: 25px auto;
-  text-align: center;
-}
-.how-to-play .enemy-guide {
-  text-align: left;
 }
 
 .network-tools {
@@ -507,8 +452,27 @@ main h1[tabindex='-1']:focus {
   .dialog .text-button {
     min-height: 44px;
   }
-  .how-to-play,
-  .result-panel {
-    margin: 0 auto;
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .app.app-menu,
+  .app.app-options,
+  .app.app-records,
+  .app.app-howToPlay,
+  .app.app-result {
+    min-height: 100dvh;
+    padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+      max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+  .studio-logo {
+    display: none;
+  }
+}
+
+@media (max-width: 540px) and (orientation: portrait) {
+  .app.app-options,
+  .app.app-records {
+    padding-top: calc(54px + env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
   }
 }
