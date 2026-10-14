@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { LocalStorageStore } from '../infrastructure/storage/LocalStorageStore';
 import { NetworkSimulator } from '../infrastructure/network/NetworkSimulator';
 import { RecordsApi } from '../infrastructure/network/RecordsApi';
+import { NetworkConfig } from '../infrastructure/network/NetworkConfig';
 import { OptionsRepository } from './configuration/OptionsRepository';
 import { MatchRepository } from './records/MatchRepository';
 import { PlayerIdentityRepository } from './records/PlayerIdentityRepository';
@@ -19,10 +20,17 @@ export class ApplicationServices {
   readonly #matches = new MatchRepository(this.#storage);
   readonly #player = new PlayerIdentityRepository(this.#storage);
   readonly #network = new NetworkSimulator(this.#storage);
-  readonly #records = new RecordsApi(axios.create({ baseURL: '/api', timeout: 1800 }));
+  readonly #records = new RecordsApi(
+    axios.create({ baseURL: NetworkConfig.BaseUrl, timeout: NetworkConfig.RequestTimeoutMs }),
+  );
   readonly #queryClient = new QueryClient({
     defaultOptions: {
-      queries: { retry: 1, staleTime: 0, refetchOnWindowFocus: false, refetchOnMount: 'always' },
+      queries: {
+        retry: NetworkConfig.QueryRetries,
+        staleTime: 0,
+        refetchOnWindowFocus: false,
+        refetchOnMount: 'always',
+      },
       mutations: { retry: false },
     },
   });

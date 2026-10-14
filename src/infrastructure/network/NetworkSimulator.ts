@@ -1,63 +1,48 @@
 import { OptionsConfig } from '../../application/configuration/OptionsConfig';
 import { GameConfigFactory } from '../../game/configuration/GameConfigFactory';
 import { GameConfigIdentity } from '../../game/configuration/GameConfigIdentity';
+import type { GameConfig } from '../../game/contracts/GameConfig';
 import { http, HttpResponse, delay } from 'msw';
 import { setupWorker } from 'msw/browser';
 
 import { isMatch, isMatchList } from '../../application/records/MatchRecord';
 import type { MatchRecord, Page } from '../../application/records/MatchRecord';
 import type { LocalStorageStore } from '../storage/LocalStorageStore';
-export const SCENARIOS = [
-  'success',
-  'empty',
-  'multiple-pages',
-  'slow',
-  'variable-latency',
-  'out-of-order',
-  'timeout',
-  'connection-error',
-  'http-400',
-  'http-500',
-  'ranking-error',
-  'history-error',
-  'post-commit-timeout',
-  'outage',
-] as const;
-export type Scenario = (typeof SCENARIOS)[number];
-function fixture(index: number, playerId: string, config: MatchRecord['config']): MatchRecord {
+import { MockFixtures } from './MockFixtures';
+import { NetworkConfig } from './NetworkConfig';
+import { NetworkScenarios } from './NetworkScenarios';
+import type { MockEndpoint, MockFailure, Scenario } from './NetworkScenarios';
+
+function page<T>(items: T[], requested: string | null): Page<T> {
+  const number = Math.max(1, Number(requested) || 1);
+  const size = NetworkConfig.PageSize;
   return {
-    id: `fixture-${playerId}-${GameConfigIdentity.key(config)}-${index}`,
-    playerId,
-    playerName: playerId.startsWith('fixture')
-      ? ['Blackbeard', 'Anne Bonny', 'Calico Jack', 'Mary Read'][index % 4]!
-      : 'You',
-    date: new Date(Date.UTC(2026, 9, 10, 12, index)).toISOString(),
-    score: 3 + (index % 11),
-    duration: index % 2 ? config.sessionSeconds : 40 + (index % 20),
-    reason: index % 2 ? 'time' : 'death',
-    config,
-  };
-}
-function page<T>(items: T[], number: number): Page<T> {
-  return {
-    items: items.slice((number - 1) * 5, number * 5),
+    items: items.slice((number - 1) * size, number * size),
     page: number,
-    totalPages: Math.max(1, Math.ceil(items.length / 5)),
+    totalPages: Math.max(1, Math.ceil(items.length / size)),
     total: items.length,
   };
 }
-function configFromKey(key: string | null) {
-  const bits = key?.split('|');
-  const duration = Number(bits?.[2]);
-  const spawn = Number(bits?.[3]);
-  if (duration >= 60 && duration <= 180 && spawn >= 2 && spawn <= 10)
-    return GameConfigFactory.create({
-      ...OptionsConfig.Default,
-      sessionSeconds: duration,
-      spawnSeconds: spawn,
-    });
-  return GameConfigFactory.create(OptionsConfig.Default);
+
+/** The ranking group's own session settings, validated with the same rules as the Options screen. */
+function configFromKey(key: string | null): GameConfig | null {
+  const settings = key ? GameConfigIdentity.settings(key) : null;
+  if (!settings) return null;
+  const options = { ...OptionsConfig.Default, ...settings };
+  return OptionsConfig.isValid(options) ? GameConfigFactory.create(options) : null;
 }
+
+function failureResponse(failure: MockFailure): Response {
+  switch (failure) {
+    case 'connection':
+      return HttpResponse.error();
+    case 'http-400':
+      return HttpResponse.json({ message: 'Simulated invalid request.' }, { status: 400 });
+    case 'http-503':
+      return HttpResponse.json({ message: 'Simulated service outage.' }, { status: 503 });
+  }
+}
+
 /** Origin-local mock server with encapsulated scenario and reset generation. */
 export class NetworkSimulator {
   readonly #storage: LocalStorageStore;
@@ -69,68 +54,58 @@ export class NetworkSimulator {
 
   constructor(storage: LocalStorageStore) {
     this.#storage = storage;
-    this.#scenario = storage.read<Scenario>(
-      'scenario',
-      (value): value is Scenario => SCENARIOS.includes(value as Scenario),
-      'success',
-    );
+    this.#scenario = storage.read<Scenario>('scenario', NetworkScenarios.isScenario, 'success');
     this.#worker = setupWorker(
       http.get('*/api/ranking', async ({ request }) => {
-        const mode = this.#scenario;
+        const behaviour = NetworkScenarios.Behaviours[this.#scenario];
         const url = new URL(request.url);
-        const failure = await this.#condition(mode, 'ranking');
+        const failure = await this.#condition('ranking');
         if (failure) return failure;
         const config = configFromKey(url.searchParams.get('config'));
+        if (!config) return HttpResponse.json({ message: 'Unknown ranking configuration.' }, { status: 400 });
         const key = GameConfigIdentity.key(config);
-        const fixtures =
-          mode === 'empty'
-            ? []
-            : Array.from({ length: mode === 'multiple-pages' ? 28 : 12 }, (_, i) =>
-                fixture(i, `fixture-${i}`, config),
-              );
-        const items = [...fixtures, ...this.#savedRecords()]
-          .filter((r) => GameConfigIdentity.key(r.config) === key)
+        const items = [...MockFixtures.ranking(behaviour.fixtures.ranking, config), ...this.#savedRecords()]
+          .filter((record) => GameConfigIdentity.key(record.config) === key)
+          // Score descending, then the earliest date, then ID: a deterministic tie-break.
           .sort((a, b) => b.score - a.score || a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
-          .map((r, i) => ({ ...r, rank: i + 1 }));
-        return HttpResponse.json(page(items, Math.max(1, Number(url.searchParams.get('page')) || 1)));
+          .map((record, index) => ({ ...record, rank: index + 1 }));
+        return HttpResponse.json(page(items, url.searchParams.get('page')));
       }),
       http.get('*/api/history', async ({ request }) => {
-        const mode = this.#scenario;
+        const behaviour = NetworkScenarios.Behaviours[this.#scenario];
         const url = new URL(request.url);
-        const failure = await this.#condition(mode, 'history');
+        const failure = await this.#condition('history');
         if (failure) return failure;
         const playerId = url.searchParams.get('playerId') ?? '';
-        const fixtures =
-          mode === 'multiple-pages'
-            ? Array.from({ length: 16 }, (_, i) =>
-                fixture(i, playerId, GameConfigFactory.create(OptionsConfig.Default)),
-              )
-            : [];
-        const items = [...fixtures, ...this.#savedRecords().filter((r) => r.playerId === playerId)].sort(
-          (a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id),
+        const fixtures = MockFixtures.history(
+          behaviour.fixtures.history,
+          playerId,
+          GameConfigFactory.create(OptionsConfig.Default),
         );
-        return HttpResponse.json(page(items, Math.max(1, Number(url.searchParams.get('page')) || 1)));
+        const items = [...fixtures, ...this.#savedRecords().filter((record) => record.playerId === playerId)];
+        items.sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id));
+        return HttpResponse.json(page(items, url.searchParams.get('page')));
       }),
       http.post('*/api/history', async ({ request }) => {
-        const mode = this.#scenario;
+        const behaviour = NetworkScenarios.Behaviours[this.#scenario];
         const epoch = this.#generation;
         const record: unknown = await request.json();
         if (!isMatch(record)) return HttpResponse.json({ message: 'Invalid match record.' }, { status: 400 });
-        const existing = this.#savedRecords().find((r) => r.id === record.id);
+        const existing = this.#savedRecords().find((saved) => saved.id === record.id);
         if (existing) {
-          await delay(100);
+          await delay(NetworkConfig.ExistingRecordDelayMs);
           return HttpResponse.json(existing);
         }
-        const failure = await this.#condition(mode, 'post');
+        const failure = await this.#condition('post');
         if (failure) return failure;
         if (epoch !== this.#generation)
           return HttpResponse.json({ message: 'Demo server was reset. Retry this battle.' }, { status: 503 });
         // Commit is synchronous before the response delay. A retry recovers this same ID.
         const latest = this.#savedRecords();
-        const raced = latest.find((r) => r.id === record.id);
+        const raced = latest.find((saved) => saved.id === record.id);
         if (raced) return HttpResponse.json(raced);
         this.#storage.write('server', [...latest, record]);
-        if (mode === 'post-commit-timeout') await delay(2500);
+        if (behaviour.postCommitDelayMs) await delay(behaviour.postCommitDelayMs);
         return HttpResponse.json(record, { status: 201 });
       }),
     );
@@ -154,27 +129,12 @@ export class NetworkSimulator {
   #savedRecords(): MatchRecord[] {
     return this.#storage.read('server', isMatchList, []);
   }
-  async #condition(mode: Scenario, kind: 'ranking' | 'history' | 'post') {
-    const count = ++this.#requestCount;
-    const latency =
-      mode === 'slow'
-        ? 1400
-        : mode === 'timeout'
-          ? 2500
-          : mode === 'variable-latency'
-            ? 100 + ((count * 193) % 700)
-            : mode === 'out-of-order'
-              ? count % 2
-                ? 1300
-                : 100
-              : 180;
-    await delay(latency);
-    if (mode === 'connection-error') return HttpResponse.error();
-    if (mode === 'http-400')
-      return HttpResponse.json({ message: 'Simulated invalid request.' }, { status: 400 });
-    if (mode === 'http-500' || mode === 'outage' || mode === `${kind}-error`)
-      return HttpResponse.json({ message: 'Simulated service outage.' }, { status: 503 });
-    return null;
+  /** Applies the selected scenario's deterministic latency, then its failure for this endpoint, if any. */
+  async #condition(endpoint: MockEndpoint): Promise<Response | null> {
+    const behaviour = NetworkScenarios.Behaviours[this.#scenario];
+    await delay(behaviour.latencyMs(++this.#requestCount));
+    const failure = behaviour.failures[endpoint];
+    return failure ? failureResponse(failure) : null;
   }
 
   async start(): Promise<void> {

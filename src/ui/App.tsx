@@ -23,7 +23,7 @@ import { useApplicationServices } from './hooks/UseApplicationServices';
 import { AudioConfig } from '../game/configuration/AudioConfig';
 import { RecordsApi } from '../infrastructure/network/RecordsApi';
 import type { MatchRecord } from '../application/records/MatchRecord';
-import type { Scenario } from '../infrastructure/network/NetworkSimulator';
+import type { Scenario } from '../infrastructure/network/NetworkScenarios';
 import { ResultScreen } from './screens/ResultScreen';
 export function App() {
   const {

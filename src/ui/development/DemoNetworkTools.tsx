@@ -1,6 +1,6 @@
 import { Button } from '../components/Button';
-import { SCENARIOS } from '../../infrastructure/network/NetworkSimulator';
-import type { Scenario } from '../../infrastructure/network/NetworkSimulator';
+import { SCENARIOS } from '../../infrastructure/network/NetworkScenarios';
+import type { Scenario } from '../../infrastructure/network/NetworkScenarios';
 
 /** Collapsed demo controls for the MSW scenarios, docked in the bottom-left corner outside the menu board. */
 export function DemoNetworkTools({
