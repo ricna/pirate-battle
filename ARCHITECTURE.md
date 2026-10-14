@@ -17,7 +17,12 @@ React authors the canvas, menus, dialogs, HUD, touch controls and one persistent
 | game/math | Pure Geometry contacts/intersections and encapsulated Navigation BFS routes (nearest reachable cell when the target cell is blocked) |
 | game/input/InputController | Gameplay-scoped keyboard and independent touch sources |
 | game/rendering/ArenaRenderer | Ships, health, deterioration, cannonballs and effects from explicit PNGs |
-| game/runtime/GameSession | Per-match initialization, fixed-step clock, RAF, resize, pause, terminal presentation and disposal |
+| game/presentation/ShipTrailSystem, ShipTrailRenderer | Bounded stern history and pooled MeshRopes for the owner-authored ship trail |
+| game/runtime/GameSession | Per-match initialization, fixed-step clock, RAF, resize/density changes, pause and disposal |
+| game/runtime/TerminalSequence | Death/victory presentation timeline after combat ends (reveal and ready transitions) |
+| game/runtime/SessionInstrumentation | Opt-in `?test=1` / `?profile=1` observation, manual test clock and frame/entity metrics |
+| infrastructure/network | NetworkConfig (HTTP settings), NetworkScenarios (MSW scenarios as data), MockFixtures and the NetworkSimulator handlers |
+| ui/navigation/ScreenRoute | URL fragments for menu screens, so refresh keeps the visible screen |
 | game/audio | AudioManager coordinates SoundEffectPlayer and streamed MusicPlayer with different lifetimes |
 | ui/game/GameCanvas | Authored React canvas view, UI state, retry and translation to session commands |
 | ui/hud | MatchStatusHud and TouchControls reproduce the authored gameplay HUD |
@@ -35,7 +40,7 @@ React receives a semantic snapshot approximately 4Hz. Loading, pause and end tra
 
 The player's finite orthogonal Tiled map is the source of truth: 32×18 tiles, 64 logical pixels, four visual layers and five rectangular collision objects. Required references are registered as bundler-visible URLs. Relative JSON references resolve against original logical asset paths, so hashed production URLs and inlined tilesets remain valid. Missing files, unsupported geometry, invalid GIDs, dimensions and out-of-arena rectangles fail visibly with a retry action.
 
-The complete 2048×1152 arena is uniformly fitted into the available canvas. Resize changes display scale, never simulation coordinates or balance. Device resolution is capped at 2×. Tiles support horizontal, vertical and diagonal Tiled flips. Cropped tile textures are reused by GID while composing the authored static layers once into an owned RenderTexture at integer resolution. Fitting one map sprite prevents cracks between independently scaled tile quads at fractional viewport/DPI sizes. Temporary tile sprites are destroyed after composition; the cached surface and frame textures are destroyed with the match. Base image textures remain intentionally cached across matches. No generated island, UI or substitute asset is used after a loading error.
+The complete 2048×1152 arena is uniformly fitted into the available canvas. Resize changes display scale, never simulation coordinates or balance. Device resolution is capped at 2×; a later devicePixelRatio change (browser zoom or moving the window to another monitor) is detected through the resolution media query and the window resize event, and the renderer is resized at the new density. Tiles support horizontal, vertical and diagonal Tiled flips. Cropped tile textures are reused by GID while composing the authored static layers once into an owned RenderTexture at integer resolution. Fitting one map sprite prevents cracks between independently scaled tile quads at fractional viewport/DPI sizes. Temporary tile sprites are destroyed after composition; the cached surface and frame textures are destroyed with the match. Base image textures remain intentionally cached across matches. No generated island, UI or substitute asset is used after a loading error.
 
 ## Object-oriented gameplay model
 
@@ -55,11 +60,15 @@ Each projectile checks the earliest contact fraction with expanded obstacle rect
 
 Chasers seek and ram, causing damage and self-destruction without score. Shooters approach, hold position and orient toward the player and shoot only with clear line of sight and within range. `EnemyShip.follow` is a deterministic steering pipeline configured by each profile's `ai` block (see CONFIGURATION.md, Enemy navigation): the goal is the target when `ICollisionWorld.isNavigable` reports a clear line with coast clearance, otherwise the next corner of `ICollisionWorld.route` — a four-neighbour BFS on the authored grid, string-pulled to its corners and ending at the nearest reachable cell when the target's cell is blocked. Separation from nearby enemies bends the desired heading; `ICollisionWorld.clearance` probes plus enemy-hull sweeps select the closest clear heading; a progress window triggers a short open-water recovery and replan. The helm follows a low-pass-filtered heading at bounded turn speed, and the protected `Ship.cruise` command eases speed towards a turn- and coast-dependent target. `EnemyContext.fleet` supplies the enemies' read views; per-step neighbour data is detached so probes never mutate or retain ships. Spawn spacing uses hull radii, and new ships face their first route corner.
 
+Island collisions damage hulls. `ShipCollisionWorld` records the strongest blocked-movement contact per ship and coast in each step; `GameManager` keeps the existing significance filter (`minimumImpactSpeed`, then one event per `impactCooldown` for that contact key), which already drives the impact sound and splash. Each significant island contact then applies `CollisionConfig.islandImpactDamage[allegiance]` through `DamageSystem` with no kill credit: 1 for the player and 0 for enemies by default. A hull resting against a coast stops generating significant contacts, so health is lost once per collision rather than once per frame. Island damage that sinks the player ends the match by death in the same step.
+
 Spawn candidates are explicit authored water positions. Each is validated against the map before combat. At spawn time candidates must be sufficiently far from the player and nearby enemies. If no candidate is safe, that interval is skipped. The first two successful spawns guarantee both types; subsequent distribution is seeded. The active enemy cap is 28.
 
 ## Rendering, UI and audio
 
 Entity-ID maps retain ship sprites while alive. Projectile and effect entities use bounded pools, and their Pixi sprites use matching separate pools. Returned sprites remain attached and hidden; activation resets texture and transform. Ship views are destroyed on removal, while all match-owned pooled sprites are destroyed on disposal. Fixed ship/projectile/effect containers preserve draw order when pools expand. Health indicators use the supplied frame and fill PNGs. The atlas's logical fill rectangle determines left-origin clipping; the transparent source margins and border alignment remain intact. Fill subtextures are replaced only when health changes and explicitly destroyed. Deterioration selects supplied ship variants and animated fire sprites. Explosion frames and effect alpha follow simulation time, therefore freeze on pause.
+
+Ship trails use the owner's `assets/authored/shipt-trail.png`. `ShipTrailSystem` (owned by `PresentationSystem`, advanced on the presentation clock) samples each moving ship's stern every `shipTrail.sampleSeconds` while its speed is at least `minimumSpeedRatio` of its maximum, and expires samples after `lifetime`; a live ship's current stern always leads the path. `ShipTrailRenderer` draws each trail as a pooled Pixi `MeshRope` with a fixed vertex count: the stern path is resampled evenly by arc length, and the texture is stretched once along it with its strong end at the stern. Ropes live in their own layer below debris, crew and ships. Alpha follows speed and the age of the newest sample, so a trail fades after its ship stops or sinks. Pause freezes trails, the logical and visual pools share one validated capacity covering every live ship, and disposal destroys each rope and its geometry while keeping the cached texture.
 
 React buttons are semantic HTML controls decorated with provided PNG states. Menu panels use the supplied 9-slice border metadata.
 
@@ -70,6 +79,8 @@ Web Audio unlocks on a user gesture and decodes only cues registered by `AudioCo
 ## Lifecycle and Strict Mode
 
 Player death uses the explicitly selected extra WAV and a temporary `MusicPlayer` mix multiplier. `AudioManager` restores the OST when that source ends, guarded by a mix revision, or when remaining match sounds are stopped. Ducking does not change Options or the soundtrack position. The cue survives completed-session disposal.
+
+`TerminalSequence` owns the post-combat timeline; `GameSession` advances it with the same clock as gameplay and translates its reveal/ready transitions into callbacks. `SessionInstrumentation` owns the opt-in observation API: `?test=1` replaces real-time advancement with bounded clock steps, `?profile=1` records frame intervals; neither exposes a command that writes combat state.
 
 `GameSession` publishes `onComplete` immediately. For death, it publishes `onResultReveal` after the configured 3-second destruction window and `onResultReady` after the additional 1-second crossfade. `App` keeps the same GameCanvas mounted under the result screen during that fade, then disposes it. For time expiry, the session publishes `onTerminalElapsed` during the 4-second victory window; React derives the survival message's opacity from that clock, fading only during the final 2 seconds. Reveal and readiness occur together after the victory message has disappeared. React/CSS own text styling and result opacity; presentation-only simulation keeps explosion/sinking/crew active while combat stays frozen. Detached instrumentation exposes terminal elapsed time and reveal state. Hidden tabs suspend the terminal simulation clock and victory opacity together.
 
@@ -85,19 +96,49 @@ Ranking compares configuration identity (map/balance version, seed, duration, sp
 
 Axios supplies a timeout and propagates each query's AbortSignal. Query keys include resource, player/configuration, page and scenario revision. Unmounted or obsolete requests are cancelled; even a late response belongs to its old key. Query retries are limited to one. Successful mutations invalidate both resources, and tabs refetch on mounting/refresh. API state never owns or pauses the combat simulation.
 
+The UI states are explicit: `Loading records…` before the first response, a visible `Updating records…` status with dimmed cached rows during background refetches, an accessible alert with Retry on failure, an empty-list message, and pagination that keeps the previous page (`keepPreviousData`) until the next arrives. `NetworkConfig` owns the base URL, the 1800 ms timeout, query retries and page size. `NetworkScenarios` describes every MSW scenario as data (deterministic latency by request count, failing endpoints, fixture counts, post-commit delay); the handlers apply that data instead of branching on scenario names. An unknown ranking configuration key is rejected with HTTP 400.
+
 ## Persistence and outbox
 
 localStorage keys `pirate.options`, `pirate.player`, `pirate.last`, `pirate.pending`, `pirate.server` and `pirate.scenario` store separately validated values. Parse/quota/unavailability failures produce a warning. Active match entities are never persisted: refresh abandons incomplete combat.
+
+Menu screens are reflected in the URL fragment through `ScreenRoute` (`#options`, `#how-to-play`, `#ranking`, `#history`, `#result`) with `history.replaceState`, so refresh reopens the visible screen without adding history entries. `#result` reopens Results from `pirate.last`; if no completed battle is stored, the main menu opens instead. Combat has no fragment, so reloading during a battle abandons it and returns to the menu.
 
 Completion stores the last result and pending record before sending HTTP. Each new record is attempted once per page session; the mutation queue is serial. Failed records remain pending and can retry explicitly or after refresh. New battles remain available. On success the matching pending ID is removed and both tabs invalidated. A stable UUID and server lookup make POST idempotent even when the first response timed out after committing. The reset operation advances a server generation so a delayed pre-reset POST cannot silently restore cleared records.
 
 Confirmed and pending records survive refresh on the same origin. MSW state is local to that browser, not a remote multi-user database. Reset server intentionally preserves the player's local result and outbox; the UI explains this. The generated service worker includes a small, reproducible API-only fetch filter: static images/modules/audio are left to the browser, avoiding unnecessary MSW response cloning and retained network message/stream buffers. `npm run mocks:init` reapplies this filter after regeneration; API handlers and failure scenarios remain unchanged.
 
-## Verification and limits
+## Verification
 
-Playwright runs isolated desktop and landscape mobile Chromium contexts, real keyboard/multiple-touch inputs, deterministic dates, seeded gameplay and controlled simulation time. The opt-in observation/clock API cannot assign combat state. Visual baselines cover menu, stable arena and result. Optimized real-time profiling measures frame intervals and entity peaks, followed by five start/play/leave heap checks; raw reports accompany the source.
+Playwright runs isolated desktop and landscape mobile Chromium contexts, real keyboard/multiple-touch inputs, deterministic dates, seeded gameplay and controlled simulation time. The opt-in observation/clock API cannot assign combat state. Visual baselines cover the menu, a stable arena and the result screen for Windows and for Linux (the CI container). A production-smoke project exercises the optimized build and its service worker; axe audits every screen against WCAG 2.1 AA. Optimized real-time profiling measures frame intervals and entity peaks, followed by start/play/leave heap checks; raw reports accompany the source. See TESTING, PERFORMANCE and REQUIREMENTS.
 
-See README, TESTING and PERFORMANCE for commands, results and supported scope. Portrait combat, arbitrary Tiled shapes, exact hull silhouettes, physical-device validation and a shared production leaderboard are outside this submission's documented scope.
+## Build identity and delivery
+
+`vite.config.ts` resolves the build's commit (Vercel, Cloudflare Pages, Netlify or GitHub Actions variables, otherwise local Git, marked `-dirty` with uncommitted tracked changes) and publishes it as `<meta name="build-commit">`, `/version.json` and a label on How To Play, so a deployment can be matched to its source. React, the records stack (TanStack Query, Axios) and MSW are split into stable vendor chunks loaded in parallel with the application chunk; Pixi and the game engine stay in the lazily loaded arena chunk.
+
+## Balancing decisions
+
+Values come from the authored profiles (balance `arena_00-v1/balance-v6`, seed 20261012). The intent is a readable three-minute arcade fight in which positioning matters more than reflexes.
+
+| Decision | Values | Reasoning |
+| --- | --- | --- |
+| Player survives several mistakes | 100 HP; Chaser ram 25; Shooter ball 12; island collision 1 | Four rams, about eight Shooter hits, or many careless coast collisions sink the ship. Island damage punishes reckless steering without making the narrow channels unusable. |
+| Two weapon roles | Front cannon 25 damage / 0.35 s; each broadside ball 22 damage, 3 balls / 1.1 s | The bow cannon is the precise sustained weapon. A full broadside (66) sinks a Chaser (40) or a Shooter (65) at once, rewarding turning alongside an enemy over facing it. |
+| Enemies need different answers | Chaser 40 HP at 125 px/s; Shooter 65 HP at 100 px/s, range 580, cooldown 2.2 s | The Chaser is fragile but closes in and must be sunk before contact; the slower, tougher Shooter holds at range, so the player must approach or outmanoeuvre it. |
+| Readable enemy fire | Player balls 780 px/s; enemy balls 340 px/s; lifetime 1.6 s | Enemy balls are slow enough to dodge, yet reach about 600 px from the hull (58 px muzzle offset plus 544 px of flight), covering the 580 px holding range. |
+| Gradual sailing | Player 230 px/s, acceleration 230 px/s², braking 115 px/s², turn 2.6 rad/s | About 1 s to full speed and 2 s to stop gives momentum without sluggish controls; enemies turn more slowly (2.1 rad/s), so out-turning them is a skill. |
+| Spawn pressure | Default 5 s (Options 2–10 s), first Chaser then Shooter, then seeded 50/50, cap 28, at least 440 px from the player | Both behaviours appear early in every session. The minimum interval bounds pressure and entity counts; the maximum still produces both types in a 60 s session. Spawns never start within ramming reach. |
+| Recovery | Each rescued survivor restores 1 HP (2–5 per sinking) | Sinking enemies sustains an aggressive player; healing never exceeds the maximum and never scores. |
+
+## Known limitations
+
+- Chromium desktop and landscape mobile emulation are the reference browsers; physical iOS/Android audio, performance and browser-specific behaviour are not verified.
+- Hulls are circles and islands are rectangles, which favours predictable navigation over exact silhouettes; contact near bows and sterns is approximate.
+- The Tiled loader supports this finite orthogonal map, external image tilesets and rectangular collision objects; other shapes fail visibly.
+- Enemies share no plan; a dense crowd at the 28-enemy cap can queue briefly around the player.
+- Portrait combat is not supported (it pauses); menus work in portrait.
+- The mock leaderboard is local to each browser and origin; it is not a shared or trusted server.
+- localStorage availability and quota limit recovery across refresh; failures are reported, not hidden.
 
 
 ## Team module convention and composition

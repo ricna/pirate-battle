@@ -6,12 +6,21 @@ The ships, ship parts, water/terrain tiles, effects, menu/HUD/control PNGs, spri
 
 The supplied asset directories are retained. Pixi gameplay uses shared ship/UI atlases with their supplied XML/JSON frames. React/CSS use individual UI PNGs; repeated water uses its standalone tile. Vite creates hashed production URLs. Cropping health textures and map tiles happens in Pixi without modifying source images.
 
-The accepted gameplay brief authorized complementary authored foam/wake/trail art. The registered additions under `assets/authored/` are `foam_ring.svg`, `projectile_trail.svg` and the owner's Krita-authored `Splash.png`. The logical `authored/water_splash` reference now loads that PNG; the previous `water_splash.svg` is retained as unused source art. `Splash.kra` is the editable source, not a runtime texture. The owner removed the previous ship wake on 13 October 2026; its emitter, profile, registration and SVG are removed. The owner's `shipt-trail.png` is preserved for future work and is not loaded by the game. These are authored drawings, not runtime-generated fallbacks or screenshot crops. No competitor code/art or synthesized sounds were imported. See [ASSET_AUDIT.md](ASSET_AUDIT.md) for all visual categories, metadata checks, legitimate omissions and the 27-WAV event catalog.
+The accepted gameplay brief authorized complementary authored foam/wake/trail art. The registered additions under `assets/authored/` are `foam_ring.svg`, `projectile_trail.svg`, the owner's Krita-authored `Splash.png` and the owner's `shipt-trail.png`. The logical `authored/water_splash` reference loads `Splash.png`; the previous `water_splash.svg` is retained as unused source art. `Splash.kra` is the editable source, not a runtime texture. `authored/ship_trail` loads `shipt-trail.png` (256×32), stretched along each moving ship's stern path by the ship-trail system; it replaced the earlier stamped wake, which the owner removed on 13 October 2026. These are authored drawings, not runtime-generated fallbacks or screenshot crops. No synthesized sounds were added. See [ASSET_AUDIT.md](ASSET_AUDIT.md) for all visual categories, metadata checks, legitimate omissions and the 27-WAV event catalog.
 
 The upstream challenge contains no separate asset licence file. This submission uses its materials for that challenge; it does not assert a new licence or broader redistribution rights for the supplied assets. Third-party packages retain their respective licences in their distributions.
 
 The personal Portuguese tutorial and its earlier educational diagram remain outside this repository in the candidate's Docs directory; they are not game assets or part of the published build.
 
+
+## Third-party sources and licences
+
+| File | Source | Licence |
+| --- | --- | --- |
+| `assets/sounds/extra/ebunny-pirate-adventure-361663.mp3` | "Pirate Adventure" by ebunny, [Pixabay track 361663](https://pixabay.com/music/adventure-pirate-adventure-361663/) | [Pixabay Content License](https://pixabay.com/service/license-summary/): free use, attribution not required; the unaltered track is not redistributed as a standalone product |
+| `assets/sounds/extra/576054__istudeny__pirat-battle.wav` | "Pirat Battle" by istudeny, [Freesound 576054](https://freesound.org/people/istudeny/sounds/576054/) | [Creative Commons 0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (public domain dedication) |
+
+`assets/sounds/extra/SoundCredits.txt` keeps the owner's original source notes. Both files are bundled unchanged.
 
 ## Owner-supplied soundtrack
 

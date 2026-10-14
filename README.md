@@ -1,144 +1,128 @@
 # Pirate Battle
 
-A single-player naval shooter built with React, strict TypeScript and PixiJS for the Jungle Gaming Frontend Game Developer challenge.
+[![CI](https://github.com/ricna/pirate-battle/actions/workflows/ci.yml/badge.svg)](https://github.com/ricna/pirate-battle/actions/workflows/ci.yml)
 
-Deployment target (publication pending): [Pirate Battle](https://pirate-battle-ricna.flowylime10.chatgpt.site)
+A single-player, top-down naval shooter built with React, strict TypeScript and PixiJS for the Jungle Gaming game developer challenge ([CHALLENGE.md](CHALLENGE.md)). Ranking and Match History use REST APIs mocked by MSW and consumed through Axios and TanStack Query; Playwright covers the flows end to end.
 
-Private source repository: [ricna/pirate-battle](https://github.com/ricna/pirate-battle). The original specification is preserved in [CHALLENGE.md](CHALLENGE.md).
+- **Live build:** _pending deployment; see [Deployment](#deployment)._ Every build reports its commit in `/version.json`, in `<meta name="build-commit">` and at the bottom of How To Play.
+- **Where each requirement lives:** [REQUIREMENTS.md](REQUIREMENTS.md) maps every item of the challenge to its implementation, tests and evidence.
+- **Latest verification:** [reports/TEST-SUMMARY.md](reports/TEST-SUMMARY.md), with the HTML report in `reports/playwright`. See [TESTING.md](TESTING.md) and [PERFORMANCE.md](PERFORMANCE.md).
 
-## Run from a clean checkout
+## Setup
 
-Use Node.js 24 LTS (tested with 24.14.1) and npm 11. No private API, account or backend is required.
+Requires Node.js 24 (see `.nvmrc`; tested with 24.14 and 24.21) and npm 11. No backend, account, private service or environment variable is required.
 
 ```sh
 npm ci
+npx playwright install chromium --no-shell
 npm run dev
 ```
 
-Open the localhost URL printed by Vite. MSW starts before the UI makes API requests. Service workers require HTTPS or localhost. The production build also includes the mock worker.
+Open the printed localhost URL. MSW starts before the first API request. Service workers need HTTPS or localhost; the production build ships the same worker.
 
-```sh
-npm run typecheck
-npm run lint
-npm run build
-npm run preview
-npx playwright install chromium --no-shell
-npm run test:e2e
-npm run test:report
-```
+## Commands
 
-The Playwright projects use the complete Chromium browser (`channel: chromium`), so a separate headless shell is unnecessary. HTML reports are written to `reports/playwright`. See [TESTING.md](TESTING.md) for coverage, baselines and traces.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Vite development server (React Strict Mode) |
+| `npm run build` | Type check, then optimized production build in `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run typecheck` | `tsc --noEmit` in strict mode |
+| `npm run lint` | Architecture convention check and ESLint |
+| `npm run format` / `npm run format:check` | Prettier for source, tests, scripts and configuration |
+| `npm run test:e2e` | Complete Playwright suite (domain, rendering, desktop, landscape mobile, production smoke) |
+| `npm run test:smoke` | Production-build smoke test; set `PIRATE_SMOKE_URL` to test a deployment |
+| `npm run test:docker` | The suite inside the CI Linux image (also used to update Linux screenshot baselines) |
+| `npm run test:report` | Open the HTML report |
+| `npm run test:summary` | Write `reports/TEST-SUMMARY.md` from the JSON results |
+| `npm run verify` | typecheck, lint, format check, build and the complete suite, in that order |
+| `npm run profile` / `npm run profile:memory` | Real-time performance and memory runs against `npm run preview` |
+| `npm run mocks:init` | Regenerate the MSW worker and reapply its `/api/`-only filter |
 
-There are no required environment variables. `PROFILE_URL` optionally selects a preview origin for the profiling script; its default is `http://127.0.0.1:4173/`.
+## Environment variables
+
+All variables are optional.
+
+| Variable | Used by | Default and effect |
+| --- | --- | --- |
+| `PIRATE_TEST_PORT` | Playwright | `5173`; selects a fresh dev-server port instead of reusing a running one |
+| `PIRATE_PREVIEW_PORT` | Playwright | `4317`; port of the preview server started for `production-smoke` |
+| `PIRATE_SMOKE_URL` | Playwright | Unset; runs `production-smoke` against a deployed URL instead of a local preview |
+| `PIRATE_TEST_REPORT_DIR` / `PIRATE_TEST_OUTPUT_DIR` | Playwright | `reports/playwright` / `test-results`; isolate a run's report and traces |
+| `CI` | Playwright | Set by CI: no server reuse, `test.only` forbidden, longer timeout for software WebGL |
+| `PROFILE_URL` | profile scripts | `http://127.0.0.1:4173/` |
+| `PROFILE_SESSION_SECONDS` / `PROFILE_SPAWN_SECONDS` | `npm run profile` | `180` / `5` |
+| `PROFILE_PILOT` / `PROFILE_OUTPUT` | `npm run profile` | `defend` (or `boundary`) / `reports/profile.json` |
+| `MEMORY_CYCLES` / `MEMORY_WARMUP_CYCLES` | `npm run profile:memory` | `30` / `5` |
 
 ## Controls
 
 | Action | Keyboard | Touch |
 | --- | --- | --- |
 | Forward | W / Up | Hold Forward |
-| Turn | A / D or Left / Right | Hold the corresponding turn button |
-| Front cannon | Space | Hold Front cannon |
-| Left broadside | Q | Hold Left broadside |
-| Right broadside | E | Hold Right broadside |
+| Turn | A / D or Left / Right | Hold a turn button |
+| Front cannon (1 ball) | Space | Hold Front cannon |
+| Left / right broadside (3 parallel balls) | Q / E | Hold Left / Right broadside |
 | Pause | P / Escape | Pause button |
 
-The main menu's **How To Play** screen presents these controls with the enemy briefing.
+How To Play, one click from the main menu, presents these controls and the enemies. Movement and attacks work at the same time, and several keys and fingers can be held at once. Game keys are captured only while the arena has focus.
 
-Movement and attacks work simultaneously. Each broadside emits three parallel cannonballs. Resume is always explicit after manual pause, focus loss or hiding the tab. Inputs and accumulated frame time are cleared when paused. Islands block ships and projectiles. Each enemy destroyed by player cannonballs awards one point; a Chaser's ram explosion does not.
+**Rules.** Sink enemies with your cannonballs: each one sunk by your shots earns 1 point; a Chaser that explodes against you does not. Islands block ships and cannonballs, and each collision with an island costs 1 health. Sail over survivors from sunk ships to recover 1 health each. The match ends when the timer reaches zero (VICTORY) or your health does (Defeated). Losing focus or hiding the tab pauses the battle; resuming always needs an explicit action. Mobile combat is landscape; portrait pauses it, menus still work.
 
-Combat supports **landscape** on mobile. Rotating to portrait pauses the battle. Menus remain usable in portrait. The arena fills the screen as in `assets/sample.png`; the complete map stays visible and scales uniformly. The animated deep water continues to the screen edges when the screen proportion differs from the map; the arena bounds remain those of the authored map. The HUD floats over it: health at the top left, score/clock/pause at the top right, movement buttons at the bottom left and weapon buttons at the bottom right. Gameplay coordinates do not change with screen size. Touch buttons support independent pointer capture for multiple fingers.
+## Gameplay configuration
 
-## Options and balance
+Options (saved immediately, kept after refresh): **Game session time** 60–180 s in 10 s steps (default 120), **Enemy spawn time** 2–10 s in 0.2 s steps (default 5), Sound on/off, master Volume and Music volume. Each match freezes a validated snapshot of the configuration at Play; later edits only affect new matches.
 
-Options persist after refresh: session time **60–180 seconds** in 10-second steps, enemy spawn interval **2–10 seconds** in 0.2-second steps, sound on/off, master volume and independent music volume in 10% steps. The screen uses the authored `assets/sample_options.png` board with **Game** and **Audio** headers. Sound uses an On/Off toggle; each numeric setting displays its value above an authored HUD-bar slider with minus/plus buttons at its sides. Every adjustment is saved immediately, so there is no separate Save action. Restore default options resets and saves all preferences. Defaults are 120 seconds, 5 seconds, sound enabled, master volume 50% and music volume 100%. The spawn minimum limits pressure and entity growth; the maximum ensures both enemy types appear even in the shortest session.
-
-Static classes under `src/game/configuration/` author ship, projectile, visual, factory, pool and runtime defaults. Each match receives a validated, recursively frozen snapshot. Version `arena_00-v1/balance-v5` includes acceleration/braking and crew rescue; seed `20261012` keeps spawning deterministic. See [CONFIGURATION.md](CONFIGURATION.md) for the client guide, editable files, units, examples and new-enemy registration. Increment the version when changing rules or map geometry.
-
-Player: 100 HP, radius 34, maximum speed 230 pixels/s, acceleration 230 pixels/s² (about 1s to maximum), braking 115 pixels/s² (about 2s to stop), turn 2.6 radians/s. Chaser: 40 HP, speed 125, ram damage 25. Shooter: 65 HP, speed 100, range 580, damage 12, cooldown 2.2s. Player front cannon: damage 25, cooldown 0.35s. Each broadside ball: damage 22, cooldown 1.1s. Player bullets travel at 780 pixels/s; enemy bullets at 340; lifetime is 1.6s. Enemy turn rate is 2.1 radians/s. Active enemies are capped at 28.
-
-The first two spawns guarantee a Chaser and a Shooter; later spawns use a seeded 50/50 distribution. Eight explicit water spawn points must pass obstacle validation and remain at least 440 pixels from the player. Occupied or unsafe points are skipped. No substitute map or generated asset is used when loading fails.
-
-The arena is authored in Tiled at `assets/maps/arena_00.tmj`, with 32×18 cells of 64 pixels. Its `collisions` object layer contains five unrotated rectangles. Tile and object layer names are part of the loader contract; individual collider names are optional. The external tileset and PNG are included and resolved both in development and the hashed production build.
+All gameplay tuning lives in static profiles under `src/game/configuration/` (ships, weapons, projectiles, spawning, collisions, presentation, audio). [CONFIGURATION.md](CONFIGURATION.md) explains every file, unit and validation rule, and how to add an enemy type without touching the systems. Current balance: `arena_00-v1/balance-v6`, seed `20261012`; the reasoning behind the values is in [ARCHITECTURE.md](ARCHITECTURE.md#balancing-decisions).
 
 ## Ranking and Match History
 
-Axios performs real HTTP requests intercepted by MSW. TanStack Query manages the paginated queries, cancellation, retries, cache and completed-match mutation. Lists contain five records per page.
+The main menu's **Ranking** and **Match History** buttons open the Captain's Log, whose two tabs page through five records at a time. Ranking compares only matches with the same configuration (version, seed, session time, spawn interval and a fingerprint of the full gameplay snapshot), ordered by score, then earliest date, then ID. Other captains are fixtures. Match History lists this browser's player, newest first, with date, points, duration and result.
 
-Both lists appear in the **Captain's Log**. Ranking shows rank, captain, points and play date; Match History shows date, points, duration (mm:ss) and result (VICTORY / Defeated). Dates are UTC. Your ranking records and your last completed battle are highlighted.
+A completed battle is saved locally (last result plus a pending outbox entry) before it is POSTed with a stable UUID. Retries reuse that ID, so repeated clicks, refreshes or a timeout after the server committed never duplicate a record. A new battle can start while an older one is pending. Records persist in `localStorage` under `pirate.*`; this is a browser-local demo server, not a shared leaderboard.
 
-A completed match contains a stable UUID, player identity, UTC date, score, active duration, end reason and configuration snapshot. Ranking compares matches with the same map/balance version, seed, session duration, spawn interval and complete gameplay snapshot fingerprint. Ordering is score descending, then date ascending, then ID ascending. Other captains are fixtures. History shows this browser's player, newest first.
+## Network scenarios
 
-Options, identity, last completed result, pending submissions and confirmed mock records persist in localStorage under `pirate.*` keys. Incomplete battles are abandoned on refresh or leaving combat. Completed results enter the persistent outbox before the POST. Retries recover the existing match ID, including a timeout after the server committed; they never duplicate ranking/history entries. Another battle can start while an older result is pending.
+Open **Demo network scenarios** at the bottom left of any menu screen, choose a scenario, then open Ranking/Match History or finish a battle. **Reset demo server** removes confirmed mock records and restores `success`; options, identity, the last result and pending battles are kept (clear the site's storage for a completely fresh state). Latencies are deterministic.
 
-This is a browser-local demo server, as requested by the challenge. Records are isolated by browser and origin; this is not a shared worldwide leaderboard. API failures do not interrupt gameplay.
-
-## Reproduce network scenarios
-
-The checked-in MSW worker is generated by MSW and then restricted to `/api/` requests. Static images, audio and scripts are fetched normally, reducing network-clone overhead. To regenerate consistently, run `npm run mocks:init`; its configuration script reapplies the documented filter and fails if the generated worker format changed.
-
-Open **Demo network scenarios** in the bottom-left corner of any menu screen. Select a scenario and open **Ranking** or **Match History**, or finish a battle.
-
-| Scenario | Reproducible behaviour |
+| Scenario | Behaviour |
 | --- | --- |
-| success | 180ms normal requests, ranking fixtures plus confirmed records |
-| empty | No fixtures; any already-confirmed records remain visible |
-| multiple-pages | 28 ranking fixtures and 16 history fixtures |
-| slow | 1400ms requests, below the 1800ms Axios timeout |
-| variable-latency | Request-count sequence: 100 + (count × 193 mod 700) ms |
-| out-of-order | Alternating 1300ms / 100ms responses |
-| timeout | 2500ms response, exceeding Axios timeout |
-| connection-error | Network failure |
-| http-400 | HTTP 400 |
-| http-500 | HTTP 503 service failure |
-| ranking-error / history-error | Only that GET endpoint fails with 503 |
-| post-commit-timeout | First POST commits, then delays 2500ms; same-ID retry returns the committed record |
-| outage | All API operations fail with 503; recover pending results after selecting success |
+| `success` | 180 ms responses; 12 ranking fixtures plus confirmed records |
+| `empty` | No fixtures; confirmed records still appear |
+| `multiple-pages` | 28 ranking and 16 history fixtures |
+| `slow` | 1400 ms, below the 1800 ms request timeout |
+| `variable-latency` | `100 + (request × 193 mod 700)` ms |
+| `out-of-order` | Alternating 1300 ms / 100 ms responses |
+| `timeout` | 2500 ms, beyond the timeout |
+| `connection-error` | Network failure |
+| `http-400` / `http-500` | HTTP 400 / HTTP 503 on every endpoint |
+| `ranking-error` / `history-error` | Only that list fails (503) |
+| `post-commit-timeout` | The first POST commits, then answers after 2500 ms; a same-ID retry returns the committed record |
+| `outage` | Every endpoint fails (503) until another scenario is selected |
 
-Scenario changes reset the deterministic request counter and use a new query revision. Obsolete queries are cancelled; old responses cannot overwrite the current view. Query retries are limited to one; POST retries require an explicit action after failure or a page reload. New pending matches are attempted in order.
+## Reproducing failures
 
-**Reset demo server** removes confirmed mock records and restores success. Options, player identity, last result and pending submissions are deliberately preserved, as stated in the UI. A pending retry can register a record again after reset. For complete isolation, clear this origin's site storage. Each E2E test starts with a new browser context.
+- **Pending submission and recovery:** select `outage`, finish a battle, refresh (Results reopen with the pending notice), select `success`, then click **Retry pending battle**.
+- **Idempotent retry:** select `post-commit-timeout`, finish a battle, wait for the timeout message, then retry or refresh. Match History shows one record.
+- **List loading, errors and late responses:** use `slow`, `timeout`, `connection-error`, `http-400`, `http-500` or `out-of-order` and open the Captain's Log.
+- **Asset loading failure:** in DevTools → Network, block `arena_00.tmj` or `ships_miscellaneous_sheet.png`, then press Play. The loading screen shows an error with **Try again**; unblock and retry.
+- **Service worker unavailable:** disable service workers or use a browser that blocks them; the menus show a warning, and the game remains playable.
+- **Storage unavailable:** block site data; a visible warning replaces silent loss of progress.
 
-To demonstrate recovery: choose outage, finish a battle, refresh, select success and click Retry pending battle. To demonstrate idempotency: choose post-commit-timeout, finish, wait for timeout, then retry or refresh. History must show only one record.
+## Testing
 
-## Audio and assets
+`npm run test:e2e` starts the dev server (and a preview build for `production-smoke`) and runs every project serially with seeded gameplay, fixed dates and a controlled simulation clock. Tests drive the real keyboard and touch controls and never write positions, health or score. The suite writes `reports/playwright` (HTML), `reports/playwright.json`, accessibility summaries in `reports/accessibility` and traces of failures in `test-results`. Screenshot baselines exist for Windows and for the Linux CI image. Details and the mapping to the twelve required test areas are in [TESTING.md](TESTING.md).
 
-Game initialization displays **Setting Sail** with the authored player-health frame and green fill. Engine preparation is indeterminate; map and texture loading report completion progress from their loaders. Retry resets progress and preserves visible errors.
+## Performance
 
-Player death plays the owner's additional pirate-battle WAV and lowers the OST to 8% of its configured mix. Destruction remains visible for 3 seconds as **Game Over** fades in; then results fade in over 1 second while Game Over fades out. The death sound survives the transition, and music recovers when it finishes or when leaving/restarting. The match is saved immediately, before these animations. Surviving until time expiry displays **You survived! Congratulations!** in amber yellow with a black outline for 4 seconds, fading over the final 2 seconds before Results opens with **VICTORY**. Time expiry keeps its separate completion cue and normal soundtrack mix.
+[PERFORMANCE.md](PERFORMANCE.md) records the optimized-build measurement: FPS, 95th-percentile frame interval and entity counts for a three-minute match, and heap behaviour across repeated start/play/leave cycles, with hardware, browser, resolution and limitations. To reproduce: `npm run build`, `npm run preview`, then `npm run profile` and `npm run profile:memory` in another terminal.
 
-Menus use the supplied title, panel and button states. The main menu reproduces `assets/sample_menu.png`: Play and Options, the ship emblem, then Ranking, Match History and How To Play. Ranking and Match History open the Captain's Log tabs; How To Play explains the game and controls and only returns to the main menu. Pixi uses the supplied ship deterioration states, cannonballs, fire, explosions and health indicators. The player's Tiled map is retained. Web Audio reuses supplied WAV buffers for ocean/sailing loops, weapons, damage, score, pause and completion. The first user gesture unlocks audio; initial sounds may wait for decoding. Options provide mute/volume. Sound loading failures are nonfatal and visible when returning to menus.
+## Deployment
 
-See [ASSETS.md](ASSETS.md) for attribution and asset ownership. No generated visual or audio replacement is used.
+The build is a static site: build command `npm run build`, output directory `dist`, no server and no environment variables. `mockServiceWorker.js` must stay at the site root (Vite copies it from `public/`). On Vercel: import the repository, keep the detected Vite preset, set the output directory to `dist`, and deploy; Netlify and Cloudflare Pages work with the same settings. After deploying, confirm that `/version.json` names the delivered commit and run `PIRATE_SMOKE_URL=https://<deployment> npm run test:smoke`.
 
-## Architecture, performance and publication
+## Architecture, assets and limitations
 
-[ARCHITECTURE.md](ARCHITECTURE.md) explains React/Pixi ownership, the fixed-step simulation, swept projectile collisions, obstacle-aware enemy routes, low-frequency HUD updates, cleanup and persistent idempotent submissions.
+[ARCHITECTURE.md](ARCHITECTURE.md) covers the React/PixiJS integration, fixed-step simulation, collisions, resource lifetime, persistence, the records integration, balancing decisions and known limitations. [ASSETS.md](ASSETS.md) lists asset sources and licences; [ASSET_AUDIT.md](ASSET_AUDIT.md) audits every supplied file. Physical iOS/Android devices and non-Chromium browsers have not been verified.
 
-Before implementing or refactoring, read [AGENTS.md](AGENTS.md) and the complete [implementation contract](IMPLEMENTATION.md). It records the owner's required OOP/SOLID, readability, configuration, factory, pooling, asset, verification and collaboration standards for future developers and coding sessions.
-
-[PERFORMANCE.md](PERFORMANCE.md) and `reports/profile.json` record real-time optimized-build profiling, frame intervals, entity counts and five-cycle memory checks. To reproduce, run `npm run build`, `npm run preview` and, in another terminal, `npm run profile`. The script uses actual keyboard inputs, 180s sessions and 10s spawn intervals; it does not modify combat state.
-
-Source code is maintained in the private repository. Hosting is a separate delivery step; no public deployment has been published. `.openai/hosting.json` identifies the site and `dist` output. The build is portable to Vercel, Netlify or Cloudflare Pages: build command `npm run build`, output directory `dist`, root path `/`, no server/environment variables. Keep `mockServiceWorker.js` at the site root. The uploaded build must come from the same pushed source commit as the delivered repository.
-
-## Known limitations
-
-- Chromium desktop and mobile landscape emulation are the reference browsers. Physical iOS/Android audio, performance and browser-specific behaviour still require device verification.
-- Collision circles and rectangular islands prioritize predictable navigation over exact silhouette physics; ship hulls are circles (`hullRadius`), so hull contact is approximate around bows and sterns.
-- The Tiled loader supports this finite orthogonal map, external image tilesets and rectangular collision objects; unsupported shapes or missing required references fail visibly.
-- Enemy routes come from a four-neighbour grid reduced to straight corners, plus local steering; enemies have no shared plan, so a dense crowd at the 28-enemy cap can still queue briefly around the player.
-- LocalStorage availability/quota can prevent recovery across refresh; a visible warning is provided.
-- Test/profiling instrumentation is opt-in (`?test=1` / `?profile=1`). Test mode can observe and advance time, never assign entity positions, life or score. No server trust/security is implied by a local mock leaderboard.
-
-
-## Team structure and audio lifecycle
-
-Source files use PascalCase matching their primary class/component. Responsibility folders are lowercase. Start at `src/main.tsx`, which constructs `ApplicationServices`, starts `NetworkSimulator` and injects services through `ServicesProvider`. React screens live under `src/ui/screens`; shared controls, HUD, hooks and the canvas view have separate folders.
-
-`GameSession` owns each match's browser/Pixi lifecycle; `GameManager` coordinates its encapsulated entities and systems. Renderers receive a frozen `GameReadView`. `AudioManager` composes `SoundEffectPlayer` and `MusicPlayer`. The authored Pirate Adventure OST loops continuously after the first click/touch/key, including during menus, paused combat, results and restarts. Options includes an independent Music volume control; Sound and master Volume affect both channels. Refresh requires another user gesture.
-
-`src/application` owns preferences and record repositories; `src/infrastructure` supplies browser storage, Axios and the origin-local MSW server. Dependencies are supplied through the composition root, not exported global managers. [ARCHITECTURE.md](ARCHITECTURE.md) documents the ownership map and extension workflow.
-
-Use `npm run format` to format source, `npm run format:check` to check it, and `npm run architecture:check` for filenames, class/component ownership and domain dependency boundaries. `npm run lint` includes the architecture check. `.editorconfig` requires UTF-8 and consistent indentation. `PIRATE_TEST_PORT` optionally selects an isolated fresh Vite origin for E2E checks.
-
-
-Sail over floating crew to rescue them: each person restores 1 health and shows green feedback: **+1**, accumulating into **+2**, **+3** and so on for rescues within 0.35 seconds. Rescue removes that survivor once and never awards score. Health is capped at the player's maximum; at full health, survivors remain until their existing 10-second lifetime ends. Rescue and lifetime freeze on pause; restarts clear them. How To Play explains the mechanic.
+Contributors and coding agents start with [AGENTS.md](AGENTS.md) and the [implementation contract](IMPLEMENTATION.md).

@@ -318,7 +318,7 @@ This section records the last known state when this contract was created. Rechec
 
 The owner explicitly requested review and implementation of the consolidated gameplay brief on 12 October 2026. Its local source is `../fork-analysis/BRIEF-IMPLEMENTACAO-GAMEPLAY.md`; preserve it as reference material. The durable requirements are summarized here so another developer's clone has the accepted context:
 
-- Implement original code. Other submissions may inform observed behavior/presentation but must not supply copied classes, functions, components, shaders, generators or systems. Supplied Jungle Gaming assets and `sample_*` compositions are the primary art references.
+- Implement original code: no copied classes, functions, components, shaders, generators or systems from other projects. Supplied Jungle Gaming assets and `sample_*` compositions are the primary art references.
 - B01: perceptible configured acceleration/braking, bounded rotation, pause/reset and collision that does not accumulate artificial acceleration into a wall.
 - B02/B03: muzzle flash, limited visual recoil, meaningful cooldown feedback, hull damage flash/debris/damage indication and contextual hull/water/coast impacts. Use the four authored wood variants, fire and explosion frames. Camera shake/recoil affect presentation only, with reduced-motion handling and stable HUD/input/world coordinates.
 - B04: every destroyed ship, including player and Chaser ram, emits exactly one group of 2–5 crew using the six supplied variants. They disperse briefly, remain floating with small drift/bob and visible foam, then fade after a configured duration. Keep them on valid water, freeze on pause and clear on abandonment/restart. Crew now have non-blocking rescue triggers and restore player health, as requested on 13 October 2026 (see Crew rescue below). They are never weapon targets or kill-score rewards. Capacity must support the required count instead of silently reducing it.
@@ -393,3 +393,25 @@ For navigation in the owner's local environment, the personal wiki entry is [Imp
 The owner requested a collider on each floating crew member: sailing over a survivor rescues that person, removes it once and restores 1 player health, with green **+1** feedback, accumulating into **+2**, **+3** and so on for rescues within 0.35 seconds of the previous rescue. Rescue is a gameplay rule, superseding B04's original cosmetic-only restriction. Preserve the player's maximum health; when full, leave survivors available until their existing lifetime expires. Dead players cannot heal or revive. Crew triggers never block hulls, take weapon damage or award kill score.
 
 GameManager owns CrewSystem and its bounded pool. Rescue sweeps relative motion between player hull and crew trigger. Fixed-step survivor motion and a dedicated seeded stream are independent of cosmetic events and reduced-motion preferences; accessibility suppresses visual bob/foam and label travel only. Pause freezes rescue and lifetime. Terminal presentation may float/fade survivors without healing. Restart/abandonment clears the pool. Presentation consumes readonly survivors and semantic Rescue feedback; rapid rescues combine in one label within an authored 0.35-second interval. Preserve the six supplied crew variants and foam art. CrewConfig authors collider radius and health per rescue; balance-v5 includes the rule in the frozen snapshot and ranking identity.
+
+
+## Island collision damage — 14 October 2026
+
+The owner requested that every island collision cost 1 health. `CollisionConfig.islandImpactDamage` authors the damage per allegiance (player 1, enemy 0) and is validated as non-negative integers. A collision is the existing significant island contact (at least `minimumImpactSpeed`, once per `impactCooldown` per contact key), so sustained pressure against a coast does not drain health every frame; arena borders never damage. Damage passes through `DamageSystem` without kill credit and can sink the player. This is a rule change: balance version `balance-v6`.
+
+## Ship trail — 14 October 2026
+
+The owner requested the continuous ship trail with the owner-authored `assets/authored/shipt-trail.png`, completing the replacement left pending by section 21. `ShipTrailSystem` (presentation clock, bounded stern history, fades after stopping) and `ShipTrailRenderer` (pooled `MeshRope`, texture stretched once with its strong end at the stern) implement it. Settings live in `PresentationConfig.shipTrail`; the logical and visual capacities are the same validated pool and must cover every live ship. Keep the image unchanged and the `authored/ship_trail` key stable.
+
+## Screen routes and result persistence — 14 October 2026
+
+Menu screens are reflected in the URL fragment by `ScreenRoute` with `history.replaceState`; refresh reopens the visible screen, and `#result` reopens Results from the persisted last completed battle. Combat never has a fragment, so refresh still abandons an unfinished battle. Results state the end reason explicitly; Match History keeps the owner's VICTORY/Defeated labels with the reason available to assistive technology. Captain's Log tabs follow the WAI-ARIA tabs pattern.
+
+## Verification infrastructure — 14 October 2026
+
+- `.gitattributes` keeps LF checkouts; Prettier covers `src`, `tests`, `scripts` and root configuration files.
+- Screenshot baselines exist for Windows (`*-win32.png`) and Linux (`*-linux.png`). Linux baselines are produced only by `npm run test:docker`, which runs the pinned `mcr.microsoft.com/playwright:v<version>-noble` image used by CI. Update a baseline only for an intentional visual change, on both platforms, and say so in the commit.
+- CI (`.github/workflows/ci.yml`) runs typecheck, lint, format check, build and the complete Playwright suite inside that image and uploads the reports.
+- The `production-smoke` project runs against the optimized preview build or `PIRATE_SMOKE_URL`; `accessibility.spec.ts` audits every screen with axe (WCAG 2.1 AA) and writes `reports/accessibility`; the JSON reporter feeds `npm run test:summary` (`reports/TEST-SUMMARY.md`).
+- MSW scenarios are data (`NetworkScenarios`) validated against `NetworkConfig.RequestTimeoutMs`; every scenario has a browser test.
+- Builds publish their commit (`meta[name=build-commit]`, `/version.json`, How To Play). Delivered reports and profiles must name the exact revision they measured.

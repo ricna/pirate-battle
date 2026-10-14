@@ -16,9 +16,11 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | `InputConfig.ts` | Keyboard bindings, pause keys and touch command labels/icons |
 | `AudioConfig.ts` | UI cues, gameplay-event sound variants, pitch ranges, repeat cooldowns, voice priorities/budget and mix gains |
 | `CrewConfig.ts` | Rescue trigger radius, health per survivor and independent seed salt |
-| `CollisionConfig.ts` | Hull separation, slide iteration budget, impact threshold and repeat cooldown |
-| `PresentationConfig.ts` | Crew/debris/projectile-trail profiles, guaranteed crew capacity, cosmetic pools, recoil/tint/shake, floating labels, water animation and terminal/result durations; ship wake removed by owner request |
+| `CollisionConfig.ts` | Hull separation, slide iteration budget, impact threshold, repeat cooldown and island impact damage per allegiance |
+| `PresentationConfig.ts` | Crew/debris/projectile-trail profiles, the owner-authored ship trail, guaranteed crew capacity, cosmetic pools, recoil/tint/shake, floating labels, water animation and terminal/result durations |
 | `AssetConfig.ts` | Shared default atlas sources and explicitly registered standalone authored textures |
+
+Network and mock-server settings are infrastructure data, not gameplay balance: `src/infrastructure/network/NetworkConfig.ts` (API base URL, Axios timeout, query retries, page size) and `NetworkScenarios.ts` (each MSW scenario's deterministic latency, failing endpoints, fixture counts and post-commit delay). Startup fails if the slow scenario stops finishing before the timeout or the timeout scenarios stop exceeding it.
 
 `GameConfigFactory.create()` gathers the registered profiles, validates them, clones their data and recursively freezes the match snapshot. `GameManager` also isolates an externally supplied configuration. Objects passed to ships cannot remain mutable aliases to their original profiles.
 
@@ -46,7 +48,7 @@ Projectile speed uses `clamp(speed + (acceleration - deceleration) * dt, 0, maxS
 
 Player mounts independently configure angle offset, muzzle distance, barrel offsets, cooldown, sound event and projectile profile. Port/starboard use ±π/2 angle offsets and `[-22, 0, 22]` longitudinal offsets, producing three parallel balls. Changing one mount's projectile does not alter the others. IDs identify input commands and must be unique per ship.
 
-Replace explicit sprite paths such as `ships/ship_1` in the selected visual profile. These are asset-relative names without `.png` under `assets/png/default/`. All configured stages, health textures, projectile sprites and effects are collected and loaded before Play. Missing files fail visibly; no replacement texture or ship is generated. New files must fit the registered asset directories in `assets.ts`.
+Replace explicit sprite paths such as `ships/ship_1` in the selected visual profile. These are asset-relative names without `.png` under `assets/png/default/`. All configured stages, health textures, projectile sprites and effects are collected and loaded before Play. Missing files fail visibly; no replacement texture or ship is generated. Ship sprites must exist as frames of the shared ship atlas XML; any other authored image must be registered explicitly in `AssetConfig.Standalone`.
 
 Damage/health stages are listed in descending minimum-health ratios with a final zero threshold. Selection uses `health / maxHealth > minimumHealthRatio`; at the exact threshold the next stage applies. Hull dimensions, orientation offset and health-indicator layout are profile data, so new enemy types do not require a renderer switch. Health metadata must match a supplied frame entry in `assets/spritesheet/ui_sheet.json`.
 
@@ -164,4 +166,27 @@ Time expiry uses `PresentationConfig.Default.victory.seconds = 4` and `victory.f
 
 PresentationConfig retains the six authored sprites, motion, 10-second lifetime, foam and guaranteed pool budget; CrewSystem owns authoritative motion. `presentation.rescue` supplies green `color = 0x68ef83`, `offsetY = -28` and `combineSeconds = 0.35` seconds between rescues in the same label. Each additional rescue updates that label and restarts its lifetime; a longer gap starts a new +1. Labels reuse the existing text font/rise/fade/lifetime and bounded pool, with no score reward/pulse. Reduced motion changes decoration without changing rescue geometry.
 
-Balance version `arena_00-v1/balance-v5` separates rescue-enabled ranking snapshots. Existing Options/completed records remain readable. Survivors and unfinished battles are never persisted; new matches receive frozen crew settings.
+Balance version `arena_00-v1/balance-v5` introduced rescue-enabled ranking snapshots. Existing Options/completed records remain readable. Survivors and unfinished battles are never persisted; new matches receive frozen crew settings.
+
+### Island collision damage
+
+`CollisionConfig.Default.islandImpactDamage = { player: 1, enemy: 0 }` is the hull damage of each significant island collision, per allegiance. A collision is significant under the same rule as its impact sound and splash: the hull meets the coast at `minimumImpactSpeed` (20 pixels/s) or more, at most once per `impactCooldown` (0.65 s) for the same ship and contact. Pressing against a coast after the hull has stopped therefore costs nothing more; leaving and hitting it again costs another point. Arena borders never cause damage. The damage passes through `DamageSystem` (statistics, damage label, hit flash, low-health warning) with no kill credit, so a player at 1 health can sink against an island. Values must be non-negative integers. Raising the enemy value would let enemies lose health on coasts without awarding points.
+
+Balance version `arena_00-v1/balance-v6` separates ranking snapshots with island damage from earlier ones.
+
+### Ship trail
+
+`PresentationConfig.Default.shipTrail` stretches the owner's `assets/authored/shipt-trail.png` (registered as `authored/ship_trail`) along each moving ship's recent stern path:
+
+| Field | Unit | Default | Meaning |
+| --- | --- | --- | --- |
+| `sampleSeconds` | seconds | 0.05 | Interval between stern samples while moving |
+| `lifetime` | seconds | 0.9 | Age at which a sample leaves the trail; must exceed `sampleSeconds` |
+| `minimumSpeedRatio` | fraction of max speed, [0, 1) | 0.15 | Slower ships add no samples, so the trail fades out |
+| `sternRatio` | fraction of the visual length | 0.4 | Stern distance behind the hull centre |
+| `width` | logical pixels | 26 | Trail thickness |
+| `alpha` | (0, 1] | 0.9 | Opacity at full speed; scaled by speed and by the newest sample's age |
+| `ropePoints` | integer ≥ 2 | 16 | Vertices of each rendered rope; the path is resampled evenly by length |
+| `pool` | capacities | 8 / 8 / 64 | Logical trails and rendered ropes; the maximum must cover the enemy cap plus the player |
+
+The texture is stretched once along the path (strong end at the stern, faded end at the tail), so it never repeats or bleeds. Trails advance on the presentation clock: pause freezes them, they fade after a ship stops or sinks, and match disposal releases every rope. They are cosmetic and never change movement, collision or score. Replacing the image keeps the `authored/ship_trail` key and changes only its URL in `AssetConfig.Standalone`.

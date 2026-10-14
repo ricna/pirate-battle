@@ -1,12 +1,31 @@
 /* global window, document, navigator, history, location */
 import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import process from 'node:process';
 import console from 'node:console';
 import { execFileSync } from 'node:child_process';
 const url = process.env.PROFILE_URL ?? 'http://127.0.0.1:4173/';
 const pilot = process.env.PROFILE_PILOT ?? 'defend';
 if (!['defend', 'boundary'].includes(pilot)) throw new Error('Unknown profiling pilot.');
+// The challenge asks for a three-minute match; the spawn interval defaults to the shipped 5 s.
+const sessionSeconds = Number(process.env.PROFILE_SESSION_SECONDS ?? 180);
+const spawnSeconds = Number(process.env.PROFILE_SPAWN_SECONDS ?? 5);
+const output = process.env.PROFILE_OUTPUT ?? 'reports/profile.json';
+if (!Number.isFinite(sessionSeconds) || !Number.isFinite(spawnSeconds))
+  throw new Error('PROFILE_SESSION_SECONDS and PROFILE_SPAWN_SECONDS must be numbers.');
+
+/** Presses a setting's minus/plus buttons (each press is saved) until its value shows `target`. */
+async function setOption(page, name, target) {
+  const setting = page.getByRole('group', { name, exact: true });
+  const value = setting.locator('output');
+  for (let presses = 0; presses < 80 && Number.parseFloat(await value.textContent()) !== target; presses++) {
+    const increase = Number.parseFloat(await value.textContent()) < target;
+    await setting.getByRole('button', { name: increase ? /^Increase/ : /^Decrease/ }).click();
+  }
+  if (Number.parseFloat(await value.textContent()) !== target)
+    throw new Error(`${name} cannot be set to ${target}.`);
+}
 // Outward-biased headings hold the authored boundary lanes despite discrete turns.
 const route = [
   { axis: 'y', boundary: 1118, angle: Math.PI },
@@ -22,11 +41,11 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 await page.goto(`${url}?profile=1`);
 await page.getByRole('button', { name: 'Options', exact: true }).click();
-// Options save on every press; raising each setting to its limit selects the profiled 180 s, 10 s and sound on.
-for (const name of ['Game session time', 'Enemy spawn time', 'Sound']) {
-  const increase = page.getByRole('group', { name, exact: true }).getByRole('button', { name: /^Increase/ });
-  while (await increase.isEnabled()) await increase.click();
-}
+// Options save on every press: the profiled session, spawn interval, and sound/music enabled.
+await setOption(page, 'Game session time', sessionSeconds);
+await setOption(page, 'Enemy spawn time', spawnSeconds);
+const sound = page.getByRole('switch', { name: 'Sound', exact: true });
+if ((await sound.getAttribute('aria-checked')) !== 'true') await sound.click();
 await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
 await page.getByRole('button', { name: 'Play', exact: true }).click();
 await page.waitForFunction(() => !!window.pirateTest);
@@ -139,10 +158,17 @@ const report = {
   browser: await browser.version(),
   ...graphics,
   revision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  // A revision with uncommitted tracked changes is not a release measurement.
+  uncommittedChanges:
+    execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8' }).trim() !==
+    '',
+  version: await page.evaluate(
+    () => document.querySelector('meta[name="build-commit"]')?.getAttribute('content') ?? null,
+  ),
   viewport: '1280x800',
   deviceScaleFactor: 1,
   build: 'optimized Vite preview',
-  options: { sessionSeconds: 180, spawnSeconds: 10, sound: true },
+  options: { sessionSeconds: config.sessionSeconds, spawnSeconds: config.spawnSeconds, sound: true },
   pilot,
   control:
     pilot === 'boundary'
@@ -165,8 +191,8 @@ const report = {
   errors,
   frameIntervalsMs: frames,
 };
-await mkdir('reports', { recursive: true });
-await writeFile('reports/profile.json', `${JSON.stringify(report, null, 2)}\n`);
+await mkdir(path.dirname(output), { recursive: true });
+await writeFile(output, `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({ ...report, frameIntervalsMs: undefined }, null, 2));
 await browser.close();
-if (metrics.elapsed < 179.99 || errors.length) process.exitCode = 1;
+if (metrics.elapsed < sessionSeconds - 0.01 || errors.length) process.exitCode = 1;
