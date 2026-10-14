@@ -99,6 +99,7 @@ Each row maps a requirement of [CHALLENGE.md](CHALLENGE.md) to where it is imple
 | Scenario selection and reset | `ui/development/DemoNetworkTools.tsx` | `demo server reset confirmation is shown briefly`; every scenario test |
 | Controlled randomness and latency | Deterministic latency functions; seeded gameplay | All scenario tests |
 | Mocks work in the published build | `public/mockServiceWorker.js` (API-only filter) | `the published build serves its commit, mocks Ranking and History, and registers a battle` |
+| Mocks survive the browser restarting the service worker | `NetworkSimulator.withRecovery` (marked responses, re-activation, one retry), validated `RecordsApi` payloads | `a restarted mock service worker is re-activated, so lists and registration keep working` |
 | Local persistence of confirmed and pending records | `LocalStorageStore` | Refresh tests |
 
 ## 7. Interface, assets and accessibility

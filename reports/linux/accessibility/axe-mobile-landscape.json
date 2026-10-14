@@ -1,0 +1,76 @@
+{
+  "project": "mobile-landscape",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa"
+  ],
+  "axe": "@axe-core/playwright",
+  "summaries": [
+    {
+      "screen": "Main menu",
+      "passes": 19,
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "Options",
+      "passes": 25,
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "How To Play",
+      "passes": 18,
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "Captain's Log — Ranking",
+      "passes": 26,
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "Captain's Log — Match History",
+      "passes": 24,
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "Gameplay HUD and touch controls",
+      "passes": 19,
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "Pause dialog",
+      "passes": 12,
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "Result",
+      "passes": 24,
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ]
+    }
+  ]
+}

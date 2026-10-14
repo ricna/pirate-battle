@@ -1,183 +1,238 @@
 {
+  "date": "2026-10-14T10:31:38.722Z",
   "browser": "156.0.8078.4",
+  "revision": "0a46e89b32e74b5e8035cc0cda32838dc1ce194f",
   "viewport": "1280x800",
-  "build": "optimized preview",
+  "build": "optimized Vite preview",
+  "workload": "Each cycle: Play, 10 s of real fixed-step rules through the test clock, pause, leave the battle",
+  "cycles": 30,
   "warmupCycles": 5,
+  "analysis": {
+    "bytesPerCycleAfterWarmup": 34919,
+    "heapGrowthAfterWarmupBytes": 966064,
+    "documents": [
+      4
+    ],
+    "nodesRange": [
+      352,
+      352
+    ],
+    "listenersRange": [
+      243,
+      243
+    ]
+  },
+  "errors": [],
   "samples": [
     {
       "cycle": 1,
-      "heapBytes": 7264588,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 7657520,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 246
     },
     {
       "cycle": 2,
-      "heapBytes": 7510776,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 8040624,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 3,
-      "heapBytes": 7702084,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 8224660,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 4,
-      "heapBytes": 7820436,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 8369156,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 5,
-      "heapBytes": 7952548,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 8607368,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 6,
-      "heapBytes": 8007020,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 8669020,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 7,
-      "heapBytes": 8047260,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 8713840,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 8,
-      "heapBytes": 8078252,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 224
+      "heapBytes": 8761052,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 9,
-      "heapBytes": 8370936,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9115876,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 10,
-      "heapBytes": 8418820,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9154976,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 11,
-      "heapBytes": 8454348,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9191580,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 12,
-      "heapBytes": 8478384,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9217396,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 13,
-      "heapBytes": 8492024,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9232380,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 14,
-      "heapBytes": 8515604,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9263256,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 15,
-      "heapBytes": 8551736,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9301172,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 16,
-      "heapBytes": 8573160,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9360556,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 17,
-      "heapBytes": 8585712,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9390012,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 18,
-      "heapBytes": 8615528,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9400724,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 19,
-      "heapBytes": 8635544,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9434176,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 20,
-      "heapBytes": 8646372,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9451584,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 21,
-      "heapBytes": 8661676,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9468536,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 22,
-      "heapBytes": 8689204,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9518024,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 23,
-      "heapBytes": 8699120,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9529856,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 24,
-      "heapBytes": 8709872,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9544076,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     },
     {
       "cycle": 25,
-      "heapBytes": 8723736,
-      "documents": 2,
-      "nodes": 250,
-      "jsEventListeners": 219
+      "heapBytes": 9556464,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
+    },
+    {
+      "cycle": 26,
+      "heapBytes": 9576460,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
+    },
+    {
+      "cycle": 27,
+      "heapBytes": 9584468,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
+    },
+    {
+      "cycle": 28,
+      "heapBytes": 9609204,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
+    },
+    {
+      "cycle": 29,
+      "heapBytes": 9621308,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
+    },
+    {
+      "cycle": 30,
+      "heapBytes": 9635084,
+      "documents": 4,
+      "nodes": 352,
+      "jsEventListeners": 243
     }
   ]
 }

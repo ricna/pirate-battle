@@ -98,6 +98,8 @@ Axios supplies a timeout and propagates each query's AbortSignal. Query keys inc
 
 The UI states are explicit: `Loading records…` before the first response, a visible `Updating records…` status with dimmed cached rows during background refetches, an accessible alert with Retry on failure, an empty-list message, and pagination that keeps the previous page (`keepPreviousData`) until the next arrives. `NetworkConfig` owns the base URL, the 1800 ms timeout, query retries and page size. `NetworkScenarios` describes every MSW scenario as data (deterministic latency by request count, failing endpoints, fixture counts, post-commit delay); the handlers apply that data instead of branching on scenario names. An unknown ranking configuration key is rejected with HTTP 400.
 
+Browsers stop idle service workers; a restarted MSW worker forgets its registered pages and would let `/api/` requests reach the static host (a 404 for the POST, or `index.html` for a GET). Every mocked response therefore carries an `x-pirate-mock` header. An Axios interceptor installed by `NetworkSimulator.withRecovery` treats an `/api/` response without it as a lost registration: it re-announces the page to the active worker with the worker's own `MOCK_ACTIVATE` message, waits for `MOCKING_ENABLED`, and retries the request once. A second unmarked response becomes a visible error. `RecordsApi` validates every page and saved record before TanStack Query or the UI sees it.
+
 ## Persistence and outbox
 
 localStorage keys `pirate.options`, `pirate.player`, `pirate.last`, `pirate.pending`, `pirate.server` and `pirate.scenario` store separately validated values. Parse/quota/unavailability failures produce a warning. Active match entities are never persisted: refresh abandons incomplete combat.
@@ -159,15 +161,15 @@ src/
     entities/                    Ship hierarchy, Projectile, Effect
     factories/                   registered ShipFactory and ProjectileFactory
     systems/                     weapons, spawning, damage, projectiles, effects, match state/statistics
-    runtime/                     GameManager and GameSession
+    runtime/                     GameManager, GameSession, TerminalSequence, SessionInstrumentation
     input/                       InputController
     math/                        pure Geometry functions and Navigation
     assets/                      TiledMapLoader and application-owned GameTextureLibrary
     rendering/                   MapRenderer, ArenaRenderer, SpritePool
-    presentation/                bounded cosmetic particles, feedback system and renderer
+    presentation/                bounded cosmetic particles, feedback, ship trail and their renderers
     audio/                       AudioManager, SoundEffectPlayer, MusicPlayer
   infrastructure/
-    network/                     injected RecordsApi and NetworkSimulator
+    network/                     RecordsApi, NetworkConfig, NetworkScenarios, MockFixtures, NetworkSimulator
     storage/                     LocalStorageStore adapter with private warning state
   ui/
     App.tsx                      application screen/state coordinator
@@ -179,6 +181,7 @@ src/
     assets/                      authored MenuArt and UiAssets lookup
     hooks/                       UseApplicationServices and UseTransientNotice
     development/                 demo network controls
+    navigation/                  ScreenRoute (URL fragments that survive refresh)
 ```
 
 A manager is an owner/coordinator, not a place to collect unrelated responsibilities. GameManager delegates rules to domain systems. GameSession delegates rendering, input, asset loading and audio, holding their match lifetime. ApplicationServices is the only application service composition root and is created explicitly in main. React consumers receive that instance through useApplicationServices; missing provider wiring throws visibly.
