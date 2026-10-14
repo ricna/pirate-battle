@@ -105,3 +105,14 @@ Five post-match start/play/leave cycles ran through the actual test clock and UI
 The earlier boundary-navigation attempt died at 65.22 active seconds under the final balance. Its report is preserved as `reports/profile-boundary-pilot.json`; it does not establish three-minute survival, and it is not used as the completed performance run. It exercised movement/sailing audio and also completed its five cleanup cycles. The pre-refactor baseline is preserved separately in `reports/profile-before-refactor.json`; its workload and audio state differ.
 
 This is one desktop Chromium workload. It does not measure physical mobile hardware, every browser, all spawn-pressure settings or subjective audio quality. Gameplay balance was unchanged by the structural/audio refactor; the profiling pilot selects actual inputs only.
+
+
+## Crew rescue working-build measurement — 13 October 2026
+
+`reports/crew-rescue/profile.json` records the optimized balance-v5 working checkout with rescue, rapid green label grouping and concurrent UI/terminal changes, based on `d35fcfe` (uncommitted changes, not a release revision). Chromium 156.0.8078.4 used ANGLE/Direct3D11 on the RTX 3060 at 1280×800, 1×. A separate regression browser ran concurrently for part of the measurement; these figures describe the working machine and are not an isolated comparison with historical profiles.
+
+The real keyboard defense pilot completed 180 active seconds, 17 credited kills, 10,469 measured frames, **59.26 FPS** mean, **16.8 ms P95**, and a 75-entity peak. No page errors or logical/visual pool exhaustion occurred; logical survivor peak was 10. Sound and music were enabled. The exact frozen configuration, pool/audio counters, raw intervals and gameplay bundle SHA-256 accompany the report.
+
+After five real start/play/abandon cycles and forced GC, heap samples were 9,535,116 / 9,594,324 / 9,728,388 / 9,805,844 / 9,936,256 / 9,993,028 bytes: a 457,912-byte increase. Domain disposal tests confirm all crew slots return and pool capacity reaches zero; browser restart tests confirm no survivors/labels carry over. The aggregate heap continues to grow modestly, so this short run cannot distinguish application caches/JIT/MSW retention from a small leak or certify zero leaks. Longer heap-retainer analysis remains a measurement limitation.
+
+To reproduce, build and start preview, then set `PROFILE_URL` to that preview origin and run `node reports/crew-rescue/Profile.mjs`. This task-local pilot adapts the existing profile script to the Sound toggle and writes evidence separately, preserving historical/concurrent reports. The defense pilot stresses effects and survivor lifetime; keyboard pickup regressions separately verify actual healing and +2 grouping on desktop/mobile. Physical-device FPS is not measured.

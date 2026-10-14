@@ -15,6 +15,7 @@ Game defaults are authored TypeScript data in static configuration classes. The 
 | `FactoryConfig.ts` | Enemy profile → concrete subclass registrations |
 | `InputConfig.ts` | Keyboard bindings, pause keys and touch command labels/icons |
 | `AudioConfig.ts` | UI cues, gameplay-event sound variants, pitch ranges, repeat cooldowns, voice priorities/budget and mix gains |
+| `CrewConfig.ts` | Rescue trigger radius, health per survivor and independent seed salt |
 | `CollisionConfig.ts` | Hull separation, slide iteration budget, impact threshold and repeat cooldown |
 | `PresentationConfig.ts` | Crew/debris/projectile-trail profiles, guaranteed crew capacity, cosmetic pools, recoil/tint/shake, floating labels, water animation and terminal/result durations; ship wake removed by owner request |
 | `AssetConfig.ts` | Shared default atlas sources and explicitly registered standalone authored textures |
@@ -152,4 +153,15 @@ Sound effects remain decoded/cached Web Audio buffers with the configured bounde
 
 `AudioConfig.DeathMusicGain = 0.08` multiplies the effective OST volume temporarily. The music keeps playing, and persisted master/music options are unchanged. Natural completion of the death cue restores the mix, including after arena teardown; Main Menu/Play Again stop remaining match effects and restore it immediately. A revision guard prevents a retired cue from restoring a later mix. Mute and zero volume continue to apply.
 
-`PresentationConfig.Default.terminalSeconds = 3` is the destruction window before result reveal. `terminalFadeInSeconds = 1` fades **Game Over** (or Battle Complete for time expiry) in during this window. `resultFadeSeconds = 1` fades the result screen in and the terminal text out together. These positive durations are validated and frozen in the match snapshot; the arena remains alive until their combined 4-second window finishes. Combat and final-record persistence end immediately, independently of presentation. Only death ducks the OST.
+`PresentationConfig.Default.terminalSeconds = 3` is the death destruction window before result reveal. `terminalFadeInSeconds = 1` fades **Game Over** in during this window. `resultFadeSeconds = 1` fades the result screen in and the death text out together; the arena remains alive until their combined 4-second window finishes. Only death ducks the OST.
+
+Time expiry uses `PresentationConfig.Default.victory.seconds = 4` and `victory.fadeOutSeconds = 2`: **You survived! Congratulations!** stays fully visible for the first 2 seconds and fades over the final 2 seconds before Results opens. The session clock drives both opacity and navigation, suspending them in hidden tabs. Durations must be positive and the fade must fit inside the total window; both are frozen in each match snapshot. The stored reason remains `time`, presented as **VICTORY** in Results and Match History. Combat and final-record persistence end immediately for either outcome.
+
+
+### Crew rescue
+
+`CrewConfig.Default` supplies `radius = 14` logical world pixels, `healthPerRescue = 1` and a dedicated `seedSalt`. Radius and healing must be positive; healing and seed salt must be integers. The trigger must fit inside the crew profile's 16-pixel water clearance. Each survivor is collected by the player's swept hull (`hullRadius + radius`), never by enemies/cannonballs. Restore only missing health; a full-health player leaves crew available. A dead ship cannot heal.
+
+PresentationConfig retains the six authored sprites, motion, 10-second lifetime, foam and guaranteed pool budget; CrewSystem owns authoritative motion. `presentation.rescue` supplies green `color = 0x68ef83`, `offsetY = -28` and `combineSeconds = 0.35` seconds between rescues in the same label. Each additional rescue updates that label and restarts its lifetime; a longer gap starts a new +1. Labels reuse the existing text font/rise/fade/lifetime and bounded pool, with no score reward/pulse. Reduced motion changes decoration without changing rescue geometry.
+
+Balance version `arena_00-v1/balance-v5` separates rescue-enabled ranking snapshots. Existing Options/completed records remain readable. Survivors and unfinished battles are never persisted; new matches receive frozen crew settings.

@@ -1,5 +1,11 @@
 # Verification
 
+## Time-expiry victory — 13 October 2026
+
+The visible working checkout passed typecheck, lint/architecture (107 source files), Prettier and production build. The full fresh-origin run at port 5198 finished with **77/79 passed in 11.4 minutes**, reported at `reports/victory-playwright`. Both desktop and landscape mobile victory scenarios passed: real cannon/helm input survives 60 seconds, the record is saved immediately with `reason: time`, the HUD shows 00:00, the amber/black-outline message stays opaque through terminal second 2, reaches 50% opacity at second 3, and Results opens at second 4. Combat and the persisted record remain unchanged during the window; results/history show VICTORY, the music mix remains normal, and restart restores initial state. `reports/victory-message-*` and `reports/victory-fade-*` retain inspected captures.
+
+Two unrelated checks failed during the complete run: desktop abandonment/repeated mounts reached the 60-second test limit; the mobile menu baseline captured incomplete authored artwork. Both passed when run separately without source or baseline changes. The desktop diagnostic used CLI `--timeout 120000` and passed in 18.4 seconds (report: `reports/victory-startup-recheck-playwright`); its preceding 60-second diagnostic spent about 50 seconds opening the initial page, as recorded in the trace. The mobile menu/arena/result baseline passed with the normal limit (report: `reports/victory-visual-recheck-playwright`). The configured suite limit and screenshot baselines remain unchanged. These are Chromium desktop/mobile emulation results for a checkout with concurrent changes, not a clean 79/79 single run, physical-device testing or a new performance profile.
+
 ## Commands and environment
 
 Node 24.14.1, npm 11.12.1, TypeScript strict, Windows 10 Pro. Install with `npm ci`, then run `npm run typecheck`, `npm run lint`, `npm run build`. Playwright 1.64 uses full Chromium, installed with `npx playwright install chromium --no-shell`.
@@ -99,3 +105,15 @@ The final working checkout passed **12/12 focused tests in 2.5 minutes**, using 
 Typecheck and production build passed. The global lint attempt found a concurrent `CrewSystem.ts` no-this-alias violation; the global formatting attempt reported concurrent GameSession/GameCanvas edits. A full 76-test run was attempted, but concurrent source changes and a survival-to-time failure invalidated it; it was interrupted and the focused scenarios were rerun. No baseline was updated for this task. These results describe the visible working checkout with parallel gameplay changes, rather than a certification of unrelated work.
 
 Captures in `reports/options-sliders-*`, `reports/loading-arena-*` and `reports/loading-engine-*` show four authored numeric sliders and the authored player-health loading bar in desktop and emulated mobile landscape. Both new Game sliders were also adjusted with Home/ArrowRight and persisted after refresh. Reduced motion disables the indeterminate preparation pulse. No physical-device testing or deployment is claimed.
+
+
+## Crew rescue coverage — 13 October 2026
+
+`presentation.spec.ts` now exercises one heal per survivor, removal/reuse of the bounded logical pool, full-health preservation, dead-player exclusion, swept hull pickup, validated rescue profiles and stable pickup motion under reduced motion. Rapid rescues reuse one green label within 0.35 seconds, renew its age and accumulate +1/+2/+3; a longer interval starts a new label, with no score pulse.
+
+The browser rescue pilot uses real keyboard steering and the existing simulation clock, with no state writes or entity injection. It checks the recovered health against green label totals and incoming damage, the visible HUD, pause and abandonment/restart on desktop 1800×1000 and emulated touch landscape 844×390 at 2×. Captures are `reports/crew-rescue/rescue-desktop.png` and `rescue-mobile-landscape.png`. Reports are kept under `reports/crew-rescue`, separately from concurrent verification. Physical devices and subjective audio listening are not covered.
+
+
+The final rescue/grouping checkout completed **79 passed, 1 failed** across 80 scenarios in the configured full run (`PIRATE_TEST_PORT=5188`, HTML report `reports/crew-rescue/full-playwright`). All crew rescue/grouping, combat, lifecycle and mobile scenarios passed. The failure was the desktop menu screenshot: the captured frame lacked authored image art. The unchanged visual scenario passed on a fresh origin (`5189`, `reports/crew-rescue/visual-recheck`), including menu/arena/result. No baselines were changed. The original readiness failure remains recorded; the full run is not relabeled as 80/80.
+
+Typecheck, lint/architecture (107 source files), Prettier and optimized build passed. The existing Vite chunk-size advisory remains. PERFORMANCE.md and `reports/crew-rescue/profile.json` describe the three-minute performance run and five lifecycle heap samples. Changes remain in the visible checkout; this task did not commit, push or deploy them, and concurrent UI/audio changes were preserved.
