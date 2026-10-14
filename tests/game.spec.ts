@@ -360,6 +360,8 @@ test('a Chaser ram deals its configured damage without scoring; Shooter cannonba
 test('real cannon input wins on time, fades survival text before results and restarts cleanly', async ({
   page,
 }, testInfo) => {
+  // A 60 s keyboard-piloted session renders every step; software WebGL in CI needs the longer budget.
+  test.slow();
   await options(page, 60, 10);
   await play(page);
   await defendUntilFinished(page, false);
