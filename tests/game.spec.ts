@@ -14,6 +14,7 @@ import {
   setTabHidden,
   waitForAuthoredArt,
 } from './helpers';
+import { evidencePath } from './TestReports';
 const pageErrors = new Map<Page, string[]>();
 test.beforeEach(async ({ page }) => {
   const errors: string[] = [];
@@ -130,7 +131,7 @@ test('the authored ship trail follows the sailing player and fades after it stop
   expect(trail.points.length).toBeGreaterThan(2);
   expect(trail.alpha).toBeGreaterThan(0.5);
   expect(sailing.renderPools.shipTrails).toMatchObject({ active: 1, exhausted: 0 });
-  const capture = await page.screenshot({ path: `reports/ship-trail-${testInfo.project.name}.png` });
+  const capture = await page.screenshot({ path: evidencePath(`ship-trail-${testInfo.project.name}.png`) });
   await testInfo.attach('authored-ship-trail', { body: capture, contentType: 'image/png' });
   await page.keyboard.up('w');
   await page.keyboard.up('d');
@@ -248,7 +249,9 @@ test('one cannonball applies its configured damage once; one destroyed enemy awa
   ).toHaveLength(emission.count);
   expect(feedback.snapshot.statistics.enemiesSunk).toBe(1);
   expect(feedback.snapshot.statistics.cannonballHits).toBe(2);
-  const screenshot = await page.screenshot({ path: `reports/combat-feedback-${testInfo.project.name}.png` });
+  const screenshot = await page.screenshot({
+    path: evidencePath(`combat-feedback-${testInfo.project.name}.png`),
+  });
   await testInfo.attach('sinking-crew-foam-debris', { body: screenshot, contentType: 'image/png' });
   await advance(page, 0.5);
   expect((await observe(page)).snapshot.score).toBe(1);
@@ -381,14 +384,16 @@ test('real cannon input wins on time, fades survival text before results and res
   await expect(message).toHaveCSS('-webkit-text-stroke-color', 'rgb(0, 0, 0)');
   await expect(message).toHaveCSS('opacity', '1');
   expect(ended.audio.music.mixGain).toBe(1);
-  const capture = await page.screenshot({ path: `reports/victory-message-${testInfo.project.name}.png` });
+  const capture = await page.screenshot({
+    path: evidencePath(`victory-message-${testInfo.project.name}.png`),
+  });
   await testInfo.attach('survival-message-before-results', { body: capture, contentType: 'image/png' });
   await advance(page, 2 - ended.terminal.elapsed);
   await expect(message).toHaveCSS('opacity', '1');
   await advance(page, 1);
   await expect(message).toHaveCSS('opacity', '0.5');
   await testInfo.attach('survival-message-half-faded', {
-    body: await page.screenshot({ path: `reports/victory-fade-${testInfo.project.name}.png` }),
+    body: await page.screenshot({ path: evidencePath(`victory-fade-${testInfo.project.name}.png`) }),
     contentType: 'image/png',
   });
   await advance(page, 0.99);
@@ -477,7 +482,9 @@ test('terminal sinking persists once before revealing results and keeps crew vis
   expect(state.snapshot.elapsed).toBe(before.elapsed);
   expect(state.snapshot.score).toBe(before.score);
   expect(state.snapshot.statistics).toEqual(before.statistics);
-  const capture = await page.screenshot({ path: `reports/terminal-feedback-${testInfo.project.name}.png` });
+  const capture = await page.screenshot({
+    path: evidencePath(`terminal-feedback-${testInfo.project.name}.png`),
+  });
   await testInfo.attach('player-sinking-before-result', { body: capture, contentType: 'image/png' });
   await advance(page, state.config.presentation.terminalSeconds - state.terminal.elapsed - 0.01);
   await expect(page.getByRole('heading', { name: 'Battle result' })).toHaveCount(0);
@@ -488,7 +495,7 @@ test('terminal sinking persists once before revealing results and keeps crew vis
   await expect(page.locator('.arena canvas')).toHaveCount(1);
   await page.waitForTimeout(450);
   const crossfade = await page.screenshot({
-    path: `reports/game-over-crossfade-${testInfo.project.name}.png`,
+    path: evidencePath(`game-over-crossfade-${testInfo.project.name}.png`),
   });
   await testInfo.attach('result-crossfade-with-arena', { body: crossfade, contentType: 'image/png' });
   await advance(page, state.config.presentation.resultFadeSeconds - 0.01);
@@ -864,7 +871,7 @@ test('authored loading bar follows engine, map and texture completion', async ({
     expect(Number(await arena.getAttribute('aria-valuenow'))).toBeLessThan(100);
     await expect(arena.locator('img').first()).toHaveAttribute('src', /health_frame/);
     await expect(arena.locator('img').last()).toHaveAttribute('src', /health_fill_green/);
-    await page.screenshot({ path: `reports/loading-arena-${testInfo.project.name}.png` });
+    await page.screenshot({ path: evidencePath(`loading-arena-${testInfo.project.name}.png`) });
     releaseAtlas();
     await page.waitForFunction(() => !!window.pirateTest);
     await expect(page.locator('.arena')).toHaveAttribute('aria-busy', 'false');
@@ -957,7 +964,9 @@ test('floating crew rescue heals once per person with green feedback and freezes
   await expect(page.locator('.hud-health strong')).toHaveText(
     `${state.snapshot.health} / ${state.player.maxHealth}`,
   );
-  const capture = await page.screenshot({ path: `reports/crew-rescue/rescue-${testInfo.project.name}.png` });
+  const capture = await page.screenshot({
+    path: evidencePath(`crew-rescue/rescue-${testInfo.project.name}.png`),
+  });
   await testInfo.attach('green-rescue-feedback', { body: capture, contentType: 'image/png' });
   await page.getByRole('button', { name: 'Pause game', exact: true }).click();
   const paused = await observe(page);

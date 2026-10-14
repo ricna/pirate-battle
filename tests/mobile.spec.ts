@@ -2,10 +2,11 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { WorldCamera } from '../src/game/rendering/WorldCamera';
 import { advance, observe, open, play, scenario, waitForAuthoredArt } from './helpers';
+import { evidencePath } from './TestReports';
 
 async function capture(page: Page, name: string) {
   await waitForAuthoredArt(page);
-  await page.screenshot({ path: `reports/mobile-layout/${name}.png`, fullPage: true });
+  await page.screenshot({ path: evidencePath(`mobile-layout/${name}.png`), fullPage: true });
 }
 
 async function expectScreenFits(page: Page, selector: string) {

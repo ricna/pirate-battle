@@ -246,7 +246,7 @@ npm run test:e2e
 - Keep tests isolated and deterministic, using seeded gameplay, controlled dates and bounded test-clock advancement. Observe DTOs; never add test hooks that assign health, score, positions or inject fake combat state.
 - `?test=1` may advance the existing simulation clock within its configured limit. `?profile=1` observes real-time behavior and must not bypass gameplay or advance time artificially.
 - Inspect actual rendered output when changing visuals. Use supplied references/metadata and save useful evidence. Do not update screenshot baselines just to conceal a regression.
-- Use the configured test reporters (`npm run test:e2e`) for delivered `reports/playwright`. A CLI reporter override may write another output directory; verify the report really belongs to the claimed run.
+- Everyday and focused runs (`npm run test:e2e`, `npx playwright test …`) write only Git-ignored output. Only `npm run test:deliver` (complete suite, no arguments) writes the delivered `reports/playwright`, `reports/playwright.json`, `reports/TEST-SUMMARY.md` and evidence captures; see "Delivered test reports" below. A `PIRATE_TEST_REPORT_DIR` or CLI reporter override may write another output directory; verify the report really belongs to the claimed run.
 - Profile an optimized build after changes to movement, spawn pressure, pool limits, TTL, allocation/rendering or audio budgets. Record revision/configuration, environment, workload, frame metrics, entity/pool peaks and memory across restarts.
 - Distinguish live objects, intentional caches, JIT warmup and retained match resources. A rising heap alone is not proof of a leak; passing a short run is not proof of zero leaks.
 - Do not reuse old performance measurements as evidence for a changed build. Emulation is not physical-device testing; report browser/device limitations and any checks not run.
@@ -427,11 +427,21 @@ Menu screens are reflected in the URL fragment by `ScreenRoute` with `history.re
 
 - `.gitattributes` keeps LF checkouts; Prettier covers `src`, `tests`, `scripts` and root configuration files.
 - Screenshot baselines exist for Windows (`*-win32.png`) and Linux (`*-linux.png`). Linux baselines are produced only by `npm run test:docker`, which runs the pinned `mcr.microsoft.com/playwright:v<version>-noble` image used by CI. Update a baseline only for an intentional visual change, on both platforms, and say so in the commit.
-- CI (`.github/workflows/ci.yml`) runs typecheck, lint, format check, build and the complete Playwright suite inside that image and uploads the reports.
-- The `production-smoke` project runs against the optimized preview build or `PIRATE_SMOKE_URL`; `accessibility.spec.ts` audits every screen with axe (WCAG 2.1 AA) and writes `reports/accessibility`; the JSON reporter feeds `npm run test:summary` (`reports/TEST-SUMMARY.md`).
+- CI (`.github/workflows/ci.yml`) runs typecheck, lint, format check, build and the complete Playwright suite (`npm run test:deliver`) inside that image and uploads the reports.
+- The `production-smoke` project runs against the optimized preview build or `PIRATE_SMOKE_URL`; `accessibility.spec.ts` audits every screen with axe (WCAG 2.1 AA) and writes `accessibility/` in the evidence folder (`reports/accessibility` in a delivery run); the JSON reporter feeds `scripts/report-summary.mjs` (`reports/TEST-SUMMARY.md`).
 - MSW scenarios are data (`NetworkScenarios`) validated against `NetworkConfig.RequestTimeoutMs`; every scenario has a browser test.
 - Every mocked response carries `NetworkConfig.MockHeader`. Keep `NetworkSimulator.withRecovery`: an unmarked `/api/` response means the browser restarted the worker, so the page re-announces itself (`MOCK_ACTIVATE`) and retries once. Never call MSW `stop()`/`start()` for this; the worker unregisters itself when its last client closes. `RecordsApi` validates every response.
 - Builds publish their commit (`meta[name=build-commit]`, `/version.json`, How To Play). Delivered reports and profiles must name the exact revision they measured.
+
+## Delivered test reports — 14 October 2026
+
+The owner observed that test runs kept deleting and recreating the versioned `reports/playwright/data/*.png` attachments: Playwright's HTML reporter replaces its whole folder, and a single-test run had replaced the complete 125-test report. The challenge requires the HTML report and test evidence in the delivered repository, so `reports/` stays versioned, but only a deliberate delivery run may change it:
+
+- `tests/TestReports.ts` owns the report, output and evidence paths for `playwright.config.ts` and the specs. Without `PIRATE_TEST_DELIVERY=1`, a run writes only Git-ignored output: `playwright-report/`, `playwright-report.json` and `test-results/`, with evidence under `test-results/evidence/`.
+- Specs save screenshots and audit files through `evidencePath()`. Never hard-code a `reports/` path in a test.
+- `npm run test:deliver` (`scripts/deliver-test-report.mjs`) enables delivery mode, refuses arguments so a delivered report always covers the complete suite, and rewrites `reports/TEST-SUMMARY.md` even when a test fails. CI runs the same command. `npm run test:docker` refreshes `reports/linux` only without arguments; a focused container run copies its report to `test-results/linux`.
+- Deliver evidence after committing the code it measures. Confirm the summary names that commit without uncommitted source/test changes, then commit `reports/` on its own. Never commit a report from an everyday run.
+- The retained delivered report is the complete 125/125 run of `0a46e89`. Later commits are not covered until the next `npm run test:deliver`.
 
 ## Fullscreen keyboard controls — 14 October 2026
 

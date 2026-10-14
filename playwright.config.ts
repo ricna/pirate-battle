@@ -1,5 +1,6 @@
 import process from 'node:process';
 import { defineConfig } from '@playwright/test';
+import { outputDirectory, reportDirectory, reportJsonFile } from './tests/TestReports';
 
 /** Development server: React Strict Mode, test instrumentation and source-level failure routes. */
 const port = Number(process.env.PIRATE_TEST_PORT ?? 5173);
@@ -7,7 +8,6 @@ const baseURL = `http://127.0.0.1:${port}`;
 /** Optimized build for the smoke project; PIRATE_SMOKE_URL points it at a deployment instead. */
 const previewPort = Number(process.env.PIRATE_PREVIEW_PORT ?? 4317);
 const smokeURL = process.env.PIRATE_SMOKE_URL ?? `http://127.0.0.1:${previewPort}`;
-const reportDirectory = process.env.PIRATE_TEST_REPORT_DIR ?? 'reports/playwright';
 const continuousIntegration = Boolean(process.env.CI);
 const browserFlows = [
   '**/game.spec.ts',
@@ -26,13 +26,14 @@ export default defineConfig({
   // Software WebGL in CI containers renders the arena more slowly than a desktop GPU.
   timeout: continuousIntegration ? 120000 : 60000,
   expect: { timeout: 8000, toHaveScreenshot: { maxDiffPixelRatio: 0.01 } },
+  // Everyday runs report into Git-ignored folders; only `npm run test:deliver` writes reports/ (TestReports.ts).
   reporter: [
     ['list'],
     ['html', { outputFolder: reportDirectory, open: 'never' }],
     // Machine-readable results live beside the HTML folder, which the HTML reporter replaces on each run.
-    ['json', { outputFile: `${reportDirectory}.json` }],
+    ['json', { outputFile: reportJsonFile }],
   ],
-  outputDir: process.env.PIRATE_TEST_OUTPUT_DIR ?? 'test-results',
+  outputDir: outputDirectory,
   use: { baseURL, channel: 'chromium', trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   projects: [
     { name: 'mobile-layout', testMatch: '**/mobile.spec.ts' },

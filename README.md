@@ -6,7 +6,7 @@ A single-player, top-down naval shooter built with React, strict TypeScript and 
 
 - **Live build:** _pending deployment; see [Deployment](#deployment)._ Every build reports its commit in `/version.json`, in `<meta name="build-commit">` and at the bottom of How To Play.
 - **Where each requirement lives:** [REQUIREMENTS.md](REQUIREMENTS.md) maps every item of the challenge to its implementation, tests and evidence.
-- **Latest verification:** [reports/TEST-SUMMARY.md](reports/TEST-SUMMARY.md), with the HTML report in `reports/playwright`. See [TESTING.md](TESTING.md) and [PERFORMANCE.md](PERFORMANCE.md).
+- **Latest verification:** [reports/TEST-SUMMARY.md](reports/TEST-SUMMARY.md), with the HTML report in `reports/playwright` (`npm run test:report`). Only `npm run test:deliver` changes these files; everyday test runs write Git-ignored output. See [TESTING.md](TESTING.md#reports-and-traces) and [PERFORMANCE.md](PERFORMANCE.md).
 
 ## Setup
 
@@ -30,11 +30,13 @@ Open the printed localhost URL. MSW starts before the first API request. Service
 | `npm run typecheck` | `tsc --noEmit` in strict mode |
 | `npm run lint` | Architecture convention check and ESLint |
 | `npm run format` / `npm run format:check` | Prettier for source, tests, scripts and configuration |
-| `npm run test:e2e` | Complete Playwright suite (domain, rendering, desktop, landscape mobile, production smoke) |
+| `npm run test:e2e` | Complete Playwright suite (domain, rendering, desktop, landscape mobile, production smoke); report, traces and captures go to Git-ignored `playwright-report/` and `test-results/` |
+| `npm run test:deliver` | The complete suite in delivery mode: rewrites the versioned `reports/playwright`, `reports/playwright.json`, evidence captures and `reports/TEST-SUMMARY.md` (no arguments accepted) |
 | `npm run test:smoke` | Production-build smoke test; set `PIRATE_SMOKE_URL` to test a deployment |
-| `npm run test:docker` | The suite inside the CI Linux image (also used to update Linux screenshot baselines) |
-| `npm run test:report` | Open the HTML report |
-| `npm run test:summary` | Write `reports/TEST-SUMMARY.md` from the JSON results |
+| `npm run test:docker` | The suite inside the CI Linux image (also used to update Linux screenshot baselines); without arguments it refreshes `reports/linux` |
+| `npm run test:report` | Open the delivered HTML report (`reports/playwright`) |
+| `npm run test:report:local` | Open the report of the last everyday run (`playwright-report`) |
+| `npm run test:summary` | Rewrite `reports/TEST-SUMMARY.md` from `reports/playwright.json` |
 | `npm run verify` | typecheck, lint, format check, build and the complete suite, in that order |
 | `npm run profile` / `npm run profile:memory` | Real-time performance and memory runs against `npm run preview` |
 | `npm run mocks:init` | Regenerate the MSW worker and reapply its `/api/`-only filter |
@@ -48,7 +50,8 @@ All variables are optional.
 | `PIRATE_TEST_PORT` | Playwright | `5173`; selects a fresh dev-server port instead of reusing a running one |
 | `PIRATE_PREVIEW_PORT` | Playwright | `4317`; port of the preview server started for `production-smoke` |
 | `PIRATE_SMOKE_URL` | Playwright | Unset; runs `production-smoke` against a deployed URL instead of a local preview |
-| `PIRATE_TEST_REPORT_DIR` / `PIRATE_TEST_OUTPUT_DIR` | Playwright | `reports/playwright` / `test-results`; isolate a run's report and traces |
+| `PIRATE_TEST_DELIVERY` | Playwright | Unset; `1` (set by `npm run test:deliver` and a full `npm run test:docker`) writes the report and evidence under `reports/` |
+| `PIRATE_TEST_REPORT_DIR` / `PIRATE_TEST_OUTPUT_DIR` | Playwright | `playwright-report` (`reports/playwright` in delivery mode) / `test-results`; isolate a run's report and traces |
 | `CI` | Playwright | Set by CI: no server reuse, `test.only` forbidden, longer timeout for software WebGL |
 | `PROFILE_URL` | profile scripts | `http://127.0.0.1:4173/` |
 | `PROFILE_SESSION_SECONDS` / `PROFILE_SPAWN_SECONDS` | `npm run profile` | `180` / `5` |

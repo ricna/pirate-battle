@@ -15,9 +15,11 @@ dist/
 # Logs
 *.log
 
-# Ephemeral Playwright run output; delivered HTML report lives in reports/.
+# Everyday Playwright output (npm run test:e2e, focused runs, agents): report, traces and evidence captures.
+# Only `npm run test:deliver` writes the versioned report and evidence under reports/ (see TESTING.md).
 test-results/
 playwright-report/
+playwright-report.json
 assets/maps/*.tiled-session
 .openai/
 .sites-runtime/

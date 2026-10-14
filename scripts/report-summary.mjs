@@ -1,4 +1,5 @@
 // Writes reports/TEST-SUMMARY.md from Playwright's JSON reporter output (reports/playwright.json).
+// `npm run test:deliver` calls it after a delivery run; pass other paths to summarize another report.
 import { readFile, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import os from 'node:os';
@@ -53,7 +54,7 @@ const minutes = ((stats.duration ?? 0) / 60000).toFixed(1);
 const lines = [
   '# Playwright summary',
   '',
-  `Generated from \`${input}\` by \`npm run test:summary\`. The HTML report is \`reports/playwright/index.html\`.`,
+  `Generated from \`${input}\` by \`scripts/report-summary.mjs\`. The HTML report is \`${input.replace(/\.json$/, '')}/index.html\`.`,
   '',
   '| Field | Value |',
   '| --- | --- |',

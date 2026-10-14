@@ -20,7 +20,7 @@ The browser can deny or lack fullscreen support. The authored dialog reports tha
 
 ## Verification
 
-`tests/mobile.spec.ts` covers four landscape sizes (568×320, 667×375, 844×390, 932×430), two portrait sizes (320×568, 390×844), readable controls, no HUD overlap, menu/table containment, rotation, real sailing, camera movement/pause, all four camera bounds, desktop overview, fullscreen entry/exit and unsupported-browser guidance. Run `npm run test:e2e -- --project=mobile-layout`; captures and isolated reports are under `reports/mobile-layout`.
+`tests/mobile.spec.ts` covers four landscape sizes (568×320, 667×375, 844×390, 932×430), two portrait sizes (320×568, 390×844), readable controls, no HUD overlap, menu/table containment, rotation, real sailing, camera movement/pause, all four camera bounds, desktop overview, fullscreen entry/exit and unsupported-browser guidance. Run `npm run test:e2e -- --project=mobile-layout`; its captures go to the Git-ignored `test-results/evidence/mobile-layout`. A delivery run (`npm run test:deliver`) writes them to `reports/mobile-layout`, beside the isolated verification reports kept there.
 
 The later screen-fit cases check Main Menu, Options, Captain's Log, all three help topics, Pause/Options and Battle result at 568×320, 844×390 and 320×568. They assert that every board and visible button remains inside the viewport and that the document, records table and pause dialog do not scroll. This is browser emulation evidence; physical devices still need inspection.
 

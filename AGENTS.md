@@ -14,5 +14,6 @@ Current explicit owner instructions take precedence. Keep accepted durable rule 
 - Read `git status` and relevant diffs before editing/staging. Another session was confirmed to edit audio on 12 October 2026; verify current ownership and preserve unrelated changes. Stage explicit reviewed paths/hunks and make cohesive commits.
 - Keep code, UI and delivered documentation in English; explain to the owner in Portuguese. Personal tutorials/diary remain in sibling `../Docs`, outside this repo; do not use Google Docs.
 - Follow the latest working mode/authorization. Explain purpose and results, update relevant documentation, and run checks appropriate to the change. Do not claim tests, profiling, pushes or deployment that did not occur.
+- Verification runs (`npm run test:e2e`, focused `npx playwright test …`) write only Git-ignored output. Only `npm run test:deliver` changes the versioned `reports/` evidence, and only when the owner asks for delivery evidence (IMPLEMENTATION.md, "Delivered test reports").
 
 The personal wiki is optional local learning material; the complete mandatory implementation contract is checked in here so other developers do not need the owner's external Docs folder.

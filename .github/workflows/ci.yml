@@ -33,11 +33,9 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run build
+      # Same delivery layout as a committed report (reports/), plus TEST-SUMMARY.md even when a test fails.
       - name: Playwright (desktop, mobile landscape, domain, rendering, production smoke)
-        run: npx playwright test
-      - name: Text summary
-        if: always()
-        run: npm run test:summary
+        run: npm run test:deliver
       - uses: actions/upload-artifact@v7
         if: always()
         with:

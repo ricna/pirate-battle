@@ -134,7 +134,7 @@ axe reports text contrast over authored artwork as "needs review" rather than pa
 | Chromium desktop and mobile | `desktop` and `mobile-landscape` projects |
 | Visual regression of menu, stable arena, result with versioned baselines | `versioned menu, arena and result visual baselines…` (`*-win32.png`, `*-linux.png`) |
 | Seeds and controlled simulation time | Seed 20261012, `?test=1` clock, `page.clock.setFixedTime` |
-| Isolated tests, HTML report, failure traces | New context per test; `reports/playwright`; `trace: 'retain-on-failure'` |
+| Isolated tests, HTML report, failure traces | New context per test; `reports/playwright` (versioned, written by `npm run test:deliver`); `trace: 'retain-on-failure'` |
 
 ## 9. Performance and delivery
 

@@ -11,7 +11,7 @@ Typecheck, lint/architecture, format check and production build passed. Reports 
 | Check | Environment | Result |
 | --- | --- | --- |
 | `npm run typecheck`, `npm run lint` (architecture check + ESLint), `npm run format:check`, `npm run build` | Windows 10, Node 24.14.1 | All pass; no chunk-size warning |
-| `npm run test:e2e` | Windows 10, Chromium 1248 (Playwright 1.64.0), RTX 3060 | **125/125 passed** in 8.6 minutes on commit `0a46e89` from a clean checkout, 14 October 2026 ([summary](reports/TEST-SUMMARY.md), `reports/playwright/index.html`) |
+| `npm run test:e2e` (then the delivery command; now `npm run test:deliver`) | Windows 10, Chromium 1248 (Playwright 1.64.0), RTX 3060 | **125/125 passed** in 8.6 minutes on commit `0a46e89` from a clean checkout, 14 October 2026 ([summary](reports/TEST-SUMMARY.md), `reports/playwright/index.html`) |
 | `npm run test:docker` | `mcr.microsoft.com/playwright:v1.64.0-noble` (the CI image), Node 24.21.0, software WebGL | **125/125 passed** in 19.9 minutes on the same commit ([summary](reports/linux/TEST-SUMMARY.md), `reports/linux/playwright.json`) |
 | GitHub Actions ([ci.yml](.github/workflows/ci.yml)) | Same container on GitHub-hosted Ubuntu | **125/125 passed** in 13.0 minutes on `96ae791` (run 38571565099), after typecheck, lint, format check and build |
 
@@ -19,15 +19,18 @@ The 125 cases are: 29 domain (`core`), 2 rendering, 9 mobile layout, 42 desktop,
 
 An earlier Linux run exposed a real defect: during a slow, minutes-long match the browser restarted the MSW service worker, which forgot the page, and the battle POST reached the static host (HTTP 404). Commit `0a46e89` adds the recovery described in ARCHITECTURE.md and a test that restarts the worker on purpose.
 
+The delivered `reports/playwright` still belongs to this complete `0a46e89` run. Later commits, and the tests added since, are not covered by it; regenerate it with `npm run test:deliver` before delivery (see [Reports and traces](#reports-and-traces)).
+
 ## Running the suite
 
 ```sh
 npm ci
 npx playwright install chromium --no-shell
-npm run test:e2e        # everything below; writes reports/playwright and reports/playwright.json
-npm run test:summary    # reports/TEST-SUMMARY.md from the JSON results
-npm run test:report     # opens the HTML report
-npm run test:docker     # the same suite inside the CI Linux image
+npm run test:e2e           # everything below; Git-ignored report in playwright-report/
+npm run test:report:local  # opens that report
+npm run test:deliver       # the complete suite into the versioned reports/ (delivery evidence)
+npm run test:report        # opens the delivered report
+npm run test:docker        # the same suite inside the CI Linux image
 ```
 
 `npm run test:e2e` starts the Vite dev server (React Strict Mode) and, for `production-smoke`, builds and serves the optimized bundle. Tests run serially with one worker so focus, audio and clocks stay deterministic. Set `PIRATE_TEST_PORT` to avoid reusing a server that is already running, and `PIRATE_SMOKE_URL` to run the smoke test against a deployment.
@@ -78,14 +81,25 @@ npm run test:docker -- -g "visual baselines" --update-snapshots          # Linux
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs typecheck, lint, format check, build and the complete suite inside the same Playwright image, then uploads the HTML/JSON reports, the text summary, accessibility summaries and failure traces as the `playwright-report` artifact.
+`.github/workflows/ci.yml` runs typecheck, lint, format check, build and the complete suite (`npm run test:deliver`) inside the same Playwright image, then uploads the HTML/JSON reports, the text summary, accessibility summaries and failure traces as the `playwright-report` artifact.
 
 ## Reports and traces
 
-- `reports/playwright/index.html`: HTML report of the final run; `reports/playwright.json`: machine-readable results; `reports/TEST-SUMMARY.md`: per-test status.
+The challenge requires the HTML report and test evidence in the delivered repository, so the delivered report is versioned under `reports/`. Everyday runs must not touch it: Playwright's HTML reporter replaces its whole folder on every run, so a focused `-g` or single-spec run would replace the complete report with a partial one and recreate every attachment in `reports/playwright/data/`. [tests/TestReports.ts](tests/TestReports.ts) is the single owner of these paths for the configuration and the specs, which save evidence through `evidencePath()`:
+
+| Run | HTML and JSON report | Evidence captures and axe summaries |
+| --- | --- | --- |
+| `npm run test:e2e`, `npx playwright test …`, `npm run verify` | `playwright-report/`, `playwright-report.json` (Git-ignored) | `test-results/evidence/` (Git-ignored, cleaned when the next run starts) |
+| `npm run test:deliver` (complete suite only; CI runs it too) | `reports/playwright/`, `reports/playwright.json`, then `reports/TEST-SUMMARY.md` | `reports/` |
+| `npm run test:docker` without arguments | Copied to `reports/linux/` | `reports/linux/accessibility/` |
+| `npm run test:docker -- <arguments>` | Copied to `test-results/linux/` (Git-ignored) | `test-results/linux/accessibility/` |
+
+To deliver new evidence, commit the code first, run `npm run test:deliver`, check that `reports/TEST-SUMMARY.md` names that commit without "uncommitted source/test changes", and commit `reports/` on its own. A report from an everyday run is never delivered. `npm run test:deliver` refuses arguments, so a delivered report always covers the complete suite, and writes the summary even when a test fails.
+
+- `reports/playwright/index.html`: HTML report of the delivered run; `reports/playwright.json`: machine-readable results; `reports/TEST-SUMMARY.md`: per-test status.
 - `reports/linux/`: JSON results and summary of the Linux container run.
 - `reports/accessibility/`: axe summaries per browser project.
-- Captures written by the tests: `combat-feedback-*`, `terminal-feedback-*`, `game-over-crossfade-*`, `victory-message-*`, `victory-fade-*`, `loading-arena-*`, `ship-trail-*`, `crew-rescue/rescue-*`.
+- Captures written by the tests (paths relative to the evidence folder above): `combat-feedback-*`, `terminal-feedback-*`, `game-over-crossfade-*`, `victory-message-*`, `victory-fade-*`, `loading-arena-*`, `ship-trail-*`, `crew-rescue/rescue-*`, `mobile-layout/*`.
 - Traces: `trace: 'retain-on-failure'` keeps a trace for every failing test in `test-results/` (uploaded by CI). `reports/failures/` keeps one historical trace from development as an example; open it with `npx playwright show-trace <file>`.
 
 Earlier dated verification logs were superseded by this run and remain available in the Git history.

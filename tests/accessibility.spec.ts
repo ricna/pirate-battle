@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { advance, open, play, selectRecordsTab, waitForAuthoredArt } from './helpers';
+import { evidencePath } from './TestReports';
 
 const WcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
@@ -67,9 +68,9 @@ test('menus, records, gameplay HUD, pause dialog and results pass automated WCAG
 
   expect(errors).toEqual([]);
   const report = { project: testInfo.project.name, tags: WcagTags, axe: '@axe-core/playwright', summaries };
-  await mkdir('reports/accessibility', { recursive: true });
+  await mkdir(evidencePath('accessibility'), { recursive: true });
   await writeFile(
-    `reports/accessibility/axe-${testInfo.project.name}.json`,
+    evidencePath(`accessibility/axe-${testInfo.project.name}.json`),
     `${JSON.stringify(report, null, 2)}\n`,
   );
   await testInfo.attach('axe-summary', {
