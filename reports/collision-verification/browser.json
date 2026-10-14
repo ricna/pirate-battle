@@ -1,0 +1,608 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=desktop",
+      "--project=mobile-landscape",
+      "--project=production-smoke",
+      "--grep",
+      "movement, rotation|player acceleration|Chaser ram deals|pause freezes|the published build"
+    ],
+    "configFile": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\playwright.config.ts",
+    "rootDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-layout",
+        "name": "mobile-layout",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/mobile.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "rendering",
+        "name": "rendering",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/rendering.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "core",
+        "name": "core",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/core.spec.ts",
+          "**/collision.spec.ts",
+          "**/navigation.spec.ts",
+          "**/presentation.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-landscape",
+        "name": "mobile-landscape",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "production-smoke",
+        "name": "production-smoke",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/smoke.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\test-results\\collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5231",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "deviceScaleFactor": 1
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\test-results\\collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile-landscape",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5231",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 844,
+            "height": 390
+          },
+          "deviceScaleFactor": 2,
+          "isMobile": true,
+          "hasTouch": true
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile-landscape"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\test-results\\collision-verification-browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "production-smoke",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": "**/smoke.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5232",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "deviceScaleFactor": 1
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "production-smoke"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "reports/collision-verification/browser",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/collision-verification/browser.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "game.spec.ts",
+      "file": "game.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "movement, rotation, island collision and arena limits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8490,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:51:50.578Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-c709c3112f9df57126cb",
+          "file": "game.spec.ts",
+          "line": 88,
+          "column": 1
+        },
+        {
+          "title": "player acceleration and braking are gradual and stop without held input",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4465,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:52:00.774Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-2250b9152557c6e81b02",
+          "file": "game.spec.ts",
+          "line": 144,
+          "column": 1
+        },
+        {
+          "title": "a Chaser ram deals its configured damage without scoring; Shooter cannonballs hurt the player",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4596,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:52:05.258Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-0cc5b399416251dbe9c4",
+          "file": "game.spec.ts",
+          "line": 320,
+          "column": 1
+        },
+        {
+          "title": "pause freezes simulation and cooldowns, focus loss requires explicit resume",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6798,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:52:09.874Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-43f5dc442ba96c4f1d8b",
+          "file": "game.spec.ts",
+          "line": 530,
+          "column": 1
+        },
+        {
+          "title": "movement, rotation, island collision and arena limits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3266,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:52:19.022Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-1f6e741302273e60d5e5",
+          "file": "game.spec.ts",
+          "line": 88,
+          "column": 1
+        },
+        {
+          "title": "player acceleration and braking are gradual and stop without held input",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2737,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:52:22.848Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-eaecfaa77dff7f1ebb73",
+          "file": "game.spec.ts",
+          "line": 144,
+          "column": 1
+        },
+        {
+          "title": "a Chaser ram deals its configured damage without scoring; Shooter cannonballs hurt the player",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2570,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:52:25.605Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-c6189fda1c289878f3fd",
+          "file": "game.spec.ts",
+          "line": 320,
+          "column": 1
+        },
+        {
+          "title": "pause freezes simulation and cooldowns, focus loss requires explicit resume",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile-landscape",
+              "projectName": "mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2885,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:52:28.191Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8b1bb1493a64c9fc3ab6-ff083c9a7567cacf6535",
+          "file": "game.spec.ts",
+          "line": 530,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "smoke.spec.ts",
+      "file": "smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the published build serves its commit, mocks Ranking and History, and registers a battle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "production-smoke",
+              "projectName": "production-smoke",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8671,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:52:34.088Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4219922fea2e2bd3c691-9540199147b39a154195",
+          "file": "smoke.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-14T13:51:45.834Z",
+    "duration": 64763.595,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

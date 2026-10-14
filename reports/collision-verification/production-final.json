@@ -1,0 +1,250 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=production-smoke"
+    ],
+    "configFile": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\playwright.config.ts",
+    "rootDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-production-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-layout",
+        "name": "mobile-layout",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/mobile.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-production-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "rendering",
+        "name": "rendering",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/rendering.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-production-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "core",
+        "name": "core",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/core.spec.ts",
+          "**/collision.spec.ts",
+          "**/navigation.spec.ts",
+          "**/presentation.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-production-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-production-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-landscape",
+        "name": "mobile-landscape",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/game.spec.ts",
+          "**/music.spec.ts",
+          "**/network.spec.ts",
+          "**/accessibility.spec.ts",
+          "**/pause.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/test-results/collision-verification-production-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "production-smoke",
+        "name": "production-smoke",
+        "testDir": "C:/_Projects/Project_JungleGaming/PirateBattle/__GIT__PirateBattle/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/smoke.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\test-results\\collision-verification-production-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "production-smoke",
+        "testDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "snapshotDir": "C:\\_Projects\\Project_JungleGaming\\PirateBattle\\__GIT__PirateBattle\\tests",
+        "testIgnore": [],
+        "testMatch": "**/smoke.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5232",
+          "channel": "chromium",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "deviceScaleFactor": 1
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "production-smoke"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "reports/collision-verification/production-final",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/collision-verification/production-final.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "smoke.spec.ts",
+      "file": "smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "the published build serves its commit, mocks Ranking and History, and registers a battle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "production-smoke",
+              "projectName": "production-smoke",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4675,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-14T13:56:37.267Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4219922fea2e2bd3c691-9540199147b39a154195",
+          "file": "smoke.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-14T13:56:31.307Z",
+    "duration": 13419.269,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

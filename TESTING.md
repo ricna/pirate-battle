@@ -1,5 +1,11 @@
 # Testing
 
+## Island damage recheck — 14 October 2026
+
+The island-damage implementation was already present in commit `fd64d34`. A focused recheck of the visible checkout based on `96ae791`, using `arena_00-v1/balance-v6` with concurrent uncommitted pause-menu changes, passed **29 domain tests and 9 browser tests**. The browser selection covers island damage and HUD health, harmless arena borders, acceleration/braking, Chaser/Shooter damage and pause on desktop and landscape mobile, plus registration and refresh in the optimized production build. The domain cases verify separate impacts, no repeated damage while held against a coast, lethal island damage, no kill credit and validation of configured damage.
+
+Typecheck, lint/architecture, format check and production build passed. Reports are isolated in [collision verification](reports/collision-verification/README.md) so they do not replace the delivered full-suite report below. This is historical focused evidence for that checkout, not a new complete-suite, Linux, physical-device, profiling or deployment result for subsequent commits.
+
 ## Final verification
 
 | Check | Environment | Result |
