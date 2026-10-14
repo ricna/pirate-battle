@@ -1,5 +1,4 @@
 import type { MapCollider } from '../assets/TiledMapLoader';
-import { GameDefaults } from '../configuration/GameDefaults';
 export interface Point {
   readonly x: number;
   readonly y: number;
@@ -21,7 +20,7 @@ export function segmentRect(
   b: Point,
   r: MapCollider,
   padding: number,
-  tolerance = GameDefaults.Rules.geometryTolerance,
+  tolerance: number,
 ): number | null {
   let enter = 0;
   let exit = 1;

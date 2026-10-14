@@ -371,7 +371,7 @@ export class GameSession {
       config: this.#dependencies.config,
       camera: this.#mapView!.camera.observation(),
       colliders: game.map.colliders,
-      frames: includeFrames ? [...this.#instrumentation.frames] : [],
+      frames: includeFrames ? this.#instrumentation.frames : [],
       entityPeak: this.#instrumentation.entityPeak,
       terminal: {
         elapsed: this.#terminal?.elapsed ?? 0,

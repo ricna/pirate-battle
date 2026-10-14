@@ -1,6 +1,15 @@
 import { Assets, Texture } from 'pixi.js';
 
 const MAP_PATH = '/assets/maps/arena_00.tmj';
+/** Loading-bar percentages reported at each validated loader stage. */
+const LoadProgress = Object.freeze({
+  mapDocument: 25,
+  /** Span reached halfway through the tilesets, once each tileset's metadata is read. */
+  tilesetMetadataSpan: 35,
+  /** Span covered once every tileset image has loaded. */
+  tilesetImageSpan: 65,
+  complete: 100,
+});
 // Explicit references keep the authored files available in both dev and builds.
 const PROJECT_FILES: Record<string, string> = {
   [MAP_PATH]: new URL('../../../assets/maps/arena_00.tmj', import.meta.url).href,
@@ -8,6 +17,16 @@ const PROJECT_FILES: Record<string, string> = {
   '/assets/tilesheet/tiles_sheet.png': new URL('../../../assets/tilesheet/tiles_sheet.png', import.meta.url)
     .href,
 };
+
+/** Tiled's 32-bit GID layout: the tile ID in the low bits, flip/rotation flags in the high bits. */
+export const TiledGid = Object.freeze({
+  maximum: 0xffffffff,
+  idMask: 0x0fffffff,
+  flippedHorizontally: 0x80000000,
+  flippedVertically: 0x40000000,
+  flippedDiagonally: 0x20000000,
+  rotatedHexagonal: 0x10000000,
+});
 
 export interface MapCollider {
   id: number;
@@ -118,7 +137,7 @@ function tileLayer(raw: Record<string, unknown>, width: number, height: number):
   }
   const data = list(raw.data, `Layer ${name} data`).map((gid) => {
     const value = integer(gid, `Layer ${name} tile ID`, 0);
-    if (value > 0xffffffff) throw new Error(`Layer ${name} contains an invalid tile ID.`);
+    if (value > TiledGid.maximum) throw new Error(`Layer ${name} contains an invalid tile ID.`);
     return value;
   });
   if (data.length !== width * height) throw new Error(`Layer ${name} has an invalid cell count.`);
@@ -210,7 +229,7 @@ export class TiledMapLoader {
     }
     if (!layers.length || !colliders?.length)
       throw new Error('The arena requires tile layers and authored collision rectangles.');
-    onProgress(25);
+    onProgress(LoadProgress.mapDocument);
 
     const references = list(raw.tilesets, 'Map tilesets');
     if (!references.length) throw new Error('The map requires an external tileset.');
@@ -223,7 +242,10 @@ export class TiledMapLoader {
         throw new Error('The arena supports static image-sheet tilesets without per-tile overrides.');
       }
       const imagePath = relativePath(path, text(tileset.image, 'Tileset image'));
-      onProgress(25 + Math.round((35 * (index + 0.5)) / references.length));
+      onProgress(
+        LoadProgress.mapDocument +
+          Math.round((LoadProgress.tilesetMetadataSpan * (index + 0.5)) / references.length),
+      );
       const texture = await Assets.load<Texture>(assetUrl(imagePath));
       signal.throwIfAborted();
       // The provided sheet has no padding; avoid sampling neighboring tiles.
@@ -262,26 +284,29 @@ export class TiledMapLoader {
         throw new Error('Tileset GID ranges must not overlap.');
       }
       tilesets.push(definition);
-      onProgress(25 + Math.round((65 * (index + 1)) / references.length));
+      onProgress(
+        LoadProgress.mapDocument +
+          Math.round((LoadProgress.tilesetImageSpan * (index + 1)) / references.length),
+      );
     }
     for (const layer of layers) {
       for (const rawGid of layer.data) {
-        const gid = (rawGid & 0x0fffffff) >>> 0;
+        const gid = (rawGid & TiledGid.idMask) >>> 0;
         if (rawGid === 0) continue;
-        if ((rawGid & 0x10000000) !== 0)
+        if ((rawGid & TiledGid.rotatedHexagonal) !== 0)
           throw new Error('Hexagonal tile rotation is unsupported in this orthogonal map.');
         if (
           !tilesets.some((tileset) => gid >= tileset.firstGid && gid < tileset.firstGid + tileset.tileCount)
         ) {
           throw new Error(`Layer ${layer.name} references unknown tile ${gid}.`);
         }
-        if ((rawGid & 0x20000000) !== 0 && tileWidth !== tileHeight) {
+        if ((rawGid & TiledGid.flippedDiagonally) !== 0 && tileWidth !== tileHeight) {
           throw new Error('Diagonal flips require square tiles in this renderer.');
         }
       }
     }
     signal.throwIfAborted();
-    onProgress(100);
+    onProgress(LoadProgress.complete);
     return { width, height, tileWidth, tileHeight, layers, tilesets, colliders };
   }
 }

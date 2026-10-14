@@ -1,5 +1,6 @@
 import { Container, Rectangle, RenderTexture, Sprite, Texture, TilingSprite } from 'pixi.js';
 import type { Renderer } from 'pixi.js';
+import { TiledGid } from '../assets/TiledMapLoader';
 import type { LoadedMap } from '../assets/TiledMapLoader';
 import type { GameTextures } from '../assets/GameTextureLibrary';
 import { requiredTexture } from '../assets/GameTextureLibrary';
@@ -8,6 +9,7 @@ import type { Point } from '../math/Geometry';
 import { WorldCamera } from './WorldCamera';
 
 export class MapRenderer {
+  readonly #map: LoadedMap;
   readonly #world = new Container();
   get world(): Container {
     return this.#world;
@@ -27,12 +29,13 @@ export class MapRenderer {
   readonly #waterDrift = { x: 0, y: 0 };
 
   constructor(
-    readonly map: LoadedMap,
+    map: LoadedMap,
     renderer: Pick<Renderer, 'render'>,
     resolution: number,
     presentation: PresentationProfile,
     textures: GameTextures,
   ) {
+    this.#map = map;
     this.#world.label = 'authored-arena';
     this.#camera = new WorldCamera(map.width * map.tileWidth, map.height * map.tileHeight);
     this.#presentation = presentation;
@@ -55,16 +58,16 @@ export class MapRenderer {
 
         layer.data.forEach((rawGid, index) => {
           if (rawGid === 0) return;
-          const gid = (rawGid & 0x0fffffff) >>> 0;
+          const gid = (rawGid & TiledGid.idMask) >>> 0;
           const sprite = new Sprite(this.#texture(gid));
           sprite.anchor.set(0.5);
           sprite.position.set(
             ((index % layer.width) + 0.5) * map.tileWidth,
             (Math.floor(index / layer.width) + 0.5) * map.tileHeight,
           );
-          const horizontal = (rawGid & 0x80000000) !== 0;
-          const vertical = (rawGid & 0x40000000) !== 0;
-          const diagonal = (rawGid & 0x20000000) !== 0;
+          const horizontal = (rawGid & TiledGid.flippedHorizontally) !== 0;
+          const vertical = (rawGid & TiledGid.flippedVertically) !== 0;
+          const diagonal = (rawGid & TiledGid.flippedDiagonally) !== 0;
           if (diagonal) {
             // Tiled swaps axes first, then applies horizontal/vertical flips.
             sprite.rotation = Math.PI / 2;
@@ -97,7 +100,7 @@ export class MapRenderer {
   #texture(gid: number): Texture {
     const cached = this.#frames.get(gid);
     if (cached) return cached;
-    const tileset = this.map.tilesets.find(
+    const tileset = this.#map.tilesets.find(
       (item) => gid >= item.firstGid && gid < item.firstGid + item.tileCount,
     );
     if (!tileset) throw new Error(`Required tile ${gid} has no tileset.`);
@@ -116,8 +119,8 @@ export class MapRenderer {
   }
 
   resize(width: number, height: number) {
-    const worldWidth = this.map.width * this.map.tileWidth;
-    const worldHeight = this.map.height * this.map.tileHeight;
+    const worldWidth = this.#map.width * this.#map.tileWidth;
+    const worldHeight = this.#map.height * this.#map.tileHeight;
     this.#camera.resize(width, height);
     const scale = this.#camera.scale;
     this.#world.scale.set(scale);
@@ -138,8 +141,8 @@ export class MapRenderer {
     this.#waterMargin.x = x;
     this.#waterMargin.y = y;
     this.#water.position.set(-x, -y);
-    this.#water.width = this.map.width * this.map.tileWidth + x * 2;
-    this.#water.height = this.map.height * this.map.tileHeight + y * 2;
+    this.#water.width = this.#map.width * this.#map.tileWidth + x * 2;
+    this.#water.height = this.#map.height * this.#map.tileHeight + y * 2;
     this.#applyWaterTiles();
   }
 

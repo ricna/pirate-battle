@@ -43,7 +43,7 @@ export class InputController {
   release(source: string) {
     this.#sources.delete(source);
   }
-  clear = () => {
+  readonly clear = () => {
     this.#sources.clear();
   };
   setActive(active: boolean) {

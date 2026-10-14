@@ -31,8 +31,9 @@ export class SessionInstrumentation {
   get manualClock(): boolean {
     return this.#manualClock;
   }
-  get frames(): readonly number[] {
-    return this.#samples;
+  /** Detached copy of the recorded frame intervals. */
+  get frames(): number[] {
+    return [...this.#samples];
   }
   get entityPeak(): number {
     return this.#entityPeak;

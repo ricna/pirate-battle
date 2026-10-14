@@ -1,5 +1,4 @@
 import type { MapCollider } from '../assets/TiledMapLoader';
-import { GameDefaults } from '../configuration/GameDefaults';
 import { circleRect, distance } from './Geometry';
 import type { Point } from './Geometry';
 
@@ -15,7 +14,7 @@ export class Navigation {
     tile: number,
     radius: number,
     obstacles: readonly MapCollider[],
-    inflation = GameDefaults.Rules.navigationInflation,
+    inflation: number,
   ) {
     this.#columns = columns;
     this.#rows = rows;
