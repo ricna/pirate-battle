@@ -171,9 +171,9 @@ Balance version `arena_00-v1/balance-v5` introduced rescue-enabled ranking snaps
 
 ### Island collision damage
 
-`CollisionConfig.Default.islandImpactDamage = { player: 1, enemy: 0 }` is the hull damage of each significant island collision, per allegiance. A collision is significant under the same rule as its impact sound and splash: the hull meets the coast at `minimumImpactSpeed` (20 pixels/s) or more, at most once per `impactCooldown` (0.65 s) for the same ship and contact. Pressing against a coast after the hull has stopped therefore costs nothing more; leaving and hitting it again costs another point. Arena borders never cause damage. The damage passes through `DamageSystem` (statistics, damage label, hit flash, low-health warning) with no kill credit, so a player at 1 health can sink against an island. Values must be non-negative integers. Raising the enemy value would let enemies lose health on coasts without awarding points.
+`CollisionConfig.Default.islandImpactDamage = { player: 1, enemy: 0 }` is the hull damage of each significant island collision, per allegiance. A collision is significant under the same rule as its impact sound and splash: the hull meets the coast at `minimumImpactSpeed` (20 pixels/s) or more, at most once per `impactCooldown` (0.65 s) for the same ship and contact. Pressing against a coast after the hull has stopped therefore costs nothing more; leaving and hitting it again costs another point. Arena borders never cause damage. The damage passes through `DamageSystem` (statistics, damage label, hit flash, low-health warning) with no kill credit, so a player at 1 health can sink against an island. Values must be non-negative integers. Raising the enemy value would let enemies lose health on coasts without awarding points. These values are cloned and frozen in each match's collision snapshot and included in its ranking identity; source edits apply to newly built matches. This island-damage rule was introduced in `balance-v6`.
 
-Balance version `arena_00-v1/balance-v6` separates ranking snapshots with island damage from earlier ones.
+Balance version `arena_00-v1/balance-v6` introduced island damage and separates its ranking snapshots from earlier ones. Later balance versions retain this rule unless explicitly changed.
 
 ### Ship hull radii
 

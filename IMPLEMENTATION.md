@@ -409,7 +409,7 @@ GameManager owns CrewSystem and its bounded pool. Rescue sweeps relative motion 
 
 ## Island collision damage — 14 October 2026
 
-The owner requested that every island collision cost 1 health. `CollisionConfig.islandImpactDamage` authors the damage per allegiance (player 1, enemy 0) and is validated as non-negative integers. A collision is the existing significant island contact (at least `minimumImpactSpeed`, once per `impactCooldown` per contact key), so sustained pressure against a coast does not drain health every frame; arena borders never damage. Damage passes through `DamageSystem` without kill credit and can sink the player. This is a rule change: balance version `balance-v6`.
+The owner requested that every island collision cost 1 health. `CollisionConfig.Default.islandImpactDamage` authors the damage per allegiance (player 1, enemy 0) and is validated as non-negative integers. A collision is the existing significant island contact (at least `minimumImpactSpeed`, once per `impactCooldown` per contact key), so sustained pressure against a coast does not drain health every frame; arena borders never damage. Damage passes through `DamageSystem` without kill credit and can sink the player. This is a rule change: balance version `balance-v6`.
 
 ## Ship hull radius — 14 October 2026
 
