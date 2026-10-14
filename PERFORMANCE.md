@@ -8,27 +8,27 @@ Windows 10 Pro; Intel Core i7-9700KF (8 cores); 32 GiB RAM; NVIDIA GeForce RTX 3
 
 ## Three-minute match
 
-Measured on 14 October 2026 on commit `06dce18` (clean checkout; the build reported the same commit), balance `arena_00-v1/balance-v6`, seed 20261012, **180 s session with the shipped 5 s spawn interval**, sound and music on, through the real-time fixed-step simulation.
+Measured on 14 October 2026 on commit `896afad` (clean checkout; the build reported the same commit), balance `arena_00-v1/balance-v9`, seed 20261012, **180 s session with the shipped 5 s spawn interval**, sound and music on, through the real-time fixed-step simulation. Under balance-v9 the opening fleet and reinforcements outlast the scripted pilot, so the measurement covers the 133.5 s it survived.
 
 | Metric | Result |
 | --- | --- |
-| Active combat | 180 s, ended by time (the pilot survived) |
-| Mean frame rate | **60.00 FPS** |
-| Frame interval p50 / **p95** / p99 / max | 16.7 / **16.8** / 16.8 / 17.2 ms |
-| Frames measured after warm-up | 10,500 |
-| Peak simultaneous entities (ships, cannonballs, effects, particles, labels) | 82 |
-| Credited kills by the keyboard pilot | 35 |
-| Pool exhaustion (projectiles, effects, particles, crew, labels, ship trails) | none; projectile peak 12 of 32, particle peak 56 of 96, crew peak 17 of 32, ship-trail peak 3 of 8 |
+| Active combat | 133.5 s of the 180 s session, ended by the pilot's death |
+| Mean frame rate | **59.84 FPS** |
+| Frame interval p50 / **p95** / p99 / max | 16.7 / **16.8** / 16.8 / 349.9 ms |
+| Frames measured after warm-up | 7,697 |
+| Peak simultaneous entities (ships, cannonballs, effects, particles, labels) | 108 |
+| Credited kills by the keyboard pilot | 46 |
+| Pool exhaustion (projectiles, effects, particles, crew, labels, ship trails) | none; projectile peak 11 of 32, effect peak 7 of 16, particle peak 73 of 96, crew peak 23 of 32, ship-trail peak 8 |
 | Audio | 27 decoded cues, effect voices peaked at the 16-voice budget, soundtrack playing throughout |
 | Unhandled page errors | 0 |
 
-The frame interval never exceeded 17.2 ms, so the 60 FPS target held for the whole match, including the busiest moments (up to 82 live entities and the full voice budget).
+One frame, about 16 s into combat, took 349.9 ms; its neighbours took 16.7 ms and every other frame stayed under 20 ms. The cause of that single stall was not investigated. Apart from it, the 60 FPS target held for the whole measurement, including the busiest moments (up to 108 live entities and the full voice budget).
 
 ## Memory across start/play/leave cycles
 
 Each cycle presses Play, runs 10 s of the real rules through the test clock, pauses and leaves the battle; garbage collection is forced before every sample.
 
-**Five cycles after the three-minute match** (`reports/profile.json`): retained JS heap 9.57 MB before the cycles and 10.09 MB after the fifth (+0.53 MB).
+**Five cycles after the three-minute match** (`reports/profile.json`): retained JS heap 9.18 MB before the cycles and 9.77 MB after the fifth (+0.59 MB).
 
 **Thirty cycles** (`npm run profile:memory`, `reports/memory-followup.json`):
 
