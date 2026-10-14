@@ -26,7 +26,9 @@ export class ApplicationServices {
   readonly #player = new PlayerIdentityRepository(this.#storage);
   readonly #network = new NetworkSimulator(this.#storage);
   readonly #records = new RecordsApi(
-    axios.create({ baseURL: NetworkConfig.BaseUrl, timeout: NetworkConfig.RequestTimeoutMs }),
+    this.#network.withRecovery(
+      axios.create({ baseURL: NetworkConfig.BaseUrl, timeout: NetworkConfig.RequestTimeoutMs }),
+    ),
   );
   readonly #queryClient = new QueryClient({
     defaultOptions: {

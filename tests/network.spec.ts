@@ -107,3 +107,32 @@ test('a pending battle never blocks a new match, and repeated retries register i
   await page.getByRole('button', { name: 'Match History', exact: true }).click();
   await expect(page.locator('tbody tr')).toHaveCount(1);
 });
+
+test('a restarted mock service worker is re-activated, so lists and registration keep working', async ({
+  page,
+}) => {
+  // The browser may stop an idle service worker; the restarted worker has forgotten this page.
+  const stopWorkers = async () => {
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('ServiceWorker.enable');
+    await cdp.send('ServiceWorker.stopAllWorkers');
+    await cdp.detach();
+  };
+  const recoveredRequests: string[] = [];
+  page.on('request', (request) => {
+    if (request.headers()['x-pirate-mock-recovery'])
+      recoveredRequests.push(`${request.method()} ${request.url()}`);
+  });
+  await stopWorkers();
+  await page.getByRole('button', { name: 'Ranking', exact: true }).click();
+  await expect(page.getByRole('table')).toBeVisible();
+  await expect(page.getByText('Page 1 of 3')).toBeVisible();
+  expect(recoveredRequests.some((request) => request.startsWith('GET'))).toBe(true);
+  await page.getByRole('button', { name: 'Main Menu', exact: true }).click();
+  await play(page);
+  await stopWorkers();
+  await advance(page, 120);
+  await expect(page.locator('.result-panel')).toContainText('Battle registered');
+  expect(recoveredRequests.some((request) => request.startsWith('POST'))).toBe(true);
+  expect(await serverRecords(page)).toBe(1);
+});

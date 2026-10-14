@@ -11,6 +11,12 @@ export class NetworkConfig {
   static readonly PageSize = 5;
   /** Delay before the mock server replays an already committed record for a same-ID retry. */
   static readonly ExistingRecordDelayMs = 100;
+  /** Marks every mocked response; an `/api/` response without it came from the static host instead. */
+  static readonly MockHeader = 'x-pirate-mock';
+  /** Marks the single retry made after re-activating the mock worker. */
+  static readonly RecoveryHeader = 'x-pirate-mock-recovery';
+  /** Longest wait for a restarted worker to acknowledge this page before the retry. */
+  static readonly ReactivationTimeoutMs = 1000;
 }
 
 freezeStaticConfiguration(NetworkConfig);

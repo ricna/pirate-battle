@@ -3,6 +3,9 @@ import { GameConfigFactory } from '../../game/configuration/GameConfigFactory';
 import { GameConfigIdentity } from '../../game/configuration/GameConfigIdentity';
 import type { GameConfig } from '../../game/contracts/GameConfig';
 import { http, HttpResponse, delay } from 'msw';
+import type { JsonBodyType } from 'msw';
+import axios from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { setupWorker } from 'msw/browser';
 
 import { isMatch, isMatchList } from '../../application/records/MatchRecord';
@@ -12,6 +15,11 @@ import { MockFixtures } from './MockFixtures';
 import { NetworkConfig } from './NetworkConfig';
 import { NetworkScenarios } from './NetworkScenarios';
 import type { MockEndpoint, MockFailure, Scenario } from './NetworkScenarios';
+
+/** Mocked JSON response carrying the marker that distinguishes it from the static host. */
+function mockJson<T extends JsonBodyType>(body: T, status = 200): Response {
+  return HttpResponse.json(body, { status, headers: { [NetworkConfig.MockHeader]: '1' } });
+}
 
 function page<T>(items: T[], requested: string | null): Page<T> {
   const number = Math.max(1, Number(requested) || 1);
@@ -37,9 +45,9 @@ function failureResponse(failure: MockFailure): Response {
     case 'connection':
       return HttpResponse.error();
     case 'http-400':
-      return HttpResponse.json({ message: 'Simulated invalid request.' }, { status: 400 });
+      return mockJson({ message: 'Simulated invalid request.' }, 400);
     case 'http-503':
-      return HttpResponse.json({ message: 'Simulated service outage.' }, { status: 503 });
+      return mockJson({ message: 'Simulated service outage.' }, 503);
   }
 }
 
@@ -51,6 +59,7 @@ export class NetworkSimulator {
   #requestCount = 0;
   #generation = 0;
   #warning: string | null = null;
+  #reactivation: Promise<void> | null = null;
 
   constructor(storage: LocalStorageStore) {
     this.#storage = storage;
@@ -62,14 +71,14 @@ export class NetworkSimulator {
         const failure = await this.#condition('ranking');
         if (failure) return failure;
         const config = configFromKey(url.searchParams.get('config'));
-        if (!config) return HttpResponse.json({ message: 'Unknown ranking configuration.' }, { status: 400 });
+        if (!config) return mockJson({ message: 'Unknown ranking configuration.' }, 400);
         const key = GameConfigIdentity.key(config);
         const items = [...MockFixtures.ranking(behaviour.fixtures.ranking, config), ...this.#savedRecords()]
           .filter((record) => GameConfigIdentity.key(record.config) === key)
           // Score descending, then the earliest date, then ID: a deterministic tie-break.
           .sort((a, b) => b.score - a.score || a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
           .map((record, index) => ({ ...record, rank: index + 1 }));
-        return HttpResponse.json(page(items, url.searchParams.get('page')));
+        return mockJson(page(items, url.searchParams.get('page')));
       }),
       http.get('*/api/history', async ({ request }) => {
         const behaviour = NetworkScenarios.Behaviours[this.#scenario];
@@ -84,29 +93,29 @@ export class NetworkSimulator {
         );
         const items = [...fixtures, ...this.#savedRecords().filter((record) => record.playerId === playerId)];
         items.sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id));
-        return HttpResponse.json(page(items, url.searchParams.get('page')));
+        return mockJson(page(items, url.searchParams.get('page')));
       }),
       http.post('*/api/history', async ({ request }) => {
         const behaviour = NetworkScenarios.Behaviours[this.#scenario];
         const epoch = this.#generation;
         const record: unknown = await request.json();
-        if (!isMatch(record)) return HttpResponse.json({ message: 'Invalid match record.' }, { status: 400 });
+        if (!isMatch(record)) return mockJson({ message: 'Invalid match record.' }, 400);
         const existing = this.#savedRecords().find((saved) => saved.id === record.id);
         if (existing) {
           await delay(NetworkConfig.ExistingRecordDelayMs);
-          return HttpResponse.json(existing);
+          return mockJson(existing);
         }
         const failure = await this.#condition('post');
         if (failure) return failure;
         if (epoch !== this.#generation)
-          return HttpResponse.json({ message: 'Demo server was reset. Retry this battle.' }, { status: 503 });
+          return mockJson({ message: 'Demo server was reset. Retry this battle.' }, 503);
         // Commit is synchronous before the response delay. A retry recovers this same ID.
         const latest = this.#savedRecords();
         const raced = latest.find((saved) => saved.id === record.id);
-        if (raced) return HttpResponse.json(raced);
+        if (raced) return mockJson(raced);
         this.#storage.write('server', [...latest, record]);
         if (behaviour.postCommitDelayMs) await delay(behaviour.postCommitDelayMs);
-        return HttpResponse.json(record, { status: 201 });
+        return mockJson(record, 201);
       }),
     );
   }
@@ -148,5 +157,70 @@ export class NetworkSimulator {
       this.#warning =
         'The demo network could not start. Enable service workers to use Ranking and Match History. You can still play.';
     }
+  }
+
+  /**
+   * The browser may stop and restart an idle service worker, which then forgets this page and lets
+   * `/api/` requests reach the static host. The page re-announces itself with the worker's own
+   * `MOCK_ACTIVATE` message (`public/mockServiceWorker.js`, generated for the installed MSW version)
+   * and waits for its `MOCKING_ENABLED` acknowledgement. Stopping and restarting MSW instead would make
+   * a worker with no remaining clients unregister itself.
+   */
+  reactivate(): Promise<void> {
+    this.#reactivation ??= this.#announceClient().finally(() => {
+      this.#reactivation = null;
+    });
+    return this.#reactivation;
+  }
+
+  async #announceClient(): Promise<void> {
+    const worker = navigator.serviceWorker?.controller;
+    if (!worker) {
+      await this.start();
+      return;
+    }
+    await new Promise<void>((resolve) => {
+      const finish = () => {
+        clearTimeout(timeout);
+        navigator.serviceWorker.removeEventListener('message', acknowledged);
+        resolve();
+      };
+      const acknowledged = (event: MessageEvent<unknown>) => {
+        const type = event.data && typeof event.data === 'object' ? Reflect.get(event.data, 'type') : null;
+        if (type === 'MOCKING_ENABLED') finish();
+      };
+      // Without an acknowledgement the single retry still runs and reports a visible failure.
+      const timeout = setTimeout(finish, NetworkConfig.ReactivationTimeoutMs);
+      navigator.serviceWorker.addEventListener('message', acknowledged);
+      worker.postMessage('MOCK_ACTIVATE');
+    });
+  }
+
+  /**
+   * Retries once, after re-activating the worker, any `/api/` response that lacks the mock marker. A second
+   * unmarked response is reported instead of being parsed as records.
+   */
+  withRecovery(client: AxiosInstance): AxiosInstance {
+    const recover = async (config: InternalAxiosRequestConfig) => {
+      if (config.headers.get(NetworkConfig.RecoveryHeader))
+        throw new Error('The demo network is not answering. Reload the page to restart it.');
+      await this.reactivate();
+      config.headers.set(NetworkConfig.RecoveryHeader, '1');
+      return client.request(config);
+    };
+    client.interceptors.response.use(
+      (response) => (response.headers[NetworkConfig.MockHeader] ? response : recover(response.config)),
+      (error: unknown) => {
+        if (
+          axios.isAxiosError(error) &&
+          error.response &&
+          error.config &&
+          !error.response.headers[NetworkConfig.MockHeader]
+        )
+          return recover(error.config);
+        return Promise.reject(error);
+      },
+    );
+    return client;
   }
 }

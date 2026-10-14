@@ -59,3 +59,16 @@ export function isMatch(value: unknown): value is MatchRecord {
   );
 }
 export const isMatchList = (v: unknown): v is MatchRecord[] => Array.isArray(v) && v.every(isMatch);
+export function isRankedMatch(value: unknown): value is RankedMatch {
+  return isMatch(value) && Number.isInteger((value as RankedMatch).rank) && (value as RankedMatch).rank > 0;
+}
+/** Validates an untrusted paginated response before the UI renders it. */
+export function isPage<T>(value: unknown, isItem: (item: unknown) => item is T): value is Page<T> {
+  if (!value || typeof value !== 'object') return false;
+  const page = value as Page<unknown>;
+  return (
+    Array.isArray(page.items) &&
+    page.items.every(isItem) &&
+    [page.page, page.totalPages, page.total].every((number) => Number.isInteger(number) && number >= 0)
+  );
+}
