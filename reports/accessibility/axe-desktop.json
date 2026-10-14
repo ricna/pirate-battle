@@ -58,7 +58,7 @@
     },
     {
       "screen": "Pause dialog",
-      "passes": 12,
+      "passes": 10,
       "violations": [],
       "incomplete": [
         "color-contrast"
